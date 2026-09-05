@@ -299,90 +299,272 @@ async function main() {
   }
   console.log(`✅ Salary Structure: ${structure.name} with ${rules.length} rules.`);
 
-  // 8. Employees & Contracts
-  const emp1 = await prisma.employee.upsert({
-    where: { organizationId_employeeNum: { organizationId: organization.id, employeeNum: 'EMP-00101' } },
-    update: { isActive: true },
-    create: {
-      organizationId: organization.id,
-      userId: adminUser.id,
-      departmentId: deptEngineering.id,
-      jobPositionId: posTechLead.id,
-      workingScheduleId: schedule.id,
-      employeeNum: 'EMP-00101',
+  // 8. 10 Mock Employees as requested: indersh, guhan, muhammad, pughal, hari, jack, karan, kiruthik, aarav, vikram
+  const mockEmployeesData = [
+    {
+      num: 'EMP-00101',
+      firstName: 'Indersh',
+      lastName: 'Raj',
+      email: 'indersh@peoplepay360.local',
+      role: 'ORGANIZATION_ADMIN',
+      dept: deptEngineering,
+      job: posTechLead,
+      phone: '+91 98401 23456',
+      bankName: 'HDFC Bank Ltd',
+      bankAccountMasked: '•••• •••• 1101',
+      taxId: 'AAAPI1010F',
+      joiningDate: new Date('2023-01-10'),
+      wage: 180000.0,
+      contractTitle: 'Principal Enterprise Architect Contract',
+    },
+    {
+      num: 'EMP-00102',
+      firstName: 'Guhan',
+      lastName: 'Prasath',
+      email: 'guhan@peoplepay360.local',
+      role: 'DEPARTMENT_MANAGER',
+      dept: deptEngineering,
+      job: posTechLead,
+      phone: '+91 98402 34567',
+      bankName: 'ICICI Bank',
+      bankAccountMasked: '•••• •••• 2202',
+      taxId: 'BBBPG2202K',
+      joiningDate: new Date('2023-03-15'),
+      wage: 140000.0,
+      contractTitle: 'Senior Backend Lead Contract',
+    },
+    {
+      num: 'EMP-00103',
+      firstName: 'Muhammad',
+      lastName: 'Farooq',
+      email: 'muhammad@peoplepay360.local',
+      role: 'EMPLOYEE',
+      dept: deptEngineering,
+      job: posTechLead,
+      phone: '+91 98403 45678',
+      bankName: 'State Bank of India',
+      bankAccountMasked: '•••• •••• 3303',
+      taxId: 'CCCPM3303M',
+      joiningDate: new Date('2023-06-01'),
+      wage: 125000.0,
+      contractTitle: 'DevOps & Security Specialist Contract',
+    },
+    {
+      num: 'EMP-00104',
+      firstName: 'Pughal',
+      lastName: 'Vendhan',
+      email: 'pughal@peoplepay360.local',
+      role: 'EMPLOYEE',
+      dept: deptEngineering,
+      job: posTechLead,
+      phone: '+91 98404 56789',
+      bankName: 'Axis Bank Ltd',
+      bankAccountMasked: '•••• •••• 4404',
+      taxId: 'DDDPP4404P',
+      joiningDate: new Date('2023-08-20'),
+      wage: 130000.0,
+      contractTitle: 'Senior UI/UX & Frontend Architect Contract',
+    },
+    {
+      num: 'EMP-00105',
+      firstName: 'Hari',
+      lastName: 'Haran',
+      email: 'hari@peoplepay360.local',
+      role: 'EMPLOYEE',
+      dept: deptEngineering,
+      job: posTechLead,
+      phone: '+91 98405 67890',
+      bankName: 'Kotak Mahindra Bank',
+      bankAccountMasked: '•••• •••• 5505',
+      taxId: 'EEEPH5505H',
+      joiningDate: new Date('2024-01-10'),
+      wage: 110000.0,
+      contractTitle: 'Fullstack Platform Engineer Contract',
+    },
+    {
+      num: 'EMP-00106',
+      firstName: 'Jack',
+      lastName: 'Daniel',
+      email: 'jack@peoplepay360.local',
+      role: 'HR_MANAGER',
+      dept: deptHR,
+      job: posHRLead,
+      phone: '+91 98406 78901',
+      bankName: 'HDFC Bank Ltd',
+      bankAccountMasked: '•••• •••• 6606',
+      taxId: 'FFFJD6606J',
+      joiningDate: new Date('2023-04-05'),
+      wage: 120000.0,
+      contractTitle: 'Senior Talent Acquisition Lead Contract',
+    },
+    {
+      num: 'EMP-00107',
+      firstName: 'Karan',
+      lastName: 'Malhotra',
+      email: 'karan@peoplepay360.local',
+      role: 'PAYROLL_MANAGER',
+      dept: deptFinance,
+      job: posPayrollLead,
+      phone: '+91 98407 89012',
+      bankName: 'Standard Chartered Bank',
+      bankAccountMasked: '•••• •••• 7707',
+      taxId: 'GGGKM7707K',
+      joiningDate: new Date('2023-05-12'),
+      wage: 115000.0,
+      contractTitle: 'Payroll & Compliance Specialist Contract',
+    },
+    {
+      num: 'EMP-00108',
+      firstName: 'Kiruthik',
+      lastName: 'Raghavan',
+      email: 'kiruthik@peoplepay360.local',
+      role: 'EMPLOYEE',
+      dept: deptEngineering,
+      job: posTechLead,
+      phone: '+91 98408 90123',
+      bankName: 'Punjab National Bank',
+      bankAccountMasked: '•••• •••• 8808',
+      taxId: 'HHHKR8808R',
+      joiningDate: new Date('2024-02-01'),
+      wage: 95000.0,
+      contractTitle: 'QA Automation Engineer Contract',
+    },
+    {
+      num: 'EMP-00109',
       firstName: 'Aarav',
       lastName: 'Sharma',
-      workEmail: 'aarav.sharma@peoplepay360.local',
-      phone: '+91 98765 43210',
+      email: 'aarav.sharma@peoplepay360.local',
+      role: 'SUPER_ADMIN',
+      dept: deptHR,
+      job: posHRLead,
+      phone: '+91 98409 01234',
       bankName: 'HDFC Bank Ltd',
-      bankAccountMasked: '•••• •••• 4821',
-      taxId: 'AAAPS1234F',
-      joiningDate: new Date('2023-01-15'),
-      isActive: true,
+      bankAccountMasked: '•••• •••• 9909',
+      taxId: 'IIIAS9909A',
+      joiningDate: new Date('2022-11-01'),
+      wage: 200000.0,
+      contractTitle: 'VP Workforce Operations Contract',
     },
-  });
-
-  const emp2 = await prisma.employee.upsert({
-    where: { organizationId_employeeNum: { organizationId: organization.id, employeeNum: 'EMP-00102' } },
-    update: { isActive: true },
-    create: {
-      organizationId: organization.id,
-      userId: empUser.id,
-      departmentId: deptEngineering.id,
-      jobPositionId: posTechLead.id,
-      workingScheduleId: schedule.id,
-      employeeNum: 'EMP-00102',
+    {
+      num: 'EMP-00110',
       firstName: 'Vikram',
       lastName: 'Patel',
-      workEmail: 'vikram.patel@peoplepay360.local',
-      phone: '+91 98765 11223',
+      email: 'vikram.patel@peoplepay360.local',
+      role: 'FINANCE_MANAGER',
+      dept: deptFinance,
+      job: posPayrollLead,
+      phone: '+91 98410 12345',
       bankName: 'State Bank of India',
-      bankAccountMasked: '•••• •••• 9920',
-      taxId: 'BBBPV5678K',
-      joiningDate: new Date('2024-03-01'),
-      isActive: true,
+      bankAccountMasked: '•••• •••• 1010',
+      taxId: 'JJJVP1010V',
+      joiningDate: new Date('2023-09-15'),
+      wage: 150000.0,
+      contractTitle: 'Senior Financial Controller Contract',
     },
-  });
+  ];
 
-  // Contracts
-  const existingContract1 = await prisma.contract.findFirst({
-    where: { organizationId: organization.id, employeeId: emp1.id },
-  });
+  console.log(`⏳ Seeding ${mockEmployeesData.length} mock employees into database...`);
 
-  if (!existingContract1) {
-    await prisma.contract.create({
-      data: {
+  for (const empData of mockEmployeesData) {
+    // 1. Ensure user account exists
+    const user = await prisma.user.upsert({
+      where: { organizationId_email: { organizationId: organization.id, email: empData.email } },
+      update: {
+        firstName: empData.firstName,
+        lastName: empData.lastName,
+        role: empData.role,
+        passwordHash,
+      },
+      create: {
         organizationId: organization.id,
-        employeeId: emp1.id,
-        structureId: structure.id,
-        workingScheduleId: schedule.id,
-        name: 'Aarav Sharma - Principal Executive Contract',
-        wage: 150000.00,
-        wagePeriod: 'MONTHLY',
-        startDate: new Date('2023-01-15'),
-        status: 'ACTIVE',
+        email: empData.email,
+        passwordHash,
+        firstName: empData.firstName,
+        lastName: empData.lastName,
+        role: empData.role,
+        isEmailVerified: true,
       },
     });
-  }
 
-  const existingContract2 = await prisma.contract.findFirst({
-    where: { organizationId: organization.id, employeeId: emp2.id },
-  });
-
-  if (!existingContract2) {
-    await prisma.contract.create({
-      data: {
-        organizationId: organization.id,
-        employeeId: emp2.id,
-        structureId: structure.id,
+    // 2. Ensure employee record exists
+    const employee = await prisma.employee.upsert({
+      where: { organizationId_employeeNum: { organizationId: organization.id, employeeNum: empData.num } },
+      update: {
+        firstName: empData.firstName,
+        lastName: empData.lastName,
+        workEmail: empData.email,
+        phone: empData.phone,
+        departmentId: empData.dept.id,
+        jobPositionId: empData.job.id,
         workingScheduleId: schedule.id,
-        name: 'Vikram Patel - Senior Engineer Contract',
-        wage: 95000.00,
-        wagePeriod: 'MONTHLY',
-        startDate: new Date('2024-03-01'),
-        status: 'ACTIVE',
+        bankName: empData.bankName,
+        bankAccountMasked: empData.bankAccountMasked,
+        taxId: empData.taxId,
+        isActive: true,
+      },
+      create: {
+        organizationId: organization.id,
+        userId: user.id,
+        departmentId: empData.dept.id,
+        jobPositionId: empData.job.id,
+        workingScheduleId: schedule.id,
+        employeeNum: empData.num,
+        firstName: empData.firstName,
+        lastName: empData.lastName,
+        workEmail: empData.email,
+        phone: empData.phone,
+        bankName: empData.bankName,
+        bankAccountMasked: empData.bankAccountMasked,
+        taxId: empData.taxId,
+        joiningDate: empData.joiningDate,
+        isActive: true,
       },
     });
+
+    // 3. Ensure active contract exists
+    const contract = await prisma.contract.findFirst({
+      where: { organizationId: organization.id, employeeId: employee.id },
+    });
+
+    if (!contract) {
+      await prisma.contract.create({
+        data: {
+          organizationId: organization.id,
+          employeeId: employee.id,
+          structureId: structure.id,
+          workingScheduleId: schedule.id,
+          name: empData.contractTitle,
+          wage: empData.wage,
+          wagePeriod: 'MONTHLY',
+          startDate: empData.joiningDate,
+          status: 'ACTIVE',
+        },
+      });
+    }
+
+    // 4. Seed recent sample attendance
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const existingAttendance = await prisma.attendance.findFirst({
+      where: { organizationId: organization.id, employeeId: employee.id, date: new Date(todayStr) },
+    });
+
+    if (!existingAttendance) {
+      const checkIn = new Date();
+      checkIn.setHours(9, 30, 0, 0);
+      await prisma.attendance.create({
+        data: {
+          organizationId: organization.id,
+          employeeId: employee.id,
+          date: new Date(todayStr),
+          checkIn,
+          status: 'PRESENT',
+          workedHours: 8.5,
+        },
+      });
+    }
+
+    console.log(`   👤 Seeded Employee [${empData.num}]: ${empData.firstName} ${empData.lastName} (${empData.email})`);
   }
 
   // 9. Leave Types & Allocations

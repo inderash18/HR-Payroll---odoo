@@ -59,6 +59,7 @@ export function AppRoutes() {
         <Route path="/profile/attendance" element={<AttendancePage />} />
         <Route path="/profile/leave" element={<LeavesPage />} />
         <Route path="/profile/payslips" element={<PayslipsPage />} />
+        <Route path="/profile/settings" element={<SettingsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
 

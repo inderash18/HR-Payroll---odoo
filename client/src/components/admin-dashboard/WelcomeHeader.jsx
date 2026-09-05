@@ -12,7 +12,7 @@ export function WelcomeHeader({ userName = 'Indhu', onAddEmployee, onDownloadRep
   return (
     <div className="admin-welcome-card" id="admin-welcome-section">
       <div>
-        <h1 className="admin-welcome-title">Good morning, {userName} 👋</h1>
+        <h1 className="admin-welcome-title">Good morning, {userName}</h1>
         <p className="admin-welcome-sub">
           Here’s what’s happening across PeoplePay360 Technologies today.
         </p>

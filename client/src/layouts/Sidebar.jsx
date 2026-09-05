@@ -66,7 +66,7 @@ export function Sidebar() {
             (item.to === '/employees' && location.pathname.startsWith('/employees/')) ||
             (item.to === '/payroll' && location.pathname.startsWith('/payroll/')) ||
             (item.to === '/payslips' && location.pathname.startsWith('/payslips/')) ||
-            (item.to === '/audit' && location.pathname === '/audit-logs');
+            (item.to === '/audit' && location.pathname.startsWith('/audit/'));
 
           return (
             <NavLink

@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../api/client';
-import { LogIn, LogOut, Clock, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { LogIn, LogOut, CheckCircle2, Search } from 'lucide-react';
 
 export function AttendancePage() {
+  const { user } = useAuth();
   const [logs, setLogs] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+
+  const isAdmin = ['ADMIN', 'HR_MANAGER', 'SUPER_ADMIN', 'ORGANIZATION_ADMIN'].includes(user?.role);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -52,6 +57,12 @@ export function AttendancePage() {
     }
   };
 
+  const filteredLogs = logs.filter(log => {
+    if (!searchQuery) return true;
+    const empName = log.employee ? `${log.employee.firstName} ${log.employee.lastName}`.toLowerCase() : 'current user';
+    return empName.includes(searchQuery.toLowerCase());
+  });
+
   return (
     <div>
       <div className="card">
@@ -60,28 +71,51 @@ export function AttendancePage() {
           style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}
         >
           <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
-            Attendance Log ({logs.length} Entries)
+            Attendance Log ({filteredLogs.length} Entries)
           </h2>
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button
-              className="btn-pill-primary"
-              id="btn-clock-in"
-              style={{ background: 'var(--green)', borderColor: 'var(--green)' }}
-              onClick={handleClockIn}
-              disabled={actionLoading}
-            >
-              <LogIn size={16} />
-              <span>Clock In</span>
-            </button>
-            <button
-              className="btn-pill-primary"
-              id="btn-clock-out"
-              onClick={handleClockOut}
-              disabled={actionLoading}
-            >
-              <LogOut size={16} />
-              <span>Clock Out</span>
-            </button>
+          
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            {isAdmin ? (
+              <div style={{ position: 'relative' }}>
+                <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                <input
+                  type="text"
+                  placeholder="Search employees..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    padding: '0.5rem 1rem 0.5rem 2.25rem',
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    fontSize: '0.875rem',
+                    outline: 'none',
+                    minWidth: '220px'
+                  }}
+                />
+              </div>
+            ) : (
+              <>
+                <button
+                  className="btn-pill-primary"
+                  id="btn-clock-in"
+                  style={{ background: 'var(--green)', borderColor: 'var(--green)' }}
+                  onClick={handleClockIn}
+                  disabled={actionLoading}
+                >
+                  <LogIn size={16} />
+                  <span>Clock In</span>
+                </button>
+                <button
+                  className="btn-pill-primary"
+                  id="btn-clock-out"
+                  onClick={handleClockOut}
+                  disabled={actionLoading}
+                >
+                  <LogOut size={16} />
+                  <span>Clock Out</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
 

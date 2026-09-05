@@ -4,17 +4,17 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting comprehensive database seed for PeoplePay360...');
+  console.log('🌱 Starting Indian Corporate database seed for PeoplePay360...');
 
   // 1. Organization
   const organization = await prisma.organization.upsert({
-    where: { code: 'DEMO-ORG' },
+    where: { code: 'PP360-IND' },
     update: {},
     create: {
-      name: 'PeoplePay360 Global Demo Corp',
-      code: 'DEMO-ORG',
-      currency: 'USD',
-      timezone: 'America/New_York',
+      name: 'PeoplePay360 India Private Limited',
+      code: 'PP360-IND',
+      currency: 'INR',
+      timezone: 'Asia/Kolkata',
     },
   });
   console.log(`✅ Organization: ${organization.name} (${organization.id})`);
@@ -24,41 +24,41 @@ async function main() {
     where: {
       organizationId_code: {
         organizationId: organization.id,
-        code: 'PP360-US',
+        code: 'PP360-KA',
       },
     },
     update: {},
     create: {
       organizationId: organization.id,
-      name: 'PeoplePay Technologies LLC',
-      code: 'PP360-US',
-      country: 'United States',
-      currency: 'USD',
-      registrationNum: 'REG-US-9874102',
+      name: 'PeoplePay Technologies India Private Limited',
+      code: 'PP360-KA',
+      country: 'India',
+      currency: 'INR',
+      registrationNum: 'U72200KA2026PTC184920',
     },
   });
   console.log(`✅ Legal Entity: ${legalEntity.name}`);
 
-  // 3. Working Schedule & Lines
+  // 3. Working Schedule & Lines (Indian General Shift: 09:30 AM - 06:30 PM)
   let schedule = await prisma.workingSchedule.findFirst({
-    where: { organizationId: organization.id, name: 'Standard 40H Work Week' },
+    where: { organizationId: organization.id, name: 'Standard Indian General Shift (09:30 - 18:30)' },
   });
 
   if (!schedule) {
     schedule = await prisma.workingSchedule.create({
       data: {
         organizationId: organization.id,
-        name: 'Standard 40H Work Week',
+        name: 'Standard Indian General Shift (09:30 - 18:30)',
         type: 'STANDARD_40H',
-        timezone: 'America/New_York',
+        timezone: 'Asia/Kolkata',
         active: true,
         lines: {
           create: [
-            { dayOfWeek: 1, startTime: '09:00', endTime: '17:00', breakMinutes: 60 },
-            { dayOfWeek: 2, startTime: '09:00', endTime: '17:00', breakMinutes: 60 },
-            { dayOfWeek: 3, startTime: '09:00', endTime: '17:00', breakMinutes: 60 },
-            { dayOfWeek: 4, startTime: '09:00', endTime: '17:00', breakMinutes: 60 },
-            { dayOfWeek: 5, startTime: '09:00', endTime: '17:00', breakMinutes: 60 },
+            { dayOfWeek: 1, startTime: '09:30', endTime: '18:30', breakMinutes: 60 },
+            { dayOfWeek: 2, startTime: '09:30', endTime: '18:30', breakMinutes: 60 },
+            { dayOfWeek: 3, startTime: '09:30', endTime: '18:30', breakMinutes: 60 },
+            { dayOfWeek: 4, startTime: '09:30', endTime: '18:30', breakMinutes: 60 },
+            { dayOfWeek: 5, startTime: '09:30', endTime: '18:30', breakMinutes: 60 },
           ],
         },
       },
@@ -72,7 +72,7 @@ async function main() {
     update: {},
     create: {
       organizationId: organization.id,
-      name: 'Engineering',
+      name: 'Engineering & Technology',
       code: 'ENG',
     },
   });
@@ -82,7 +82,7 @@ async function main() {
     update: {},
     create: {
       organizationId: organization.id,
-      name: 'Human Resources',
+      name: 'Human Resources & Talent',
       code: 'HR',
     },
   });
@@ -92,11 +92,21 @@ async function main() {
     update: {},
     create: {
       organizationId: organization.id,
-      name: 'Finance & Payroll',
+      name: 'Finance & Indian Payroll',
       code: 'FIN',
     },
   });
-  console.log('✅ Departments: Engineering, Human Resources, Finance & Payroll');
+
+  const deptOperations = await prisma.department.upsert({
+    where: { organizationId_code: { organizationId: organization.id, code: 'OPS' } },
+    update: {},
+    create: {
+      organizationId: organization.id,
+      name: 'Operations & Service Delivery',
+      code: 'OPS',
+    },
+  });
+  console.log('✅ Departments: Engineering, Human Resources, Finance & Indian Payroll, Operations');
 
   // 5. Job Positions
   const posSoftwareEngineer = await prisma.jobPosition.upsert({
@@ -116,7 +126,7 @@ async function main() {
     create: {
       organizationId: organization.id,
       departmentId: deptHR.id,
-      title: 'Lead HR Partner',
+      title: 'Lead HR Business Partner',
       code: 'HR-LEAD',
     },
   });
@@ -127,8 +137,19 @@ async function main() {
     create: {
       organizationId: organization.id,
       departmentId: deptFinance.id,
-      title: 'Payroll Specialist',
+      title: 'Payroll Compliance Lead',
       code: 'PAY-SPEC',
+    },
+  });
+
+  const posOpsLead = await prisma.jobPosition.upsert({
+    where: { organizationId_code: { organizationId: organization.id, code: 'OPS-LEAD' } },
+    update: {},
+    create: {
+      organizationId: organization.id,
+      departmentId: deptOperations.id,
+      title: 'Operations Shift Lead',
+      code: 'OPS-LEAD',
     },
   });
   console.log('✅ Job Positions seeded');
@@ -161,8 +182,8 @@ async function main() {
       legalEntityId: legalEntity.id,
       email: 'payroll.manager@peoplepay360.local',
       passwordHash: payrollHash,
-      firstName: 'Sarah',
-      lastName: 'Jenkins',
+      firstName: 'Rahul',
+      lastName: 'Verma',
       role: Role.HR_PAYROLL_MANAGER,
     },
   });
@@ -175,8 +196,8 @@ async function main() {
       legalEntityId: legalEntity.id,
       email: 'hr.manager@peoplepay360.local',
       passwordHash: hrHash,
-      firstName: 'David',
-      lastName: 'Mitchell',
+      firstName: 'Priya',
+      lastName: 'Patel',
       role: Role.HR_MANAGER,
     },
   });
@@ -189,15 +210,15 @@ async function main() {
       legalEntityId: legalEntity.id,
       email: 'employee@peoplepay360.local',
       passwordHash: empHash,
-      firstName: 'Alex',
-      lastName: 'Johnson',
+      firstName: 'Aarav',
+      lastName: 'Sharma',
       role: Role.EMPLOYEE,
     },
   });
-  console.log('✅ Users & Roles: Admin, HR Manager, Payroll Manager, Employee');
+  console.log('✅ Users & Roles: Admin, HR Manager (Priya Patel), Payroll Manager (Rahul Verma), Employee (Aarav Sharma)');
 
   // 7. Employees
-  const empRecord = await prisma.employee.upsert({
+  const empRecord1 = await prisma.employee.upsert({
     where: { organizationId_employeeNum: { organizationId: organization.id, employeeNum: 'EMP-00101' } },
     update: {},
     create: {
@@ -208,19 +229,19 @@ async function main() {
       jobPositionId: posSoftwareEngineer.id,
       workingScheduleId: schedule.id,
       employeeNum: 'EMP-00101',
-      firstName: 'Alex',
-      lastName: 'Johnson',
-      workEmail: 'employee@peoplepay360.local',
-      personalEmail: 'alex.johnson.personal@gmail.com',
-      phone: '+1-555-0199',
-      bankName: 'JPMorgan Chase',
+      firstName: 'Aarav',
+      lastName: 'Sharma',
+      workEmail: 'aarav.sharma@peoplepay360.local',
+      personalEmail: 'aarav.sharma@gmail.com',
+      phone: '+91-9876543210',
+      bankName: 'HDFC Bank',
       bankAccountMasked: '••••••••4821',
-      taxId: 'US-TAX-982104',
+      taxId: 'ABCPS1234K',
       isActive: true,
     },
   });
 
-  const hrEmpRecord = await prisma.employee.upsert({
+  const empRecord2 = await prisma.employee.upsert({
     where: { organizationId_employeeNum: { organizationId: organization.id, employeeNum: 'EMP-00102' } },
     update: {},
     create: {
@@ -231,40 +252,102 @@ async function main() {
       jobPositionId: posHRLead.id,
       workingScheduleId: schedule.id,
       employeeNum: 'EMP-00102',
-      firstName: 'David',
-      lastName: 'Mitchell',
-      workEmail: 'hr.manager@peoplepay360.local',
-      bankName: 'Bank of America',
+      firstName: 'Priya',
+      lastName: 'Patel',
+      workEmail: 'priya.patel@peoplepay360.local',
+      personalEmail: 'priya.patel@gmail.com',
+      phone: '+91-9876543211',
+      bankName: 'ICICI Bank',
       bankAccountMasked: '••••••••7734',
-      taxId: 'US-TAX-334190',
+      taxId: 'BNYPI8765L',
       isActive: true,
     },
   });
-  console.log(`✅ Employees: Alex Johnson (${empRecord.employeeNum}), David Mitchell (${hrEmpRecord.employeeNum})`);
 
-  // 8. Leave Types
-  const leaveVacation = await prisma.leaveType.upsert({
-    where: { organizationId_code: { organizationId: organization.id, code: 'VACATION' } },
+  const empRecord3 = await prisma.employee.upsert({
+    where: { organizationId_employeeNum: { organizationId: organization.id, employeeNum: 'EMP-00103' } },
     update: {},
     create: {
       organizationId: organization.id,
-      name: 'Paid Annual Leave',
-      code: 'VACATION',
+      legalEntityId: legalEntity.id,
+      userId: payrollUser.id,
+      departmentId: deptFinance.id,
+      jobPositionId: posPayrollSpecialist.id,
+      workingScheduleId: schedule.id,
+      employeeNum: 'EMP-00103',
+      firstName: 'Rahul',
+      lastName: 'Verma',
+      workEmail: 'rahul.verma@peoplepay360.local',
+      personalEmail: 'rahul.verma@gmail.com',
+      phone: '+91-9876543212',
+      bankName: 'State Bank of India',
+      bankAccountMasked: '••••••••3321',
+      taxId: 'DKPAD9088M',
+      isActive: true,
+    },
+  });
+
+  const empRecord4 = await prisma.employee.upsert({
+    where: { organizationId_employeeNum: { organizationId: organization.id, employeeNum: 'EMP-00104' } },
+    update: {},
+    create: {
+      organizationId: organization.id,
+      legalEntityId: legalEntity.id,
+      departmentId: deptOperations.id,
+      jobPositionId: posOpsLead.id,
+      workingScheduleId: schedule.id,
+      employeeNum: 'EMP-00104',
+      firstName: 'Sneha',
+      lastName: 'Iyer',
+      workEmail: 'sneha.iyer@peoplepay360.local',
+      personalEmail: 'sneha.iyer@gmail.com',
+      phone: '+91-9876543213',
+      bankName: 'Axis Bank',
+      bankAccountMasked: '••••••••9912',
+      taxId: 'CPSVS5544R',
+      isActive: true,
+    },
+  });
+  console.log(`✅ Employees: Aarav Sharma, Priya Patel, Rahul Verma, Sneha Iyer`);
+
+  // 8. Leave Types (Indian Statutory Structure)
+  const leaveEL = await prisma.leaveType.upsert({
+    where: { organizationId_code: { organizationId: organization.id, code: 'PL' } },
+    update: {},
+    create: {
+      organizationId: organization.id,
+      name: 'Earned / Privilege Leave (PL)',
+      code: 'PL',
       isPaid: true,
       requiresAllocation: true,
       approvalRequired: true,
-      daysAllowed: 20,
+      daysAllowed: 18,
       active: true,
     },
   });
 
-  const leaveSick = await prisma.leaveType.upsert({
-    where: { organizationId_code: { organizationId: organization.id, code: 'SICK' } },
+  const leaveCL = await prisma.leaveType.upsert({
+    where: { organizationId_code: { organizationId: organization.id, code: 'CL' } },
     update: {},
     create: {
       organizationId: organization.id,
-      name: 'Sick Leave',
-      code: 'SICK',
+      name: 'Casual Leave (CL)',
+      code: 'CL',
+      isPaid: true,
+      requiresAllocation: true,
+      approvalRequired: false,
+      daysAllowed: 12,
+      active: true,
+    },
+  });
+
+  const leaveSL = await prisma.leaveType.upsert({
+    where: { organizationId_code: { organizationId: organization.id, code: 'SL' } },
+    update: {},
+    create: {
+      organizationId: organization.id,
+      name: 'Sick / Medical Leave (SL)',
+      code: 'SL',
       isPaid: true,
       requiresAllocation: true,
       approvalRequired: false,
@@ -273,13 +356,13 @@ async function main() {
     },
   });
 
-  const leaveUnpaid = await prisma.leaveType.upsert({
-    where: { organizationId_code: { organizationId: organization.id, code: 'UNPAID' } },
+  const leaveLOP = await prisma.leaveType.upsert({
+    where: { organizationId_code: { organizationId: organization.id, code: 'LOP' } },
     update: {},
     create: {
       organizationId: organization.id,
-      name: 'Unpaid Leave / LOP',
-      code: 'UNPAID',
+      name: 'Loss of Pay / Unpaid (LOP)',
+      code: 'LOP',
       isPaid: false,
       requiresAllocation: false,
       approvalRequired: true,
@@ -287,20 +370,20 @@ async function main() {
       active: true,
     },
   });
-  console.log('✅ Leave Types: Paid Annual Leave, Sick Leave, Unpaid Leave');
+  console.log('✅ Leave Types: Privilege Leave (PL), Casual Leave (CL), Sick Leave (SL), LOP');
 
   // 9. Leave Allocations
   let allocation = await prisma.leaveAllocation.findFirst({
-    where: { organizationId: organization.id, employeeId: empRecord.id, leaveTypeId: leaveVacation.id },
+    where: { organizationId: organization.id, employeeId: empRecord1.id, leaveTypeId: leaveEL.id },
   });
 
   if (!allocation) {
     allocation = await prisma.leaveAllocation.create({
       data: {
         organizationId: organization.id,
-        employeeId: empRecord.id,
-        leaveTypeId: leaveVacation.id,
-        allocatedAmount: 12,
+        employeeId: empRecord1.id,
+        leaveTypeId: leaveEL.id,
+        allocatedAmount: 18,
         consumedAmount: 2,
         validFrom: new Date('2026-01-01'),
         validUntil: new Date('2026-12-31'),
@@ -308,17 +391,17 @@ async function main() {
       },
     });
   }
-  console.log(`✅ Leave Allocation: 12 days allocated to ${empRecord.firstName}`);
+  console.log(`✅ Leave Allocation: 18 days allocated to ${empRecord1.firstName}`);
 
-  // 10. Salary Structure & Rules
+  // 10. Indian Salary Structure & Rules (EPF, HRA, PT, TDS)
   const salaryStructure = await prisma.salaryStructure.upsert({
-    where: { organizationId_code: { organizationId: organization.id, code: 'STD-CORP-2026' } },
+    where: { organizationId_code: { organizationId: organization.id, code: 'STD-INDIA-2026' } },
     update: {},
     create: {
       organizationId: organization.id,
-      name: 'Standard Corporate Salary Structure 2026',
-      code: 'STD-CORP-2026',
-      description: 'Standard enterprise fulltime salary structure with basic, HRA, special allowances, and statutory deductions',
+      name: 'Standard Indian Corporate Salary Structure 2026',
+      code: 'STD-INDIA-2026',
+      description: 'Indian enterprise fulltime salary structure with Basic 50%, HRA 40%, Special Allowance, EPF 12%, Professional Tax, and TDS',
       active: true,
     },
   });
@@ -331,7 +414,7 @@ async function main() {
         {
           organizationId: organization.id,
           structureId: salaryStructure.id,
-          name: 'Basic Salary',
+          name: 'Basic Pay',
           code: 'BASIC',
           category: RuleCategoryType.BASIC,
           sequence: 10,
@@ -343,7 +426,7 @@ async function main() {
         {
           organizationId: organization.id,
           structureId: salaryStructure.id,
-          name: 'House Rent Allowance',
+          name: 'House Rent Allowance (HRA)',
           code: 'HRA',
           category: RuleCategoryType.ALLOWANCE,
           sequence: 20,
@@ -360,7 +443,7 @@ async function main() {
           category: RuleCategoryType.ALLOWANCE,
           sequence: 30,
           amountType: AmountType.FIXED,
-          amountFixed: 500,
+          amountFixed: 8500,
           isActive: true,
         },
         {
@@ -377,8 +460,8 @@ async function main() {
         {
           organizationId: organization.id,
           structureId: salaryStructure.id,
-          name: 'Provident Fund / 401(k)',
-          code: 'PF',
+          name: 'Provident Fund (EPF 12%)',
+          code: 'EPF',
           category: RuleCategoryType.DEDUCTION,
           sequence: 50,
           amountType: AmountType.PERCENTAGE,
@@ -389,12 +472,23 @@ async function main() {
         {
           organizationId: organization.id,
           structureId: salaryStructure.id,
-          name: 'Income Tax (TDS)',
-          code: 'TAX',
+          name: 'Professional Tax (PT)',
+          code: 'PT',
           category: RuleCategoryType.DEDUCTION,
           sequence: 60,
           amountType: AmountType.FIXED,
-          amountFixed: 300,
+          amountFixed: 200,
+          isActive: true,
+        },
+        {
+          organizationId: organization.id,
+          structureId: salaryStructure.id,
+          name: 'Income Tax (TDS)',
+          code: 'TDS',
+          category: RuleCategoryType.DEDUCTION,
+          sequence: 70,
+          amountType: AmountType.FIXED,
+          amountFixed: 2500,
           isActive: true,
         },
         {
@@ -403,73 +497,133 @@ async function main() {
           name: 'Net Take-Home Pay',
           code: 'NET',
           category: RuleCategoryType.NET,
-          sequence: 70,
+          sequence: 80,
           amountType: AmountType.FORMULA,
-          codeFormula: 'GROSS - PF - TAX',
+          codeFormula: 'GROSS - EPF - PT - TDS',
           isActive: true,
         },
       ],
     });
   }
-  console.log(`✅ Salary Structure: ${salaryStructure.name} with 7 ordered rules`);
+  console.log(`✅ Salary Structure: ${salaryStructure.name} with Indian statutory rules (EPF, PT, TDS)`);
 
   // 11. Contracts
-  let contract = await prisma.contract.findFirst({
-    where: { organizationId: organization.id, employeeId: empRecord.id },
+  let contract1 = await prisma.contract.findFirst({
+    where: { organizationId: organization.id, employeeId: empRecord1.id },
   });
 
-  if (!contract) {
-    contract = await prisma.contract.create({
+  if (!contract1) {
+    contract1 = await prisma.contract.create({
       data: {
         organizationId: organization.id,
-        employeeId: empRecord.id,
+        employeeId: empRecord1.id,
         structureId: salaryStructure.id,
         workingScheduleId: schedule.id,
-        name: 'Fulltime Principal Engineering Contract',
-        wage: 6000,
+        name: 'Senior Engineering Employment Agreement (Bengaluru)',
+        wage: 85000,
         wagePeriod: 'MONTHLY',
         startDate: new Date('2026-01-01'),
         status: ContractStatus.ACTIVE,
       },
     });
   }
-  console.log(`✅ Contract: ${contract.name} for ${empRecord.firstName} ($${contract.wage}/month)`);
+
+  let contract2 = await prisma.contract.findFirst({
+    where: { organizationId: organization.id, employeeId: empRecord2.id },
+  });
+
+  if (!contract2) {
+    contract2 = await prisma.contract.create({
+      data: {
+        organizationId: organization.id,
+        employeeId: empRecord2.id,
+        structureId: salaryStructure.id,
+        workingScheduleId: schedule.id,
+        name: 'Lead HR Business Partner Employment Agreement',
+        wage: 65000,
+        wagePeriod: 'MONTHLY',
+        startDate: new Date('2026-01-01'),
+        status: ContractStatus.ACTIVE,
+      },
+    });
+  }
+
+  let contract3 = await prisma.contract.findFirst({
+    where: { organizationId: organization.id, employeeId: empRecord3.id },
+  });
+
+  if (!contract3) {
+    contract3 = await prisma.contract.create({
+      data: {
+        organizationId: organization.id,
+        employeeId: empRecord3.id,
+        structureId: salaryStructure.id,
+        workingScheduleId: schedule.id,
+        name: 'Payroll Compliance Lead Employment Agreement',
+        wage: 72000,
+        wagePeriod: 'MONTHLY',
+        startDate: new Date('2026-01-01'),
+        status: ContractStatus.ACTIVE,
+      },
+    });
+  }
+
+  let contract4 = await prisma.contract.findFirst({
+    where: { organizationId: organization.id, employeeId: empRecord4.id },
+  });
+
+  if (!contract4) {
+    contract4 = await prisma.contract.create({
+      data: {
+        organizationId: organization.id,
+        employeeId: empRecord4.id,
+        structureId: salaryStructure.id,
+        workingScheduleId: schedule.id,
+        name: 'Operations Lead Employment Agreement',
+        wage: 68000,
+        wagePeriod: 'MONTHLY',
+        startDate: new Date('2026-01-01'),
+        status: ContractStatus.ACTIVE,
+      },
+    });
+  }
+  console.log(`✅ Contracts: Seeded Indian contracts (₹85k, ₹65k, ₹72k, ₹68k)`);
 
   // 12. Attendance records for current month
   for (let d = 1; d <= 5; d++) {
     const attendanceDate = new Date(Date.UTC(2026, 8, d));
-    const checkInDate = new Date(Date.UTC(2026, 8, d, 9, 0, 0));
-    const checkOutDate = new Date(Date.UTC(2026, 8, d, 17, 30, 0));
+    const checkInDate = new Date(Date.UTC(2026, 8, d, 4, 0, 0)); // 09:30 IST is 04:00 UTC
+    const checkOutDate = new Date(Date.UTC(2026, 8, d, 13, 0, 0)); // 18:30 IST is 13:00 UTC
 
     await prisma.attendance.upsert({
       where: {
         organizationId_employeeId_date: {
           organizationId: organization.id,
-          employeeId: empRecord.id,
+          employeeId: empRecord1.id,
           date: attendanceDate,
         },
       },
       update: {},
       create: {
         organizationId: organization.id,
-        employeeId: empRecord.id,
+        employeeId: empRecord1.id,
         date: attendanceDate,
         checkIn: checkInDate,
         checkOut: checkOutDate,
-        workedHours: 8.5,
+        workedHours: 9.0,
         status: AttendanceStatus.PRESENT,
       },
     });
   }
-  console.log('✅ Seeded representative attendance entries');
+  console.log('✅ Seeded representative Indian shift attendance entries');
 
   console.log('\n🎉 ========================================================');
-  console.log('🎉 PeoplePay360 database seed completed successfully!');
+  console.log('🎉 PeoplePay360 India database seed completed successfully!');
   console.log('🎉 Login Credentials:');
-  console.log('   - ADMIN:           admin@peoplepay360.local           / Admin@123456');
-  console.log('   - HR MANAGER:      hr.manager@peoplepay360.local      / Hr@123456');
-  console.log('   - PAYROLL MANAGER: payroll.manager@peoplepay360.local / Payroll@123456');
-  console.log('   - EMPLOYEE:        employee@peoplepay360.local        / Emp@123456');
+  console.log('   - ADMIN:           admin@peoplepay360.local           / Admin@123456 (or fixed dev: admin / 123)');
+  console.log('   - HR MANAGER:      hr.manager@peoplepay360.local      / Hr@123456    (or fixed dev: hr / 123)');
+  console.log('   - PAYROLL MANAGER: payroll.manager@peoplepay360.local / Payroll@123456 (or fixed dev: payroll / 123)');
+  console.log('   - EMPLOYEE:        employee@peoplepay360.local        / Emp@123456    (or fixed dev: emp / 123)');
   console.log('========================================================\n');
 }
 

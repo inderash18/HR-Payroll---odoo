@@ -602,6 +602,12 @@ export class AuthService {
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto): Promise<{ message: string }> {
+    if (this.devFixedAuthService?.isEnabled() && this.devFixedAuthService.isDevUserId(userId)) {
+      throw new BadRequestError(
+        'Development fixed credentials cannot be modified via database password change. Update the environment configuration instead.',
+      );
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -642,6 +648,123 @@ export class AuthService {
     });
 
     return { message: 'Password updated successfully' };
+  }
+
+  async logoutAll(userId: string, organizationId?: string): Promise<{ message: string }> {
+    if (this.devFixedAuthService?.isEnabled() && this.devFixedAuthService.isDevUserId(userId)) {
+      this.devFixedAuthService.revokeAllDevSessions(userId);
+      return { message: 'Signed out from all devices successfully' };
+    }
+
+    try {
+      await this.prisma.runInTransaction(async (tx) => {
+        await tx.refreshToken.updateMany({
+          where: { userId, revokedAt: null },
+          data: { revokedAt: new Date() },
+        });
+
+        if (organizationId) {
+          await this.auditService.log(
+            {
+              organizationId,
+              userId,
+              action: 'LOGOUT_ALL',
+              entityType: 'User',
+              entityId: userId,
+            },
+            tx,
+          );
+        }
+      });
+    } catch (err) {
+      this.logger.debug('Logout all DB update omitted (offline/error)');
+    }
+
+    return { message: 'Signed out from all devices successfully' };
+  }
+
+  async getUserSessions(userId: string, currentRefreshToken?: string) {
+    let currentTokenHash: string | undefined;
+    if (currentRefreshToken) {
+      currentTokenHash = this.tokenService.hashToken(currentRefreshToken);
+    }
+
+    if (this.devFixedAuthService?.isEnabled() && this.devFixedAuthService.isDevUserId(userId)) {
+      return this.devFixedAuthService.getDevSessions(userId, currentTokenHash);
+    }
+
+    try {
+      const records = await this.prisma.refreshToken.findMany({
+        where: {
+          userId,
+          revokedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const { parseUserAgent } = await import('@common/utils/user-agent.parser');
+
+      return records.map((r, idx) => ({
+        id: r.id,
+        device: parseUserAgent(r.userAgent),
+        ipAddress: r.ipAddress || '127.0.0.1',
+        createdAt: r.createdAt,
+        isCurrent: currentTokenHash ? r.tokenHash === currentTokenHash : idx === 0,
+      }));
+    } catch (err) {
+      return [
+        {
+          id: 'current-session',
+          device: 'Current Web Session',
+          ipAddress: '127.0.0.1',
+          createdAt: new Date(),
+          isCurrent: true,
+        },
+      ];
+    }
+  }
+
+  async revokeSession(userId: string, sessionId: string, role?: Role, organizationId?: string) {
+    if (this.devFixedAuthService?.isEnabled() && this.devFixedAuthService.isDevUserId(userId)) {
+      this.devFixedAuthService.revokeDevSessionById(userId, sessionId);
+      return { message: 'Session revoked successfully' };
+    }
+
+    const session = await this.prisma.refreshToken.findUnique({
+      where: { id: sessionId },
+      include: { user: true },
+    });
+
+    if (!session) {
+      throw new NotFoundError('Session not found');
+    }
+
+    if (session.userId !== userId && role !== Role.ADMIN) {
+      throw new BadRequestError('You do not have permission to revoke this session');
+    }
+
+    await this.prisma.runInTransaction(async (tx) => {
+      await tx.refreshToken.update({
+        where: { id: sessionId },
+        data: { revokedAt: new Date() },
+      });
+
+      if (organizationId || session.user?.organizationId) {
+        await this.auditService.log(
+          {
+            organizationId: organizationId || session.user.organizationId,
+            userId,
+            action: 'SESSION_REVOKED',
+            entityType: 'RefreshToken',
+            entityId: sessionId,
+          },
+          tx,
+        );
+      }
+    });
+
+    return { message: 'Session revoked successfully' };
   }
 
   async getProfile(userId: string) {

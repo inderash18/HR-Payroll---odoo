@@ -168,4 +168,34 @@ describe('Auth & RBAC Flow (e2e)', () => {
     const cookieHeader = response.headers['set-cookie'];
     expect(cookieHeader).toBeDefined();
   });
+
+  it('GET /auth/sessions should return active sessions list for authenticated user', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/auth/sessions',
+      headers: {
+        authorization: `Bearer ${adminToken}`,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const sessions = JSON.parse(response.payload);
+    expect(Array.isArray(sessions)).toBe(true);
+    expect(sessions.length).toBeGreaterThan(0);
+    expect(sessions[0].device).toBeDefined();
+  });
+
+  it('POST /auth/logout-all should revoke all sessions for authenticated user', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/auth/logout-all',
+      headers: {
+        authorization: `Bearer ${adminToken}`,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.payload);
+    expect(body.success).toBe(true);
+  });
 });

@@ -7,6 +7,7 @@
     "frontend"
   ],
   "scripts": {
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue,green\" \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "npm --prefix backend run start:dev",
     "dev:frontend": "npm --prefix frontend run dev",
     "build:backend": "npm --prefix backend run build",
@@ -18,5 +19,8 @@
     "prisma:studio": "npx --prefix backend prisma studio",
     "prisma:migrate": "npm --prefix backend run prisma:migrate",
     "prisma:seed": "npm --prefix backend run prisma:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
   }
 }

@@ -277,6 +277,73 @@ export class DevFixedAuthService {
   }
 
   /**
+   * Retrieve active sessions for a development user.
+   */
+  public getDevSessions(userId: string, currentTokenHash?: string) {
+    if (!this.isEnabled()) return [];
+    this.cleanExpiredSessions();
+
+    const sessions: Array<{
+      id: string;
+      device: string;
+      ipAddress: string;
+      createdAt: Date;
+      isCurrent: boolean;
+    }> = [];
+
+    for (const [hash, record] of this.inMemorySessions.entries()) {
+      if (record.userId === userId && record.expiresAt > new Date()) {
+        const isCurrent = currentTokenHash ? hash === currentTokenHash : sessions.length === 0;
+        sessions.push({
+          id: `dev-session-${hash.slice(0, 8)}`,
+          device: 'Chrome on Windows (Local Dev Session)',
+          ipAddress: '127.0.0.1',
+          createdAt: record.createdAt,
+          isCurrent,
+        });
+      }
+    }
+
+    if (sessions.length === 0) {
+      sessions.push({
+        id: 'dev-session-active',
+        device: 'Current Browser Session (Development)',
+        ipAddress: '127.0.0.1',
+        createdAt: new Date(),
+        isCurrent: true,
+      });
+    }
+
+    return sessions;
+  }
+
+  /**
+   * Revoke a single dev session by session ID.
+   */
+  public revokeDevSessionById(userId: string, sessionId: string): boolean {
+    if (!this.isEnabled()) return false;
+    for (const [hash, record] of this.inMemorySessions.entries()) {
+      if (record.userId === userId && (`dev-session-${hash.slice(0, 8)}` === sessionId || sessionId === hash)) {
+        this.inMemorySessions.delete(hash);
+        return true;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Revoke all dev sessions for a given user.
+   */
+  public revokeAllDevSessions(userId: string): void {
+    if (!this.isEnabled()) return;
+    for (const [hash, record] of this.inMemorySessions.entries()) {
+      if (record.userId === userId) {
+        this.inMemorySessions.delete(hash);
+      }
+    }
+  }
+
+  /**
    * Housekeeping: Remove expired dev sessions.
    */
   private cleanExpiredSessions(): void {

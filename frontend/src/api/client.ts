@@ -65,12 +65,15 @@ async function request<T = any>(endpoint: string, options: RequestInit = {}, isR
     );
   }
 
-  // Handle 401 and attempt automatic transparent refresh (only for business endpoints)
-  const isAuthEndpoint =
-    endpoint.includes('/auth/') ||
-    endpoint.startsWith('/auth') ||
-    endpoint.startsWith('auth/');
-  if (response.status === 401 && !isRetry && !isAuthEndpoint) {
+  // Handle 401 and attempt automatic transparent refresh (only refresh-exempt endpoints are login, logout, and refresh itself)
+  const isRefreshExemptEndpoint =
+    endpoint === '/auth/login' ||
+    endpoint === '/auth/logout' ||
+    endpoint === '/auth/refresh' ||
+    endpoint === 'auth/login' ||
+    endpoint === 'auth/logout' ||
+    endpoint === 'auth/refresh';
+  if (response.status === 401 && !isRetry && !isRefreshExemptEndpoint) {
     const refreshed = await attemptTokenRefresh();
     if (refreshed) {
       return request<T>(endpoint, options, true);

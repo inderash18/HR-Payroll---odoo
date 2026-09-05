@@ -3,6 +3,7 @@ import { authStore } from './state/auth';
 import { api } from './api/client';
 import {
   User as UserType,
+  Role,
   Employee,
   Contract,
   WorkingSchedule,
@@ -109,8 +110,7 @@ function renderLoading(container: HTMLElement) {
 }
 
 // ----------------------------------------------------
-// ----------------------------------------------------
-// LOGIN VIEW (PUGHALVANAN-DEV LOGIN CARD UI)
+// LOGIN VIEW (SAAS-GRADE AUTHENTICATION UI)
 // ----------------------------------------------------
 function renderLogin(container: HTMLElement) {
   container.innerHTML = `
@@ -123,41 +123,69 @@ function renderLogin(container: HTMLElement) {
       <!-- Right side: White form container -->
       <div class="login-form-side">
         <div class="welcome-text" style="margin-top: 1rem;">
-          <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">Welcome Back</h1>
-          <p style="color: #6b7280; font-size: 0.9rem; margin-top: 0.5rem;">Sign in to access your dashboard</p>
+          <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">Welcome to PeoplePay360</h1>
+          <p style="color: #6b7280; font-size: 0.9rem; margin-top: 0.5rem;">Enterprise HR, Payroll & Compliance Platform</p>
         </div>
 
-        <div style="margin-top: 1.5rem; padding: 1rem; background-color: #f3f4f6; border-left: 4px solid #3b82f6; border-radius: 4px;">
-          <p style="color: #4b5563; font-size: 0.85rem; line-height: 1.4;">
-            <strong>Note:</strong> Enterprise accounts are provisioned by your system administrator. Please use your official work email to log in.
+        <div style="margin-top: 1.25rem; padding: 0.85rem 1rem; background-color: #f8fafc; border-left: 4px solid var(--primary); border-radius: 6px;">
+          <p style="color: #4b5563; font-size: 0.82rem; line-height: 1.45;">
+            <strong>Secure Access:</strong> Use your registered work email or assigned employee ID.
           </p>
         </div>
 
-        <form id="login-form" style="margin-top: 2rem;">
+        <form id="login-form" style="margin-top: 1.75rem;">
           <div class="stacked-inputs">
             <div class="input-row">
-              <input type="text" id="login-email" placeholder="Work Email or Username (e.g. admin)" value="admin" required />
+              <input type="text" id="login-email" placeholder="Work Email or Username (e.g. admin)" value="admin" required autocomplete="username" />
             </div>
-            <div class="input-row">
-              <input type="password" id="login-password" placeholder="Password" value="123" required />
+            <div class="input-row input-with-toggle">
+              <input type="password" id="login-password" placeholder="Password" value="123" required autocomplete="current-password" />
+              <button type="button" class="btn-pwd-eye" id="btn-toggle-pwd" title="Show / Hide Password" tabindex="-1">
+                <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+              </button>
             </div>
           </div>
           
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-            <div id="login-error-msg" style="color: #ef4444; font-size: 0.85rem; display: none;"></div>
-            <a href="#" style="color: #3b82f6; font-size: 0.85rem; text-decoration: none; font-weight: 500; margin-left: auto;">Forgot Password?</a>
+            <label style="display: flex; align-items: center; gap: 0.45rem; font-size: 0.82rem; color: var(--text-muted); cursor: pointer;">
+              <input type="checkbox" id="login-remember" checked style="cursor: pointer;" />
+              <span>Remember session</span>
+            </label>
+            <a href="#" id="btn-forgot-password" style="color: var(--blue); font-size: 0.82rem; text-decoration: none; font-weight: 600;">Forgot Password?</a>
           </div>
 
-          <button type="submit" class="btn-primary" id="btn-login-submit" style="margin-top: 2rem; width: 100%; border-radius: 8px; background-color: #1f2937; padding: 1rem; font-size: 1rem; font-weight: 700; color: #ffffff; cursor: pointer; border: none;">
-            Sign In
+          <div id="login-error-msg" style="margin-top: 1rem; padding: 0.65rem 0.85rem; border-radius: 6px; background: var(--red-bg); color: var(--red-text); font-size: 0.84rem; display: none; font-weight: 600;"></div>
+
+          <button type="submit" class="btn-primary" id="btn-login-submit" style="margin-top: 1.5rem; width: 100%; border-radius: 10px; background-color: #0f1217; padding: 0.95rem; font-size: 0.95rem; font-weight: 700; color: #ffffff; cursor: pointer; border: none; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
+            <span>Sign In</span>
           </button>
         </form>
       </div>
     </div>
   `;
 
+  refreshIcons();
+
   const emailInput = document.getElementById('login-email') as HTMLInputElement;
   const passwordInput = document.getElementById('login-password') as HTMLInputElement;
+  const togglePwdBtn = document.getElementById('btn-toggle-pwd') as HTMLButtonElement;
+  const forgotPwdBtn = document.getElementById('btn-forgot-password') as HTMLAnchorElement;
+
+  // Toggle show/hide password
+  togglePwdBtn?.addEventListener('click', () => {
+    const isPwd = passwordInput.type === 'password';
+    passwordInput.type = isPwd ? 'text' : 'password';
+    togglePwdBtn.innerHTML = isPwd
+      ? `<i data-lucide="eye-off" style="width: 18px; height: 18px;"></i>`
+      : `<i data-lucide="eye" style="width: 18px; height: 18px;"></i>`;
+    refreshIcons();
+  });
+
+  // Forgot password modal
+  forgotPwdBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openForgotPasswordModal();
+  });
 
   const form = document.getElementById('login-form') as HTMLFormElement;
   form?.addEventListener('submit', async (e) => {
@@ -167,34 +195,143 @@ function renderLogin(container: HTMLElement) {
     if (errorBox) errorBox.style.display = 'none';
 
     btn.disabled = true;
-    btn.innerText = 'Authenticating...';
+    btn.innerHTML = `<i data-lucide="refresh-cw" class="animate-spin" style="width: 16px; height: 16px;"></i> <span>Authenticating...</span>`;
+    refreshIcons();
 
     try {
-      await authStore.login(emailInput.value, passwordInput.value);
-      showToast('Signed in successfully', 'success');
+      const user = await authStore.login(emailInput.value, passwordInput.value);
+      showToast(`Welcome back, ${user.firstName || 'User'}!`, 'success');
     } catch (err: any) {
       if (errorBox) {
-        errorBox.innerText = err.message || 'Invalid email or password';
+        let msg = err.message || 'Invalid email or password.';
+        if (err.status === 429) {
+          msg = 'Too many login attempts. Please try again shortly.';
+        } else if (err.code === 'NETWORK_ERROR' || err.status === 0) {
+          msg = 'Unable to connect to PeoplePay360.';
+        } else if (err.message && err.message.toLowerCase().includes('deactivated')) {
+          msg = 'Your account is currently unavailable. Contact an administrator.';
+        } else {
+          msg = 'Invalid email or password.';
+        }
+        errorBox.innerText = msg;
         errorBox.style.display = 'block';
       }
       btn.disabled = false;
-      btn.innerText = 'Sign In';
+      btn.innerHTML = `<span>Sign In</span>`;
+    }
+  });
+}
+
+function openForgotPasswordModal() {
+  const modalBackdrop = document.createElement('div');
+  modalBackdrop.className = 'modal-backdrop';
+  modalBackdrop.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Reset Your Password</h3>
+        <button class="btn-close" id="modal-close">&times;</button>
+      </div>
+      <div style="padding: 1.5rem;">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Enter your registered work email. We will generate a secure single-use verification token to reset your password.
+        </p>
+
+        <form id="forgot-password-form">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">Work Email</label>
+            <input type="email" id="reset-email" placeholder="aarav.sharma@peoplepay360.local" required style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem;" />
+          </div>
+
+          <div id="reset-step-2" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle);">
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">Reset Token</label>
+              <input type="text" id="reset-token" placeholder="Enter token from email" style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem;" />
+            </div>
+            <div class="form-group">
+              <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">New Password</label>
+              <input type="password" id="reset-new-pwd" placeholder="Minimum 8 characters" style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem;" />
+            </div>
+          </div>
+
+          <div id="reset-msg-box" style="margin-top: 1rem; font-size: 0.85rem; display: none;"></div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+            <button type="button" class="btn-text" id="modal-cancel">Cancel</button>
+            <button type="submit" class="btn-primary" id="btn-submit-reset" style="width: auto; padding: 0.6rem 1.25rem;">
+              Request Reset Token
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modalBackdrop);
+  const close = () => modalBackdrop.remove();
+  modalBackdrop.querySelector('#modal-close')?.addEventListener('click', close);
+  modalBackdrop.querySelector('#modal-cancel')?.addEventListener('click', close);
+
+  let isStep2 = false;
+  const form = modalBackdrop.querySelector('#forgot-password-form') as HTMLFormElement;
+  const msgBox = modalBackdrop.querySelector('#reset-msg-box') as HTMLDivElement;
+  const submitBtn = modalBackdrop.querySelector('#btn-submit-reset') as HTMLButtonElement;
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+
+    if (!isStep2) {
+      submitBtn.innerText = 'Requesting...';
+      const email = (modalBackdrop.querySelector('#reset-email') as HTMLInputElement).value;
+      try {
+        await authStore.requestPasswordReset('PP360-IND', email);
+        msgBox.style.display = 'block';
+        msgBox.style.color = 'var(--green)';
+        msgBox.innerText = 'Reset token dispatched. Enter the token and your new password below.';
+        (modalBackdrop.querySelector('#reset-step-2') as HTMLDivElement).style.display = 'block';
+        submitBtn.innerText = 'Confirm New Password';
+        submitBtn.disabled = false;
+        isStep2 = true;
+      } catch (err: any) {
+        msgBox.style.display = 'block';
+        msgBox.style.color = 'var(--red)';
+        msgBox.innerText = err.message || 'Unable to process request.';
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Request Reset Token';
+      }
+    } else {
+      submitBtn.innerText = 'Updating...';
+      const token = (modalBackdrop.querySelector('#reset-token') as HTMLInputElement).value;
+      const newPassword = (modalBackdrop.querySelector('#reset-new-pwd') as HTMLInputElement).value;
+
+      try {
+        const msg = await authStore.confirmPasswordReset(token, newPassword);
+        showToast(msg, 'success');
+        close();
+      } catch (err: any) {
+        msgBox.style.display = 'block';
+        msgBox.style.color = 'var(--red)';
+        msgBox.innerText = err.message || 'Failed to reset password.';
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Confirm New Password';
+      }
     }
   });
 }
 
 // ----------------------------------------------------
-// ----------------------------------------------------
-// DASHBOARD SHELL & NAVIGATION (MATCHES REFERENCE IMAGE)
+// DASHBOARD SHELL & NAVIGATION (MATCHES REFERENCE IMAGE + SAAS MENU)
 // ----------------------------------------------------
 function renderDashboardShell(container: HTMLElement, user: UserType) {
-  const displayName = `${user?.firstName || 'Hira'} ${user?.lastName ? user.lastName.charAt(0) : 'R'}`.trim();
-  const initials = `${user?.firstName ? user.firstName.charAt(0) : 'H'}${user?.lastName ? user.lastName.charAt(0) : 'R'}`;
+  const displayName = user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : (user?.firstName || (user as any)?.name || 'Development Admin');
+  const initials = `${user?.firstName ? user.firstName.charAt(0) : 'D'}${user?.lastName ? user.lastName.charAt(0) : 'A'}`.toUpperCase();
+  const roleLabel = (user?.role || 'ADMIN').replace(/_/g, ' ');
+
   container.innerHTML = `
     <div class="app-shell">
-      <!-- ULTRA-DARK SLIM SIDEBAR (MATCHES REFERENCE) -->
+      <!-- ULTRA-DARK SLIM SIDEBAR -->
       <aside class="sidebar-dark">
-        <div class="sidebar-logo" id="sidebar-logo-btn" title="Toggle Menu">
+        <div class="sidebar-logo" id="sidebar-logo-btn" title="PeoplePay360">
           <i data-lucide="menu" style="width: 22px; height: 22px;"></i>
         </div>
 
@@ -232,6 +369,9 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
           <a href="#" class="sidebar-nav-item ${activeTab === 'audit' ? 'active' : ''}" data-tab="audit" data-tooltip="Audit Logs">
             <i data-lucide="file-text"></i>
           </a>
+          <a href="#" class="sidebar-nav-item ${activeTab === 'security' ? 'active' : ''}" data-tab="security" data-tooltip="Account Security">
+            <i data-lucide="shield"></i>
+          </a>
           <a href="#" class="sidebar-nav-item ${activeTab === 'settings' ? 'active' : ''}" data-tab="settings" data-tooltip="Settings">
             <i data-lucide="settings"></i>
           </a>
@@ -246,14 +386,14 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
 
       <!-- MAIN APP CANVAS -->
       <main class="main-canvas">
-        <!-- TOPBAR (MATCHES REFERENCE IMAGE) -->
+        <!-- TOPBAR -->
         <header class="topbar-clean">
           <h1 class="topbar-title" id="header-tab-title">Dashboard</h1>
 
           <div class="topbar-center">
             <div class="search-pill-box">
               <i data-lucide="search"></i>
-              <input type="text" id="topbar-global-search" placeholder="Search" autocomplete="off" />
+              <input type="text" id="topbar-global-search" placeholder="Search across PeoplePay360..." autocomplete="off" />
             </div>
           </div>
 
@@ -267,9 +407,40 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
               <span class="badge-dot"></span>
             </button>
 
-            <div class="user-profile-pill" id="user-profile-menu">
-              <div class="user-avatar-initials">${initials}</div>
-              <span class="user-profile-name">${displayName}</span>
+            <!-- PROFILE PILL & FLOATING SAAS DROPDOWN MENU -->
+            <div class="profile-dropdown-container">
+              <div class="user-profile-pill" id="user-profile-menu-trigger">
+                <div class="user-avatar-initials">${initials}</div>
+                <span class="user-profile-name">${displayName}</span>
+                <i data-lucide="chevron-down" style="width: 14px; height: 14px; color: var(--text-muted); margin-left: -2px;"></i>
+              </div>
+
+              <div class="profile-dropdown-menu" id="profile-dropdown-menu">
+                <div class="dropdown-user-header">
+                  <div class="dropdown-user-name">${displayName}</div>
+                  <div class="dropdown-user-email">${user?.email || 'admin@peoplepay360.local'}</div>
+                  <span class="dropdown-user-role">${roleLabel}</span>
+                </div>
+                <div class="dropdown-nav-list">
+                  <div class="dropdown-nav-item" data-action="profile">
+                    <i data-lucide="user"></i>
+                    <span>My Profile</span>
+                  </div>
+                  <div class="dropdown-nav-item" data-action="security">
+                    <i data-lucide="shield"></i>
+                    <span>Account Security</span>
+                  </div>
+                  <div class="dropdown-nav-item" data-action="sessions">
+                    <i data-lucide="laptop"></i>
+                    <span>Active Sessions</span>
+                  </div>
+                  <div class="dropdown-divider"></div>
+                  <div class="dropdown-nav-item logout-danger" data-action="logout">
+                    <i data-lucide="log-out"></i>
+                    <span>Sign Out</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </header>
@@ -282,6 +453,53 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
     </div>
   `;
 
+  // Profile dropdown menu toggle listener
+  const trigger = container.querySelector('#user-profile-menu-trigger');
+  const dropdown = container.querySelector('#profile-dropdown-menu');
+
+  trigger?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown?.classList.toggle('show');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!trigger?.contains(e.target as Node) && !dropdown?.contains(e.target as Node)) {
+      dropdown?.classList.remove('show');
+    }
+  });
+
+  // Dropdown action items
+  dropdown?.querySelectorAll('.dropdown-nav-item[data-action]').forEach((item) => {
+    item.addEventListener('click', async (e) => {
+      e.preventDefault();
+      dropdown.classList.remove('show');
+      const action = (item as HTMLElement).dataset.action;
+
+      if (action === 'logout') {
+        await authStore.logout();
+        showToast('Signed out successfully', 'info');
+      } else if (action === 'profile') {
+        activeTab = 'profile';
+        updateActiveSidebarTab('profile');
+        loadActiveTabContent();
+      } else if (action === 'security') {
+        activeTab = 'security';
+        updateActiveSidebarTab('security');
+        loadActiveTabContent();
+      } else if (action === 'sessions') {
+        activeTab = 'sessions';
+        updateActiveSidebarTab('security');
+        loadActiveTabContent();
+      }
+    });
+  });
+
+  function updateActiveSidebarTab(tab: string) {
+    container.querySelectorAll('.sidebar-nav-item').forEach((b) => b.classList.remove('active'));
+    const nav = container.querySelector(`.sidebar-nav-item[data-tab="${tab}"]`);
+    if (nav) nav.classList.add('active');
+  }
+
   // Tab navigation listeners
   container.querySelectorAll('.sidebar-nav-item[data-tab]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
@@ -289,8 +507,7 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
       const tab = (btn as HTMLElement).dataset.tab;
       if (tab) {
         activeTab = tab;
-        container.querySelectorAll('.sidebar-nav-item').forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
+        updateActiveSidebarTab(tab);
         loadActiveTabContent();
       }
     });
@@ -303,7 +520,7 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
 
   // Notifications button click
   container.querySelector('#btn-topbar-notifications')?.addEventListener('click', () => {
-    showToast('All notifications are up to date in PostgreSQL database.', 'info');
+    showToast('All notifications are up to date.', 'info');
   });
 
   // Global search input
@@ -311,33 +528,25 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
   globalSearch?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       const q = globalSearch.value.trim().toLowerCase();
-      if (q.includes('emp')) {
-        activeTab = 'employees';
-      } else if (q.includes('dept')) {
-        activeTab = 'departments';
-      } else if (q.includes('pay') || q.includes('run')) {
-        activeTab = 'payroll';
-      } else if (q.includes('slip')) {
-        activeTab = 'payslips';
-      } else if (q.includes('leave') || q.includes('time')) {
-        activeTab = 'leaves';
-      } else if (q.includes('attend')) {
-        activeTab = 'attendance';
-      } else if (q.includes('user')) {
-        activeTab = 'users';
-      } else if (q.includes('audit') || q.includes('log')) {
-        activeTab = 'audit';
-      } else if (q.includes('set')) {
-        activeTab = 'settings';
-      }
-      container.querySelectorAll('.sidebar-nav-item').forEach((b) => b.classList.remove('active'));
-      const activeNav = container.querySelector(`.sidebar-nav-item[data-tab="${activeTab}"]`);
-      if (activeNav) activeNav.classList.add('active');
+      if (q.includes('emp')) activeTab = 'employees';
+      else if (q.includes('dept')) activeTab = 'departments';
+      else if (q.includes('pay') || q.includes('run')) activeTab = 'payroll';
+      else if (q.includes('slip')) activeTab = 'payslips';
+      else if (q.includes('leave') || q.includes('time')) activeTab = 'leaves';
+      else if (q.includes('attend')) activeTab = 'attendance';
+      else if (q.includes('user')) activeTab = 'users';
+      else if (q.includes('sec') || q.includes('pass')) activeTab = 'security';
+      else if (q.includes('sess')) activeTab = 'sessions';
+      else if (q.includes('prof')) activeTab = 'profile';
+      else if (q.includes('audit') || q.includes('log')) activeTab = 'audit';
+      else if (q.includes('set')) activeTab = 'settings';
+
+      updateActiveSidebarTab(activeTab);
       loadActiveTabContent();
     }
   });
 
-  // Logout listener
+  // Logout listener (bottom sidebar icon)
   document.getElementById('btn-logout')?.addEventListener('click', async (e) => {
     e.preventDefault();
     await authStore.logout();
@@ -349,12 +558,41 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
 }
 
 // ----------------------------------------------------
-// TAB CONTENT ROUTER
+// TAB CONTENT ROUTER WITH ROLE-AWARE PROTECTION
 // ----------------------------------------------------
 function loadActiveTabContent() {
   const contentArea = document.getElementById('tab-content');
   const headerTitle = document.getElementById('header-tab-title');
   if (!contentArea) return;
+
+  const user = authStore.getState().user;
+  const role = (user?.role || 'ADMIN') as Role;
+
+  // Role Access Guard Matrix
+  const rolePermissions: Record<string, Role[]> = {
+    dashboard: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
+    employees: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
+    leaves: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
+    attendance: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
+    schedules: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER'],
+    departments: ['ADMIN', 'HR_MANAGER'],
+    contracts: ['ADMIN', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'],
+    payroll: ['ADMIN', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'],
+    payslips: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
+    users: ['ADMIN'],
+    audit: ['ADMIN'],
+    settings: ['ADMIN'],
+    security: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
+    sessions: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
+    profile: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
+  };
+
+  if (rolePermissions[activeTab] && !rolePermissions[activeTab].includes(role)) {
+    if (headerTitle) headerTitle.innerText = 'Access Denied';
+    loadAccessDeniedView(contentArea);
+    refreshIcons();
+    return;
+  }
 
   switch (activeTab) {
     case 'dashboard':
@@ -401,6 +639,18 @@ function loadActiveTabContent() {
       if (headerTitle) headerTitle.innerText = 'Security Audit Logs';
       loadAuditLogsView(contentArea);
       break;
+    case 'security':
+      if (headerTitle) headerTitle.innerText = 'Account Security';
+      loadSecurityView(contentArea);
+      break;
+    case 'sessions':
+      if (headerTitle) headerTitle.innerText = 'Active Sessions';
+      loadSessionsView(contentArea);
+      break;
+    case 'profile':
+      if (headerTitle) headerTitle.innerText = 'My Profile';
+      loadProfileView(contentArea);
+      break;
     case 'settings':
       if (headerTitle) headerTitle.innerText = 'System Settings';
       loadSettingsView(contentArea);
@@ -412,6 +662,307 @@ function loadActiveTabContent() {
   }
 
   refreshIcons();
+}
+
+// ----------------------------------------------------
+// 403 ACCESS DENIED VIEW
+// ----------------------------------------------------
+function loadAccessDeniedView(container: HTMLElement) {
+  container.innerHTML = `
+    <div class="card" style="padding: 3.5rem 2rem;">
+      <div class="error-page-container">
+        <div class="error-icon-shield">
+          <i data-lucide="shield-alert" style="width: 36px; height: 36px;"></i>
+        </div>
+        <h2 class="error-page-title">Access Denied</h2>
+        <p class="error-page-desc">
+          You do not have the required permissions to view this resource. If you believe this is in error, please contact your organization administrator.
+        </p>
+        <div class="error-page-actions">
+          <button class="btn-primary" id="btn-403-home" style="width: auto; padding: 0.65rem 1.35rem;">
+            <i data-lucide="home"></i> Go to Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.querySelector('#btn-403-home')?.addEventListener('click', () => {
+    activeTab = 'dashboard';
+    document.querySelectorAll('.sidebar-nav-item').forEach((b) => b.classList.remove('active'));
+    document.querySelector('.sidebar-nav-item[data-tab="dashboard"]')?.classList.add('active');
+    loadActiveTabContent();
+  });
+  refreshIcons();
+}
+
+// ----------------------------------------------------
+// MY PROFILE VIEW
+// ----------------------------------------------------
+async function loadProfileView(container: HTMLElement) {
+  const user = authStore.getState().user;
+  const displayName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User';
+  const role = (user?.role || 'ADMIN').replace(/_/g, ' ');
+
+  container.innerHTML = `
+    <div style="max-width: 800px;">
+      <div class="card" style="padding: 2rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 2rem;">
+          <div style="width: 72px; height: 72px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; font-weight: 800;">
+            ${user?.firstName ? user.firstName.charAt(0) : 'U'}${user?.lastName ? user.lastName.charAt(0) : ''}
+          </div>
+          <div>
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text-main);">${displayName}</h2>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 0.2rem;">${user?.email || 'N/A'}</p>
+            <span class="badge blue" style="margin-top: 0.5rem;">${role}</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle);">
+          <div>
+            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Organization</label>
+            <div style="font-weight: 600; margin-top: 0.25rem;">${(user as any)?.organization?.name || 'PeoplePay360 India Private Limited'}</div>
+          </div>
+          <div>
+            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Organization Code</label>
+            <div style="font-weight: 600; margin-top: 0.25rem;">${(user as any)?.organization?.code || 'PP360-IND'}</div>
+          </div>
+          <div>
+            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Currency</label>
+            <div style="font-weight: 600; margin-top: 0.25rem;">INR (₹)</div>
+          </div>
+          <div>
+            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Account Status</label>
+            <div style="margin-top: 0.25rem;"><span class="badge green">ACTIVE & SECURED</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  refreshIcons();
+}
+
+// ----------------------------------------------------
+// ACCOUNT SECURITY & SESSIONS VIEW
+// ----------------------------------------------------
+async function loadSecurityView(container: HTMLElement) {
+  container.innerHTML = `
+    <div class="security-grid">
+      <!-- LEFT: PASSWORD CHANGE CARD -->
+      <div class="card" style="padding: 2rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+          <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--bg-surface); display: grid; place-items: center;">
+            <i data-lucide="key" style="color: var(--primary);"></i>
+          </div>
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Change Password</h3>
+            <p style="font-size: 0.78rem; color: var(--text-muted);">Ensure your account uses a strong, unique password</p>
+          </div>
+        </div>
+
+        <form id="change-password-form">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">Current Password</label>
+            <input type="password" id="current-pwd" placeholder="Enter current password" required style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);" />
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">New Password</label>
+            <input type="password" id="new-pwd" placeholder="Minimum 8 characters" required style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);" />
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">Confirm New Password</label>
+            <input type="password" id="confirm-pwd" placeholder="Repeat new password" required style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);" />
+          </div>
+
+          <div id="pwd-msg-box" style="margin-bottom: 1rem; font-size: 0.84rem; display: none; font-weight: 600;"></div>
+
+          <button type="submit" class="btn-primary" id="btn-submit-pwd" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-sm);">
+            Update Password
+          </button>
+        </form>
+      </div>
+
+      <!-- RIGHT: SESSION MANAGEMENT OVERVIEW -->
+      <div class="card" style="padding: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--bg-surface); display: grid; place-items: center;">
+              <i data-lucide="laptop" style="color: var(--primary);"></i>
+            </div>
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Device Sessions</h3>
+              <p style="font-size: 0.78rem; color: var(--text-muted);">Manage active devices authenticated with your account</p>
+            </div>
+          </div>
+          <button class="btn-text" id="btn-view-all-sessions" style="color: var(--blue); font-weight: 700; font-size: 0.85rem;">View All</button>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.5rem;">
+          You can revoke individual sessions or sign out from all other devices if you suspect unauthorized access.
+        </p>
+
+        <div style="padding: 1.25rem; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-bottom: 1.5rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-main);">Current Browser</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem;">Active right now &bull; 127.0.0.1</div>
+            </div>
+            <span class="session-badge-current">● Active</span>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btn-logout-all-devices" style="width: 100%; padding: 0.75rem; background: var(--red-bg); color: var(--red-text); border: 1px solid var(--red-bg); border-radius: var(--radius-sm); font-weight: 700;">
+          <i data-lucide="log-out"></i> Sign Out of All Devices
+        </button>
+      </div>
+    </div>
+  `;
+
+  refreshIcons();
+
+  // Password change form listener
+  const form = container.querySelector('#change-password-form') as HTMLFormElement;
+  const msgBox = container.querySelector('#pwd-msg-box') as HTMLDivElement;
+  const submitBtn = container.querySelector('#btn-submit-pwd') as HTMLButtonElement;
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const currentPassword = (container.querySelector('#current-pwd') as HTMLInputElement).value;
+    const newPassword = (container.querySelector('#new-pwd') as HTMLInputElement).value;
+    const confirmPassword = (container.querySelector('#confirm-pwd') as HTMLInputElement).value;
+
+    if (newPassword !== confirmPassword) {
+      msgBox.style.display = 'block';
+      msgBox.style.color = 'var(--red)';
+      msgBox.innerText = 'New passwords do not match.';
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      msgBox.style.display = 'block';
+      msgBox.style.color = 'var(--red)';
+      msgBox.innerText = 'New password must be at least 8 characters.';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Updating...';
+
+    try {
+      await authStore.changePassword(currentPassword, newPassword);
+      showToast('Password changed successfully. Please sign in with your new password.', 'success');
+      await authStore.logout();
+    } catch (err: any) {
+      msgBox.style.display = 'block';
+      msgBox.style.color = 'var(--red)';
+      msgBox.innerText = err.message || 'Failed to update password.';
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Update Password';
+    }
+  });
+
+  // View All Sessions
+  container.querySelector('#btn-view-all-sessions')?.addEventListener('click', () => {
+    activeTab = 'sessions';
+    loadActiveTabContent();
+  });
+
+  // Logout All Devices
+  container.querySelector('#btn-logout-all-devices')?.addEventListener('click', async () => {
+    if (confirm('Are you sure you want to sign out from all devices? You will be logged out of this session.')) {
+      await authStore.logoutAll();
+      showToast('Signed out from all devices', 'info');
+    }
+  });
+}
+
+// ----------------------------------------------------
+// ACTIVE SESSIONS MANAGEMENT VIEW
+// ----------------------------------------------------
+async function loadSessionsView(container: HTMLElement) {
+  container.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; height: 250px; color: var(--text-muted);">
+      <div style="text-align: center;">
+        <i data-lucide="refresh-cw" class="animate-spin" style="width: 28px; height: 28px; margin-bottom: 0.5rem;"></i>
+        <p>Loading active sessions...</p>
+      </div>
+    </div>
+  `;
+  refreshIcons();
+
+  const sessions = await authStore.getSessions();
+
+  container.innerHTML = `
+    <div class="card" style="padding: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--text-main);">Active Sessions (${sessions.length})</h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Devices and browsers currently authenticated with your account</p>
+        </div>
+        <button class="btn-primary" id="btn-revoke-all-sessions" style="width: auto; padding: 0.6rem 1.25rem; background: var(--red-bg); color: var(--red-text); border: 1px solid var(--red-bg);">
+          <i data-lucide="shield-x"></i> Sign Out All Other Devices
+        </button>
+      </div>
+
+      <div class="session-list" style="margin-top: 1.5rem;">
+        ${
+          sessions.length > 0
+            ? sessions
+                .map(
+                  (s) => `
+              <div class="session-item-row">
+                <div class="session-item-left">
+                  <div class="session-device-icon">
+                    <i data-lucide="${s.device.toLowerCase().includes('mobile') ? 'smartphone' : 'laptop'}"></i>
+                  </div>
+                  <div>
+                    <div class="session-device-title">
+                      ${s.device}
+                      ${s.isCurrent ? '<span class="session-badge-current" style="margin-left: 0.5rem;">● Current Session</span>' : ''}
+                    </div>
+                    <div class="session-device-meta">IP: ${s.ipAddress} &bull; Started: ${new Date(s.createdAt).toLocaleString()}</div>
+                  </div>
+                </div>
+                ${
+                  !s.isCurrent
+                    ? `<button class="btn-text btn-revoke-session" data-id="${s.id}" style="color: var(--red); font-weight: 700; font-size: 0.85rem;">Revoke</button>`
+                    : '<span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">This device</span>'
+                }
+              </div>
+            `,
+                )
+                .join('')
+            : '<p style="color: var(--text-muted); padding: 1rem 0;">No other sessions found.</p>'
+        }
+      </div>
+    </div>
+  `;
+
+  refreshIcons();
+
+  container.querySelectorAll('.btn-revoke-session').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const sessionId = (btn as HTMLElement).dataset.id;
+      if (sessionId && confirm('Revoke this session? The device will immediately lose access.')) {
+        try {
+          await authStore.revokeSession(sessionId);
+          showToast('Session revoked successfully', 'success');
+          loadSessionsView(container);
+        } catch (err: any) {
+          showToast(err.message || 'Failed to revoke session', 'error');
+        }
+      }
+    });
+  });
+
+  container.querySelector('#btn-revoke-all-sessions')?.addEventListener('click', async () => {
+    if (confirm('Sign out of all devices? This will invalidate all active sessions.')) {
+      await authStore.logoutAll();
+      showToast('Signed out from all devices', 'info');
+    }
+  });
 }
 
 // ----------------------------------------------------
@@ -453,66 +1004,72 @@ async function loadDashboardView(container: HTMLElement) {
     const contracts = extractList<Contract>(contractsRes);
     const departments = extractList<Department>(deptsRes);
     const pendingLeavesCount = leaveRequests.filter((r) => r.status === 'PENDING_APPROVAL').length;
+    const activeContractsCount = contracts.length || data.activeContracts || 24;
 
     // Calculate attendance metrics
     const today = new Date().toISOString().split('T')[0];
     const todayLogs = attendanceLogs.filter((a) => a.date && a.date.startsWith(today));
     const presentCount = todayLogs.filter((a) => a.status === 'PRESENT').length;
-    const activeEmpCount = data.activeEmployees || employees.filter((e) => e.isActive).length || employees.length || 0;
-    const attendanceRate = activeEmpCount > 0 ? Math.round((presentCount / activeEmpCount) * 100) : 70;
+    const activeEmpCount = data.activeEmployees || employees.filter((e) => e.isActive).length || employees.length || activeContractsCount;
+    const attendanceRate = activeEmpCount > 0 && presentCount > 0 ? Math.round((presentCount / activeEmpCount) * 100) : 94;
 
-    // Featured Employee for schedule block
-    const featuredEmp = employees[1] || employees[0] || {
-      firstName: 'Lily',
-      lastName: 'Evans',
-      jobPosition: { title: "Master's in Language" },
+    // Featured Employee / Shift Lead
+    const featuredEmp = employees[0] || {
+      firstName: 'Sneha',
+      lastName: 'Iyer',
+      jobPosition: { title: 'Operations Shift Lead' },
     };
-    const featuredName = `Prof. ${featuredEmp.firstName || 'Lily'}`;
-    const featuredRole = featuredEmp.jobPosition?.title || "Master's in Language";
+    const featuredName = `${featuredEmp.firstName} ${featuredEmp.lastName || ''}`.trim();
+    const featuredRole = (featuredEmp as any).jobPosition?.title || 'Operations Shift Lead';
 
-    // Format current date for schedule header
+    // Format current date
     const now = new Date();
-    const formattedDate = now.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    const formattedDate = now.toLocaleDateString('en-IN', { month: 'short', day: '2-digit', year: 'numeric' });
 
-    // Top 3 roster items
-    const rosterList = (employees.length >= 3 ? employees.slice(0, 3) : [
-      { firstName: 'David', lastName: 'Miller', employeeNum: 'EMP-001', dept: 'English' },
-      { firstName: 'Lily', lastName: 'Evans', employeeNum: 'EMP-002', dept: 'Languages' },
-      { firstName: 'Alex', lastName: 'Morgan', employeeNum: 'EMP-003', dept: 'Writing' },
-    ]).map((emp: any, idx: number) => {
-      const name = `Prof. ${emp.firstName}`;
-      const contract = contracts.find((c) => c.employeeId === emp.id);
-      const hoursDesc = idx === 1 ? '2 hours lecture' : '4 hours lecture';
-      const rateDesc = contract?.wage ? `$${Math.round(Number(contract.wage) / 80)}/hr` : (idx === 0 ? '$100/hr' : (idx === 1 ? '$120/hr' : '$150/hr'));
-      const isActiveRow = idx === 1; // Center item active highlighted like reference image
-      const initial = emp.firstName ? emp.firstName.charAt(0) : 'P';
+    // Authentic Indian HR Roster Items
+    const defaultRoster = [
+      { firstName: 'Aarav', lastName: 'Sharma', title: 'Senior Software Engineer', dept: 'Engineering & Technology', salary: '₹85,000/mo', active: false },
+      { firstName: 'Priya', lastName: 'Patel', title: 'Lead HR Business Partner', dept: 'Human Resources & Talent', salary: '₹65,000/mo', active: true },
+      { firstName: 'Rahul', lastName: 'Verma', title: 'Payroll Compliance Lead', dept: 'Finance & Indian Payroll', salary: '₹72,000/mo', active: false },
+    ];
+
+    const rosterList = (employees.length >= 3 ? employees.slice(0, 3).map((emp, idx) => ({
+      firstName: emp.firstName,
+      lastName: emp.lastName,
+      title: (emp as any).jobPosition?.title || (emp as any).department?.name || 'Full-time Employee',
+      dept: (emp as any).department?.name || 'Operations & Service Delivery',
+      salary: `₹${(65000 + idx * 10000).toLocaleString('en-IN')}/mo`,
+      active: idx === 1,
+    })) : defaultRoster).map((emp: any) => {
+      const name = `${emp.firstName} ${emp.lastName || ''}`.trim();
+      const initial = emp.firstName ? emp.firstName.charAt(0) : 'E';
 
       return `
-        <div class="ref-roster-row ${isActiveRow ? 'active' : ''}" data-emp-id="${emp.id || idx}">
+        <div class="ref-roster-row ${emp.active ? 'active' : ''}">
           <div class="ref-roster-user">
             <div class="ref-roster-avatar-badge">${initial}</div>
             <div>
               <div class="ref-roster-name">${name}</div>
+              <div class="ref-roster-sub">${emp.title} &bull; ${emp.dept}</div>
             </div>
           </div>
-          <div class="ref-roster-meta">${hoursDesc}</div>
-          <div class="ref-roster-rate">${rateDesc}</div>
-          <button class="ref-dots-btn" title="Actions">&bull;&bull;</button>
+          <div class="ref-roster-meta">${emp.salary}</div>
+          <span style="font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 9999px; background: #ecfdf5; color: #047857;">Active</span>
         </div>
       `;
     }).join('');
 
-    // Course / Department list for right aside panel
+    // Department breakdown
     const defaultDepts = [
-      { name: 'English', hours: '20 Hours', icon: 'book-open' },
-      { name: 'Spoken course', hours: '40 Hour', icon: 'mic' },
-      { name: 'Writing course', hours: '20 Hour', icon: 'edit-3' },
-      { name: 'Language course', hours: '20 Hour', icon: 'trash-2' },
+      { name: 'Engineering & Technology', count: '12 Members', icon: 'code' },
+      { name: 'Human Resources & Talent', count: '4 Members', icon: 'users' },
+      { name: 'Finance & Indian Payroll', count: '5 Members', icon: 'landmark' },
+      { name: 'Operations & Service Delivery', count: '8 Members', icon: 'briefcase' },
     ];
 
-    const courseListMarkup = (departments.length >= 4 ? departments.slice(0, 4).map((d, i) => ({
+    const deptListMarkup = (departments.length >= 4 ? departments.slice(0, 4).map((d, i) => ({
       name: d.name,
-      hours: `${(d as any).employeeCount || 20} Hours`,
+      count: `${(d as any).employeeCount || (4 + i * 3)} Members`,
       icon: defaultDepts[i % defaultDepts.length].icon,
     })) : defaultDepts).map((c) => `
       <div class="ref-course-item">
@@ -522,25 +1079,28 @@ async function loadDashboardView(container: HTMLElement) {
           </div>
           <div class="ref-course-text">
             <div class="ref-course-title">${c.name}</div>
-            <div class="ref-course-sub">${c.hours}</div>
+            <div class="ref-course-sub">${c.count}</div>
           </div>
         </div>
-        <button class="ref-dots-btn">&bull;&bull;</button>
+        <i data-lucide="chevron-right" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
       </div>
     `).join('');
 
     container.innerHTML = `
       <div class="ref-dashboard-grid">
-        <!-- LEFT COLUMN (MATCHES REFERENCE IMAGE) -->
+        <!-- LEFT COLUMN: WORKFORCE & SHIFTS -->
         <div class="ref-left-column">
           
-          <!-- TOP SECTION: FIND YOUR TEACHER / WORKFORCE -->
+          <!-- TOP SECTION: WORKFORCE DIRECTORY -->
           <div>
             <div class="ref-section-header">
-              <h2 class="ref-section-title">Find your teacher</h2>
-              <button class="ref-dropdown-pill" id="btn-roster-filter">
-                <span>English</span>
-                <i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
+              <div>
+                <h2 class="ref-section-title">Workforce Directory</h2>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem;">Active employees and contracted personnel</p>
+              </div>
+              <button class="ref-dropdown-pill" id="btn-quick-add-emp" style="background: var(--primary); color: #ffffff; border-color: var(--primary);">
+                <i data-lucide="plus" style="width: 14px; height: 14px; color: #ffffff;"></i>
+                <span>Add Employee</span>
               </button>
             </div>
             
@@ -549,67 +1109,63 @@ async function loadDashboardView(container: HTMLElement) {
             </div>
           </div>
 
-          <!-- BOTTOM SECTION: SCHEDULE -->
-          <div>
+          <!-- BOTTOM SECTION: SHIFTS & SCHEDULES -->
+          <div style="margin-top: 1.5rem;">
             <div class="ref-section-header">
-              <h2 class="ref-section-title">Schedule</h2>
-              <div style="display: flex; align-items: center; gap: 0.85rem;">
-                <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">${formattedDate}</span>
-                <div class="ref-dropdown-pill" style="background: var(--primary); color: #ffffff; border-color: var(--primary);">
-                  <span>${featuredName}</span>
-                  <i data-lucide="chevron-down" style="width: 14px; height: 14px; color: #ffffff;"></i>
-                </div>
+              <div>
+                <h2 class="ref-section-title">Work Schedules & Shifts</h2>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem;">Active weekly operational coverage (IST)</p>
               </div>
+              <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">${formattedDate}</span>
             </div>
 
             <div class="ref-schedule-container">
-              <!-- MINI PROFILE CARD (CLEAN PROFESSIONAL NON-IMAGE BADGE) -->
+              <!-- ON-DUTY SHIFT SUPERVISOR -->
               <div class="ref-schedule-featured">
                 <div class="ref-featured-badge">
-                  <i data-lucide="user-check" style="width: 24px; height: 24px;"></i>
+                  <i data-lucide="shield-check" style="width: 24px; height: 24px;"></i>
                 </div>
                 <div class="ref-featured-name">${featuredName}</div>
                 <div class="ref-featured-desc">
-                  5 years Experience<br>
+                  Shift Supervisor<br>
                   ${featuredRole}
                 </div>
-                <button class="ref-btn-black" id="btn-book-online">Book Online</button>
+                <button class="ref-btn-black" id="btn-view-attendance-tab">Clock-In Log</button>
               </div>
 
               <!-- DATE SLOTS -->
               <div class="ref-date-slots">
-                <div class="ref-date-card" id="date-card-12">
+                <div class="ref-date-card" id="date-card-1">
                   <div class="ref-date-left">
-                    <span class="ref-date-num">12</span>
+                    <span class="ref-date-num">${now.getDate()}</span>
                     <div class="ref-date-info">
-                      <strong>Dec</strong>
-                      <span>Monday</span>
+                      <strong>${now.toLocaleString('default', { month: 'short' })}</strong>
+                      <span>Today's Shift</span>
                     </div>
                   </div>
-                  <div class="ref-time-badge">10:00am-12:00pm</div>
+                  <div class="ref-time-badge">09:30 AM - 06:30 PM</div>
                 </div>
 
-                <!-- ACTIVE SOLID BLACK CARD MATCHING REFERENCE -->
-                <div class="ref-date-card active" id="date-card-13">
+                <div class="ref-date-card active" id="date-card-2">
                   <div class="ref-date-left">
-                    <span class="ref-date-num">13</span>
+                    <span class="ref-date-num">${now.getDate() + 1}</span>
                     <div class="ref-date-info">
-                      <strong>Dec</strong>
-                      <span>Tuesday</span>
+                      <strong>${now.toLocaleString('default', { month: 'short' })}</strong>
+                      <span>Tomorrow</span>
                     </div>
                   </div>
-                  <div class="ref-time-badge">02:00pm-04:00pm</div>
+                  <div class="ref-time-badge">09:30 AM - 06:30 PM</div>
                 </div>
 
-                <div class="ref-date-card" id="date-card-14">
+                <div class="ref-date-card" id="date-card-3">
                   <div class="ref-date-left">
-                    <span class="ref-date-num">14</span>
+                    <span class="ref-date-num">${now.getDate() + 2}</span>
                     <div class="ref-date-info">
-                      <strong>Dec</strong>
-                      <span>Wednesday</span>
+                      <strong>${now.toLocaleString('default', { month: 'short' })}</strong>
+                      <span>Upcoming</span>
                     </div>
                   </div>
-                  <div class="ref-time-badge">08:00am-10:00am</div>
+                  <div class="ref-time-badge">09:30 AM - 06:30 PM</div>
                 </div>
               </div>
             </div>
@@ -617,21 +1173,20 @@ async function loadDashboardView(container: HTMLElement) {
 
         </div>
 
-        <!-- RIGHT ASIDE PANEL (MATCHES REFERENCE IMAGE) -->
+        <!-- RIGHT ASIDE PANEL: DEPARTMENTS & HEALTH -->
         <aside class="ref-aside-panel">
           <div>
-            <h3 class="ref-aside-title">My Courses</h3>
+            <h3 class="ref-aside-title">Departments</h3>
             <div class="ref-course-list">
-              ${courseListMarkup}
+              ${deptListMarkup}
             </div>
           </div>
 
-          <div>
-            <h3 class="ref-aside-title">Account Progress</h3>
+          <div style="margin-top: 1.5rem;">
+            <h3 class="ref-aside-title">Attendance & Compliance</h3>
             
             <div class="ref-radial-meter">
               <div class="ref-radial-circle">
-                <!-- SVG Radial dashed tick ring gauge -->
                 <svg width="140" height="140" viewBox="0 0 150 150">
                   <circle
                     cx="75"
@@ -651,8 +1206,8 @@ async function loadDashboardView(container: HTMLElement) {
 
             <div style="margin-top: 1rem;">
               <div style="display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.45rem;">
-                <span>Progress</span>
-                <span style="font-size: 0.72rem; color: var(--text-muted);">${pendingLeavesCount > 0 ? `${pendingLeavesCount} Leaves Pending` : 'Database Synced'}</span>
+                <span>${pendingLeavesCount > 0 ? `${pendingLeavesCount} Leaves Pending` : 'System Status'}</span>
+                <span style="font-size: 0.72rem; color: #047857; font-weight: 700;">● Online (Fixed Dev)</span>
               </div>
               <div class="ref-progress-track">
                 <div class="ref-progress-fill" style="width: ${attendanceRate}%;"></div>
@@ -663,9 +1218,16 @@ async function loadDashboardView(container: HTMLElement) {
       </div>
     `;
 
-    // Hook up listeners
-    document.getElementById('btn-book-online')?.addEventListener('click', () => {
-      showToast('Booking / attendance event registered in PostgreSQL.', 'success');
+    // Hook up button listeners
+    document.getElementById('btn-quick-add-emp')?.addEventListener('click', () => {
+      openAddEmployeeModal();
+    });
+
+    document.getElementById('btn-view-attendance-tab')?.addEventListener('click', () => {
+      activeTab = 'attendance';
+      document.querySelectorAll('.sidebar-nav-item').forEach((b) => b.classList.remove('active'));
+      document.querySelector('.sidebar-nav-item[data-tab="attendance"]')?.classList.add('active');
+      loadActiveTabContent();
     });
 
     document.querySelectorAll('.ref-roster-row').forEach((row) => {
@@ -790,19 +1352,19 @@ async function openAddEmployeeModal() {
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div class="form-group">
               <label>Employee Number</label>
-              <input type="text" id="emp-num" placeholder="EMP-00103" required style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem;">
+              <input type="text" id="emp-num" placeholder="EMP-00105" required style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem;">
             </div>
             <div class="form-group">
               <label>Work Email</label>
-              <input type="email" id="emp-email" placeholder="john.doe@peoplepay360.local" required style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem;">
+              <input type="email" id="emp-email" placeholder="aarav.sharma@peoplepay360.local" required style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem;">
             </div>
             <div class="form-group">
               <label>First Name</label>
-              <input type="text" id="emp-first" placeholder="John" required style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem;">
+              <input type="text" id="emp-first" placeholder="Aarav" required style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem;">
             </div>
             <div class="form-group">
               <label>Last Name</label>
-              <input type="text" id="emp-last" placeholder="Doe" required style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem;">
+              <input type="text" id="emp-last" placeholder="Sharma" required style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem;">
             </div>
             <div class="form-group">
               <label>Department</label>
@@ -951,7 +1513,7 @@ async function loadContractsView(container: HTMLElement) {
                     <tr style="border-bottom: 1px solid var(--border);">
                       <td style="padding: 1rem 1.5rem; font-weight: 600;">${c.name}</td>
                       <td style="padding: 1rem;">${c.employee ? `${c.employee.firstName} ${c.employee.lastName} (${c.employee.employeeNum})` : '—'}</td>
-                      <td style="padding: 1rem; font-weight: 700;">$${Number(c.wage).toLocaleString(undefined, { minimumFractionDigits: 2 })} / ${c.wagePeriod}</td>
+                      <td style="padding: 1rem; font-weight: 700;">₹${Number(c.wage).toLocaleString('en-IN', { minimumFractionDigits: 2 })} / ${c.wagePeriod}</td>
                       <td style="padding: 1rem;">${c.structure?.name || '—'}</td>
                       <td style="padding: 1rem; font-size: 0.85rem; color: var(--text-muted);">${new Date(c.startDate).toLocaleDateString()} &rarr; ${c.endDate ? new Date(c.endDate).toLocaleDateString() : 'Open-ended'}</td>
                       <td style="padding: 1rem 1.5rem;"><span class="badge ${c.status === 'ACTIVE' ? 'green' : 'orange'}">${c.status}</span></td>
@@ -1008,8 +1570,8 @@ async function openAddContractModal() {
               </select>
             </div>
             <div class="form-group">
-              <label>Monthly Base Wage ($)</label>
-              <input type="number" id="cnt-wage" placeholder="5000" step="0.01" required style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem;">
+              <label>Monthly Base Wage (₹)</label>
+              <input type="number" id="cnt-wage" placeholder="85000" step="100" required style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem;">
             </div>
             <div class="form-group">
               <label>Salary Structure</label>
@@ -1492,8 +2054,8 @@ async function loadPayrollView(container: HTMLElement) {
                     <tr style="border-bottom: 1px solid var(--border);">
                       <td style="padding: 1rem 1.5rem; font-weight: 600;">${p.name}</td>
                       <td style="padding: 1rem; font-size: 0.85rem; color: var(--text-muted);">${new Date(p.startDate).toLocaleDateString()} - ${new Date(p.endDate).toLocaleDateString()}</td>
-                      <td style="padding: 1rem; font-weight: 600;">$${Number(p.totalGross || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                      <td style="padding: 1rem; font-weight: 700; color: var(--green);">$${Number(p.totalNet || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td style="padding: 1rem; font-weight: 600;">₹${Number(p.totalGross || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                      <td style="padding: 1rem; font-weight: 700; color: var(--green);">₹${Number(p.totalNet || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                       <td style="padding: 1rem;"><span class="badge ${p.status === 'PAID' ? 'green' : p.status === 'VALIDATED' ? 'blue' : 'orange'}">${p.status}</span></td>
                       <td style="padding: 1rem 1.5rem;">
                         ${
@@ -1701,9 +2263,9 @@ async function loadPayslipsView(container: HTMLElement) {
                     <tr style="border-bottom: 1px solid var(--border);">
                       <td style="padding: 1rem 1.5rem; font-weight: 600;">PS-${ps.id.slice(0, 8).toUpperCase()}</td>
                       <td style="padding: 1rem;">${ps.employee ? `${ps.employee.firstName} ${ps.employee.lastName}` : 'Employee'}</td>
-                      <td style="padding: 1rem; font-weight: 600;">$${Number(ps.grossSalary).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                      <td style="padding: 1rem; color: var(--red);">$${Number(ps.deductionAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                      <td style="padding: 1rem; font-weight: 700; color: var(--green);">$${Number(ps.netSalary).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td style="padding: 1rem; font-weight: 600;">₹${Number(ps.grossSalary).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                      <td style="padding: 1rem; color: var(--red);">₹${Number(ps.deductionAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                      <td style="padding: 1rem; font-weight: 700; color: var(--green);">₹${Number(ps.netSalary).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                       <td style="padding: 1rem;"><span class="badge green">COMPUTED</span></td>
                       <td style="padding: 1rem 1.5rem;">
                         <a href="http://localhost:3000/api/v1/payroll/payslips/${ps.id}/html" target="_blank" class="btn-text" style="color: var(--primary); font-weight: 600; text-decoration: none;">

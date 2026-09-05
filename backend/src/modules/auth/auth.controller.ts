@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
+  Param,
   Body,
   Req,
   Res,
@@ -174,6 +176,44 @@ export class AuthController {
     }
     this.clearAuthCookies(res);
     return { success: true, message: 'Logged out successfully' };
+  }
+
+  @Post('logout-all')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Revoke all active sessions on all devices for current user' })
+  async logoutAll(
+    @CurrentUser() user: AuthenticatedUser,
+    @Res({ passthrough: true }) res: FastifyReply,
+  ) {
+    const result = await this.authService.logoutAll(user.id, user.organizationId);
+    this.clearAuthCookies(res);
+    return { success: true, ...result };
+  }
+
+  @Get('sessions')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get all active sessions for current authenticated user' })
+  async getSessions(
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: FastifyRequest,
+  ) {
+    const rawRefreshToken = (req.cookies as Record<string, string>)?.[REFRESH_COOKIE_NAME];
+    return this.authService.getUserSessions(user.id, rawRefreshToken);
+  }
+
+  @Delete('sessions/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Revoke an individual session' })
+  async revokeSession(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') sessionId: string,
+  ) {
+    return this.authService.revokeSession(user.id, sessionId, user.role, user.organizationId);
   }
 
   @Public()

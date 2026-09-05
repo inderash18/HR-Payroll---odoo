@@ -176,11 +176,12 @@ export class AuthService {
       if (!user) {
         const fallbackOrgId = '00000000-0000-0000-0000-000000000001';
         const fallbackUserId = '00000000-0000-0000-0000-000000000002';
-        const accessToken = this.tokenService.generateAccessToken({
-          userId: fallbackUserId,
+        const accessToken = this.tokenService.signAccessToken({
+          sub: fallbackUserId,
+          email: dto.email,
           organizationId: fallbackOrgId,
           role: Role.ADMIN,
-          tokenVersion: 1,
+          legalEntityId: null,
         });
         const { rawToken } = this.tokenService.generateRefreshToken();
         return {

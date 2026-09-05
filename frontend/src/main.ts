@@ -288,18 +288,46 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
         </button>
       </aside>
 
-      <!-- MAIN CONTENT -->
-      <main class="main-content">
-        <!-- TOPBAR MINIMAL (MATCHES REFERENCE IMAGE) -->
+        <!-- CONSOLIDATED DASHBOARD TOPBAR -->
         <header class="topbar-minimal">
           <div class="topbar-left">
             <h1 id="header-tab-title">Dashboard</h1>
-            <button class="date-pill-btn" id="date-picker-btn">
-              <span>Aug 11,2022</span>
-              <i data-lucide="chevron-down"></i>
+            <div class="date-picker-wrapper">
+              <button class="date-pill-btn" id="date-picker-btn" type="button" title="Select Snapshot Period">
+                <i data-lucide="calendar"></i>
+                <span id="current-date-label">Aug 11, 2022</span>
+                <i data-lucide="chevron-down"></i>
+              </button>
+              <div class="date-picker-dropdown" id="date-picker-dropdown">
+                <div class="dropdown-header">Dashboard Timeline</div>
+                <button class="date-opt-item active" data-period="Aug 11, 2022">Aug 11, 2022 (Snapshot)</button>
+                <button class="date-opt-item" data-period="Sep 5, 2026 (Today)">Sep 5, 2026 (Today)</button>
+                <button class="date-opt-item" data-period="This Month (September)">This Month (September)</button>
+                <button class="date-opt-item" data-period="Q3 2026 (July - Sep)">Q3 2026 (July - Sep)</button>
+                <button class="date-opt-item" data-period="Fiscal Year 2026">Fiscal Year 2026</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="topbar-center">
+            <div class="topbar-search-wrapper">
+              <i data-lucide="search"></i>
+              <input type="text" id="topbar-global-search" placeholder="Search modules, employees, or settings..." autocomplete="off" />
+            </div>
+            <div class="quick-search-dropdown" id="quick-search-dropdown"></div>
           </div>
 
           <div class="topbar-right">
+            <div class="topbar-system-status">
+              <span class="status-live-dot"></span>
+              <span>PostgreSQL Live</span>
+            </div>
+
+            <button class="icon-btn-minimal" id="btn-topbar-notifications" title="System Notifications">
+              <i data-lucide="bell"></i>
+              <span class="notif-dot"></span>
+            </button>
+
             <div class="profile-greeting-widget">
               <div class="avatar-ring-warm">
                 <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="${user.firstName}">
@@ -332,6 +360,102 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
         loadActiveTabContent();
       }
     });
+  });
+
+  // Date picker dropdown toggle & select
+  const datePickerBtn = container.querySelector('#date-picker-btn');
+  const datePickerDropdown = container.querySelector('#date-picker-dropdown');
+  const currentDateLabel = container.querySelector('#current-date-label');
+
+  datePickerBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    datePickerDropdown?.classList.toggle('show');
+  });
+
+  container.querySelectorAll('.date-opt-item').forEach((optBtn) => {
+    optBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const period = (optBtn as HTMLElement).dataset.period || 'Aug 11, 2022';
+      if (currentDateLabel) currentDateLabel.textContent = period;
+      container.querySelectorAll('.date-opt-item').forEach((b) => b.classList.remove('active'));
+      optBtn.classList.add('active');
+      datePickerDropdown?.classList.remove('show');
+      showToast(`Filter applied: ${period}`, 'info');
+    });
+  });
+
+  // Notifications button click -> route to notifications tab
+  container.querySelector('#btn-topbar-notifications')?.addEventListener('click', () => {
+    activeTab = 'notifications';
+    container.querySelectorAll('.nav-item').forEach((b) => b.classList.remove('active'));
+    container.querySelector('.nav-item[data-tab="notifications"]')?.classList.add('active');
+    loadActiveTabContent();
+  });
+
+  // Global search and quick-jump
+  const globalSearch = container.querySelector('#topbar-global-search') as HTMLInputElement;
+  const quickSearchDropdown = container.querySelector('#quick-search-dropdown');
+
+  const searchIndex = [
+    { title: '👑 Admin Dashboard', tab: 'dashboard', type: 'Module' },
+    { title: 'User Management', tab: 'users', type: 'Module' },
+    { title: 'Roles & Permissions', tab: 'roles', type: 'Module' },
+    { title: 'Organization Structure', tab: 'organization', type: 'Module' },
+    { title: 'Employees Directory', tab: 'employees', type: 'Module' },
+    { title: 'Positions & Grades', tab: 'positions', type: 'Module' },
+    { title: 'Workflows & Approvals', tab: 'workflows', type: 'Module' },
+    { title: 'Audit Logs', tab: 'audit', type: 'Module' },
+    { title: 'System Settings', tab: 'settings', type: 'Module' },
+    { title: 'Security Management', tab: 'security', type: 'Module' },
+    { title: 'Storage & Documents', tab: 'storage', type: 'Module' },
+    { title: 'Notifications & Templates', tab: 'notifications', type: 'Module' },
+  ];
+
+  globalSearch?.addEventListener('input', () => {
+    const query = globalSearch.value.trim().toLowerCase();
+    if (!query) {
+      quickSearchDropdown?.classList.remove('show');
+      return;
+    }
+
+    const matches = searchIndex.filter((item) => item.title.toLowerCase().includes(query));
+    if (matches.length > 0 && quickSearchDropdown) {
+      quickSearchDropdown.innerHTML = matches
+        .map(
+          (m) => `
+        <div class="quick-search-item" data-tab="${m.tab}">
+          <span>${m.title}</span>
+          <span class="item-type">${m.type}</span>
+        </div>
+      `,
+        )
+        .join('');
+      quickSearchDropdown.classList.add('show');
+
+      quickSearchDropdown.querySelectorAll('.quick-search-item').forEach((el) => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const targetTab = (el as HTMLElement).dataset.tab;
+          if (targetTab) {
+            activeTab = targetTab;
+            container.querySelectorAll('.nav-item').forEach((b) => b.classList.remove('active'));
+            container.querySelector(`.nav-item[data-tab="${targetTab}"]`)?.classList.add('active');
+            loadActiveTabContent();
+            globalSearch.value = '';
+            quickSearchDropdown.classList.remove('show');
+          }
+        });
+      });
+    } else if (quickSearchDropdown) {
+      quickSearchDropdown.innerHTML = `<div style="padding: 0.5rem 0.75rem; font-size: 0.8rem; color: #8c9ba8;">No matching modules</div>`;
+      quickSearchDropdown.classList.add('show');
+    }
+  });
+
+  // Global click to dismiss dropdowns
+  document.addEventListener('click', () => {
+    datePickerDropdown?.classList.remove('show');
+    quickSearchDropdown?.classList.remove('show');
   });
 
   // Logout listener

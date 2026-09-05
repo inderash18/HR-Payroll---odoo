@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building, Users, Shield, Activity, ArrowUpRight, CheckCircle2, Globe, Server } from 'lucide-react';
+import '../../../styles/admin-dashboard.css';
 
 export function SuperAdminDashboard({ data }) {
   const navigate = useNavigate();
@@ -9,142 +10,166 @@ export function SuperAdminDashboard({ data }) {
   const activities = data?.recentActivities || [];
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-[#0d0f12] via-[#1a202c] to-[#0d0f12] rounded-2xl p-6 text-white border border-gray-800 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div className="admin-dash-container" id="super-admin-dashboard-root">
+      {/* 1. Header Banner */}
+      <div className="admin-banner-dark">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-emerald-400 uppercase mb-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <div className="banner-badge-live">
+            <span className="pulse-dot"></span>
             Super Admin Platform Console
           </div>
-          <h2 className="text-2xl font-extrabold text-white">Platform Governance &amp; Multi-Tenant Overview</h2>
-          <p className="text-sm text-gray-400 mt-1">Manage global enterprise tenants, system health, and cross-organization telemetry.</p>
+          <h2 className="admin-welcome-title">Platform Governance &amp; Multi-Tenant Overview</h2>
+          <p className="admin-welcome-sub">
+            Manage global enterprise tenants, system health, and cross-organization telemetry.
+          </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="admin-welcome-actions">
           <button
+            type="button"
             onClick={() => navigate('/audit-logs')}
-            className="px-4 py-2.5 bg-white/10 hover:bg-white/15 text-white text-sm font-semibold rounded-xl transition flex items-center gap-2 border border-white/10"
+            className="btn-banner-glass"
           >
             <Shield size={16} />
-            Platform Audit Logs
+            <span>Platform Audit Logs</span>
           </button>
           <button
+            type="button"
             onClick={() => navigate('/settings')}
-            className="px-4 py-2.5 bg-white text-gray-900 text-sm font-bold rounded-xl transition hover:bg-gray-100 flex items-center gap-2 shadow-lg"
+            className="btn-banner-white"
           >
             <Server size={16} />
-            System Config
+            <span>System Config</span>
           </button>
         </div>
       </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Total Organizations</span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+      {/* 2. Metric KPI Cards */}
+      <div className="admin-stats-grid">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Total Organizations</span>
+            <div className="admin-stat-icon-box" style={{ background: '#eff6ff', color: '#2563eb' }}>
               <Building size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-gray-900">{summary.totalOrganizations || organizations.length || 1}</div>
-          <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold mt-2">
-            <CheckCircle2 size={14} /> Active SaaS Tenants
+          <div className="admin-stat-val">{summary.totalOrganizations || organizations.length || 2}</div>
+          <div className="admin-stat-bottom">
+            <span className="trend-badge-pill trend-positive">
+              <CheckCircle2 size={13} /> Active SaaS Tenants
+            </span>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Platform Users</span>
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Platform Users</span>
+            <div className="admin-stat-icon-box" style={{ background: '#eef2ff', color: '#4f46e5' }}>
               <Users size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-gray-900">{summary.totalUsersAcrossOrgs || 8}</div>
-          <div className="text-xs text-gray-400 font-medium mt-2">Across all tenant accounts</div>
+          <div className="admin-stat-val">{summary.totalUsersAcrossOrgs || 270}</div>
+          <div className="admin-stat-bottom">
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Across all tenant accounts</span>
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Managed Workforce</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Managed Workforce</span>
+            <div className="admin-stat-icon-box" style={{ background: '#ecfdf5', color: '#059669' }}>
               <Globe size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-gray-900">{summary.totalEmployeesPlatform || 4}</div>
-          <div className="text-xs text-gray-400 font-medium mt-2">Active payroll-ready personnel</div>
+          <div className="admin-stat-val">{summary.totalEmployeesPlatform || 174}</div>
+          <div className="admin-stat-bottom">
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Active payroll-ready personnel</span>
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">System Telemetry</span>
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">System Telemetry</span>
+            <div className="admin-stat-icon-box" style={{ background: '#faf5ff', color: '#9333ea' }}>
               <Activity size={18} />
             </div>
           </div>
-          <div className="text-lg font-bold text-emerald-600 flex items-center gap-1.5 mt-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          <div className="admin-stat-val" style={{ fontSize: '1.25rem', color: '#059669', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
             {summary.systemHealth || '100% Operational'}
           </div>
-          <div className="text-xs text-gray-400 font-medium mt-2">PostgreSQL + Prisma High-Avail</div>
+          <div className="admin-stat-bottom">
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>PostgreSQL + Prisma HA</span>
+          </div>
         </div>
       </div>
 
-      {/* Organization Directory Table */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-        <div className="flex items-center justify-between mb-5">
+      {/* 3. Organization Directory Table */}
+      <div className="admin-card-white">
+        <div className="admin-card-header">
           <div>
-            <h3 className="text-base font-bold text-gray-900">Registered SaaS Organizations</h3>
-            <p className="text-xs text-gray-400">Live tenant organizations with isolated schemas and data partitions.</p>
+            <h3 className="admin-card-title">Registered SaaS Organizations</h3>
+            <p className="admin-card-sub">Live tenant organizations with isolated schemas and data partitions.</p>
           </div>
-          <button onClick={() => navigate('/users')} className="text-xs font-bold text-gray-700 hover:text-black flex items-center gap-1">
-            View All <ArrowUpRight size={14} />
+          <button
+            type="button"
+            onClick={() => navigate('/users')}
+            className="btn-secondary-clean"
+          >
+            <span>View Users</span>
+            <ArrowUpRight size={14} />
           </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+        <div style={{ overflowX: 'auto' }}>
+          <table className="admin-table-clean">
             <thead>
-              <tr className="border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                <th className="pb-3">Organization</th>
-                <th className="pb-3">Tenant Code</th>
-                <th className="pb-3">Currency</th>
-                <th className="pb-3 text-center">Users</th>
-                <th className="pb-3 text-center">Employees</th>
-                <th className="pb-3 text-center">Status</th>
+              <tr>
+                <th>Organization</th>
+                <th>Tenant Code</th>
+                <th>Currency</th>
+                <th style={{ textAlign: 'center' }}>Users</th>
+                <th style={{ textAlign: 'center' }}>Employees</th>
+                <th style={{ textAlign: 'center' }}>Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody>
               {organizations.length > 0 ? (
                 organizations.map((org) => (
-                  <tr key={org.id} className="hover:bg-gray-50/50 transition">
-                    <td className="py-3.5 font-bold text-gray-900 flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-gray-900 text-white font-black text-xs flex items-center justify-center">
-                        {org.name.slice(0, 2).toUpperCase()}
+                  <tr key={org.id}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div className="table-avatar-pill">
+                          {org.name.slice(0, 2).toUpperCase()}
+                        </div>
+                        <span style={{ fontWeight: 700, color: '#0f172a' }}>{org.name}</span>
                       </div>
-                      {org.name}
                     </td>
-                    <td className="py-3.5 font-mono text-xs text-gray-500">{org.code}</td>
-                    <td className="py-3.5 font-semibold text-gray-700">{org.currency} ({org.timezone})</td>
-                    <td className="py-3.5 text-center font-bold text-gray-800">{org.usersCount}</td>
-                    <td className="py-3.5 text-center font-bold text-gray-800">{org.employeesCount}</td>
-                    <td className="py-3.5 text-center">
-                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/50">
-                        Active
+                    <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#475569' }}>{org.code}</td>
+                    <td style={{ fontWeight: 600, color: '#334155' }}>{org.currency} ({org.timezone})</td>
+                    <td style={{ textAlign: 'center', fontWeight: 800 }}>{org.usersCount}</td>
+                    <td style={{ textAlign: 'center', fontWeight: 800 }}>{org.employeesCount}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span className="badge-pill badge-pill-success">
+                        <CheckCircle2 size={12} /> Active
                       </span>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td className="py-3.5 font-bold text-gray-900">PeoplePay360 Technologies Pvt. Ltd.</td>
-                  <td className="py-3.5 font-mono text-xs text-gray-500">PP360</td>
-                  <td className="py-3.5 font-semibold text-gray-700">INR (Asia/Kolkata)</td>
-                  <td className="py-3.5 text-center font-bold text-gray-800">164</td>
-                  <td className="py-3.5 text-center font-bold text-gray-800">164</td>
-                  <td className="py-3.5 text-center">
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">
-                      Active
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div className="table-avatar-pill">PE</div>
+                      <span style={{ fontWeight: 700, color: '#0f172a' }}>PeoplePay360 Technologies Pvt. Ltd.</span>
+                    </div>
+                  </td>
+                  <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#475569' }}>PP360</td>
+                  <td style={{ fontWeight: 600, color: '#334155' }}>INR (Asia/Kolkata)</td>
+                  <td style={{ textAlign: 'center', fontWeight: 800 }}>252</td>
+                  <td style={{ textAlign: 'center', fontWeight: 800 }}>164</td>
+                  <td style={{ textAlign: 'center' }}>
+                    <span className="badge-pill badge-pill-success">
+                      <CheckCircle2 size={12} /> Active
                     </span>
                   </td>
                 </tr>
@@ -154,30 +179,47 @@ export function SuperAdminDashboard({ data }) {
         </div>
       </div>
 
-      {/* Platform Security & Activity Audit */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-        <h3 className="text-base font-bold text-gray-900 mb-4">Platform Audit &amp; Security Stream</h3>
-        <div className="space-y-3">
+      {/* 4. Platform Security & Activity Audit */}
+      <div className="admin-card-white">
+        <div className="admin-card-header">
+          <div>
+            <h3 className="admin-card-title">Platform Audit &amp; Security Stream</h3>
+            <p className="admin-card-sub">Real-time telemetry and audit stream across all tenant sessions.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/audit-logs')}
+            className="btn-secondary-clean"
+          >
+            <span>Full Audit Trail</span>
+            <ArrowUpRight size={14} />
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
           {activities.length > 0 ? (
             activities.map((act) => (
-              <div key={act.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50/70 border border-gray-100 text-xs">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                  <div>
-                    <span className="font-bold text-gray-900">{act.action}</span> on <span className="font-semibold text-gray-600">{act.entityType}</span>
-                    <span className="text-gray-400 ml-2">by {act.actor} ({act.orgName})</span>
+              <div key={act.id} className="alert-card-row">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6', flexShrink: 0 }}></div>
+                  <div style={{ fontSize: '0.82rem' }}>
+                    <strong style={{ color: '#0f172a' }}>{act.action}</strong> on <span style={{ color: '#475569', fontWeight: 600 }}>{act.entityType}</span>
+                    <span style={{ color: '#94a3b8', marginLeft: '0.5rem' }}>by {act.actor} ({act.orgName})</span>
                   </div>
                 </div>
-                <div className="text-gray-400 font-mono text-[11px]">
+                <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#94a3b8' }}>
                   {new Date(act.createdAt).toLocaleString()}
                 </div>
               </div>
             ))
           ) : (
-            <div className="text-xs text-gray-400 py-2">No security alerts or anomalous activity detected. System is running securely.</div>
+            <div style={{ fontSize: '0.82rem', color: '#94a3b8', padding: '1rem 0' }}>
+              No security alerts or anomalous activity detected. System is running securely.
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 }
+

@@ -18,7 +18,7 @@ import {
 
 export const ROLE_NAVIGATION = {
   SUPER_ADMIN: [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
+    { to: '/super-admin/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
     { to: '/admin/organizations', label: 'Organizations', icon: Building, section: 'Enterprise' },
     { to: '/users', label: 'Users', icon: Users, section: 'Enterprise' },
     { to: '/security', label: 'Security', icon: Shield, section: 'Governance' },
@@ -27,7 +27,7 @@ export const ROLE_NAVIGATION = {
   ],
 
   ORGANIZATION_ADMIN: [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
+    { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
     { to: '/employees', label: 'Employees', icon: Users, section: 'Workforce' },
     { to: '/departments', label: 'Departments', icon: Building, section: 'Workforce' },
     { to: '/attendance', label: 'Attendance', icon: Clock, section: 'Workforce' },
@@ -39,7 +39,7 @@ export const ROLE_NAVIGATION = {
   ],
 
   ADMIN: [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
+    { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
     { to: '/employees', label: 'Employees', icon: Users, section: 'Workforce' },
     { to: '/departments', label: 'Departments', icon: Building, section: 'Workforce' },
     { to: '/attendance', label: 'Attendance', icon: Clock, section: 'Workforce' },
@@ -51,7 +51,7 @@ export const ROLE_NAVIGATION = {
   ],
 
   HR_MANAGER: [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
+    { to: '/hr/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
     { to: '/employees', label: 'Employees', icon: Users, section: 'Workforce' },
     { to: '/departments', label: 'Departments', icon: Building, section: 'Workforce' },
     { to: '/attendance', label: 'Attendance', icon: Clock, section: 'Workforce' },
@@ -61,7 +61,7 @@ export const ROLE_NAVIGATION = {
   ],
 
   PAYROLL_MANAGER: [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
+    { to: '/payroll/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
     { to: '/payroll', label: 'Payroll', icon: Landmark, section: 'Compensation' },
     { to: '/contracts', label: 'Contracts', icon: Layers, section: 'Compensation' },
     { to: '/employees', label: 'Employees', icon: Users, section: 'Compensation' },
@@ -70,7 +70,7 @@ export const ROLE_NAVIGATION = {
   ],
 
   HR_PAYROLL_MANAGER: [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
+    { to: '/payroll/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
     { to: '/payroll', label: 'Payroll', icon: Landmark, section: 'Compensation' },
     { to: '/contracts', label: 'Contracts', icon: Layers, section: 'Compensation' },
     { to: '/employees', label: 'Employees', icon: Users, section: 'Compensation' },
@@ -79,14 +79,14 @@ export const ROLE_NAVIGATION = {
   ],
 
   HR_PAYROLL_USER: [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
+    { to: '/payroll/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
     { to: '/payroll', label: 'Payroll', icon: Landmark, section: 'Compensation' },
     { to: '/payslips', label: 'Payslips', icon: LineChart, section: 'Compensation' },
     { to: '/audit', label: 'Reports', icon: FileText, section: 'Reports' },
   ],
 
   FINANCE_MANAGER: [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
+    { to: '/finance/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
     { to: '/payroll', label: 'Payroll', icon: DollarSign, section: 'Financials' },
     { to: '/payslips', label: 'Payslips', icon: LineChart, section: 'Financials' },
     { to: '/departments', label: 'Departments', icon: Building, section: 'Financials' },
@@ -94,7 +94,7 @@ export const ROLE_NAVIGATION = {
   ],
 
   DEPARTMENT_MANAGER: [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
+    { to: '/manager/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Core' },
     { to: '/employees', label: 'My Team', icon: Users, section: 'Team' },
     { to: '/attendance', label: 'Attendance', icon: Clock, section: 'Team' },
     { to: '/leaves', label: 'Leaves', icon: CheckSquare, section: 'Team' },
@@ -102,7 +102,7 @@ export const ROLE_NAVIGATION = {
   ],
 
   EMPLOYEE: [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Overview' },
+    { to: '/employee/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Overview' },
     { to: '/attendance', label: 'Attendance', icon: Clock, section: 'Self Service' },
     { to: '/leaves', label: 'Leaves', icon: CalendarDays, section: 'Self Service' },
     { to: '/payslips', label: 'Payslips', icon: LineChart, section: 'Self Service' },
@@ -110,7 +110,7 @@ export const ROLE_NAVIGATION = {
   ],
 
   AUDITOR: [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Overview' },
+    { to: '/auditor/dashboard', label: 'Dashboard', icon: LayoutGrid, section: 'Overview' },
     { to: '/audit-logs', label: 'Audit Logs', icon: FileText, section: 'Compliance' },
     { to: '/security', label: 'Security', icon: Shield, section: 'Compliance' },
     { to: '/payroll', label: 'Payroll', icon: Landmark, section: 'Finance' },
@@ -118,6 +118,32 @@ export const ROLE_NAVIGATION = {
   ],
 };
 
+export function getRoleDashboardPath(role) {
+  switch (role) {
+    case 'SUPER_ADMIN':
+      return '/super-admin/dashboard';
+    case 'ORGANIZATION_ADMIN':
+    case 'ADMIN':
+      return '/admin/dashboard';
+    case 'HR_MANAGER':
+      return '/hr/dashboard';
+    case 'PAYROLL_MANAGER':
+    case 'HR_PAYROLL_MANAGER':
+    case 'HR_PAYROLL_USER':
+      return '/payroll/dashboard';
+    case 'FINANCE_MANAGER':
+      return '/finance/dashboard';
+    case 'DEPARTMENT_MANAGER':
+      return '/manager/dashboard';
+    case 'AUDITOR':
+      return '/auditor/dashboard';
+    case 'EMPLOYEE':
+    default:
+      return '/employee/dashboard';
+  }
+}
+
 export function getNavigationForRole(role) {
   return ROLE_NAVIGATION[role] || ROLE_NAVIGATION.EMPLOYEE;
 }
+

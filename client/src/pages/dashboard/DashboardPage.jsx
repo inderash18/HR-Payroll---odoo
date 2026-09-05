@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
+import { getRoleDashboardPath } from '../../config/navigation.config';
 import { AdminDashboard } from '../admin/AdminDashboard';
 import { SuperAdminDashboard } from './components/SuperAdminDashboard';
 import { HRManagerDashboard } from './components/HRManagerDashboard';
@@ -12,8 +14,19 @@ import { AuditorDashboard } from './components/AuditorDashboard';
 
 export function DashboardPage() {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?.role && location.pathname === '/dashboard') {
+      const target = getRoleDashboardPath(user.role);
+      if (target && target !== '/dashboard') {
+        navigate(target, { replace: true });
+      }
+    }
+  }, [user?.role, location.pathname, navigate]);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -30,6 +43,7 @@ export function DashboardPage() {
   useEffect(() => {
     loadData();
   }, [user?.role]);
+
 
   if (isLoading) {
     return (

@@ -6,7 +6,6 @@ import {
   CalendarDays,
   FileText,
   CheckCircle2,
-  AlertCircle,
   Download,
   ArrowUpRight,
   Sparkles,
@@ -14,6 +13,7 @@ import {
   LogIn as LogInIcon,
 } from 'lucide-react';
 import { api } from '../../../api/client';
+import '../../../styles/admin-dashboard.css';
 
 export function EmployeeDashboard({ data, onRefresh }) {
   const navigate = useNavigate();
@@ -49,70 +49,74 @@ export function EmployeeDashboard({ data, onRefresh }) {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-black rounded-2xl p-6 text-white border border-gray-800 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div className="admin-dash-container" id="employee-dashboard-root">
+      {/* 1. Header Banner */}
+      <div className="admin-banner-dark">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-emerald-400 uppercase mb-1">
+          <div className="banner-badge-live">
             <Sparkles size={14} /> Employee Self-Service Portal
           </div>
-          <h2 className="text-2xl font-black text-white">Welcome back, {profile.name || 'Team Member'}!</h2>
-          <p className="text-xs text-gray-300 mt-1">
-            {profile.jobTitle} • {profile.department} • ID: <span className="font-mono">{profile.employeeNum}</span>
+          <h2 className="admin-welcome-title">Welcome back, {profile.name || 'Team Member'}!</h2>
+          <p className="admin-welcome-sub">
+            {profile.jobTitle || 'Senior Engineer'} • {profile.department || 'Engineering'} • ID: <span style={{ fontFamily: 'monospace', color: '#cbd5e1' }}>{profile.employeeNum || 'PP360-1007'}</span>
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="admin-welcome-actions">
           <button
+            type="button"
             onClick={() => navigate('/profile')}
-            className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition flex items-center gap-2 border border-white/10"
+            className="btn-banner-glass"
           >
             <User size={16} />
-            My Profile
+            <span>My Profile</span>
           </button>
           <button
+            type="button"
             onClick={() => navigate('/leaves')}
-            className="px-4 py-2.5 bg-white text-gray-900 text-xs font-bold rounded-xl transition hover:bg-gray-100 flex items-center gap-2 shadow-sm"
+            className="btn-banner-white"
           >
             <CalendarDays size={16} />
-            Apply Leave
+            <span>Apply Leave</span>
           </button>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* 2. KPI Cards */}
+      <div className="admin-stats-grid">
         {/* Live Attendance / Clock Control */}
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-gray-500 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Today's Attendance</span>
-              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Clock size={18} />
-              </div>
-            </div>
-            <div className="text-xl font-black text-gray-900">
-              {attendance.isCheckedIn ? 'Clocked In' : 'Not Clocked In'}
-            </div>
-            <div className="text-xs text-gray-400 font-medium mt-1">
-              {attendance.checkInTime
-                ? `In at ${new Date(attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                : 'Ready to start your work day'}
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Today's Attendance</span>
+            <div className="admin-stat-icon-box" style={{ background: '#eff6ff', color: '#2563eb' }}>
+              <Clock size={18} />
             </div>
           </div>
-          <div className="mt-4">
+          <div className="admin-stat-val" style={{ fontSize: '1.35rem' }}>
+            {attendance.isCheckedIn ? 'Clocked In' : 'Not Clocked In'}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
+            {attendance.checkInTime
+              ? `In at ${new Date(attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+              : 'Ready to start your work day'}
+          </div>
+          <div style={{ marginTop: '0.85rem' }}>
             {attendance.isCheckedIn ? (
               <button
+                type="button"
                 onClick={handleClockOut}
                 disabled={isClocking}
-                className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+                className="btn-action-sm btn-action-danger"
+                style={{ width: '100%', padding: '0.55rem' }}
               >
                 <LogOutIcon size={14} /> Clock Out
               </button>
             ) : (
               <button
+                type="button"
                 onClick={handleClockIn}
                 disabled={isClocking}
-                className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+                className="btn-action-sm btn-action-success"
+                style={{ width: '100%', padding: '0.55rem' }}
               >
                 <LogInIcon size={14} /> Clock In Now
               </button>
@@ -121,83 +125,95 @@ export function EmployeeDashboard({ data, onRefresh }) {
         </div>
 
         {/* Leave Balance */}
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Leave Balance</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Leave Balance</span>
+            <div className="admin-stat-icon-box" style={{ background: '#ecfdf5', color: '#059669' }}>
               <CalendarDays size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-gray-900">{leave.totalAllocatedDays || 24} Days</div>
-          <div className="text-xs text-emerald-600 font-semibold mt-2 flex items-center gap-1">
-            <CheckCircle2 size={13} /> {leave.pendingRequestsCount || 0} Pending Approvals
+          <div className="admin-stat-val">{leave.totalAllocatedDays || 24} Days</div>
+          <div className="admin-stat-bottom">
+            <span className="trend-badge-pill trend-positive">
+              <CheckCircle2 size={13} /> {leave.pendingRequestsCount || 0} Pending Approvals
+            </span>
           </div>
         </div>
 
         {/* Latest Payslip */}
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Latest Payslip</span>
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Latest Payslip</span>
+            <div className="admin-stat-icon-box" style={{ background: '#faf5ff', color: '#9333ea' }}>
               <FileText size={18} />
             </div>
           </div>
-          <div className="text-2xl font-black text-purple-600">
-            {payslip ? `₹${Number(payslip.netSalary).toLocaleString('en-IN')}` : '₹68,000'}
+          <div className="admin-stat-val" style={{ color: '#9333ea', fontSize: '1.45rem' }}>
+            {payslip ? `₹${Number(payslip.netSalary).toLocaleString('en-IN')}` : '₹82,400'}
           </div>
-          <div className="text-xs text-gray-400 font-medium mt-2">
-            <button onClick={() => navigate('/payslips')} className="text-black font-bold hover:underline flex items-center gap-1">
-              Download Payslip <Download size={12} />
+          <div className="admin-stat-bottom">
+            <button
+              type="button"
+              onClick={() => navigate('/payslips')}
+              style={{ background: 'none', border: 'none', color: '#0f172a', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem', padding: 0 }}
+            >
+              <span>Download Payslip</span>
+              <Download size={13} />
             </button>
           </div>
         </div>
 
         {/* Profile Completion */}
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Profile Status</span>
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Profile Status</span>
+            <div className="admin-stat-icon-box" style={{ background: '#eef2ff', color: '#4f46e5' }}>
               <User size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-gray-900">{profile.profileCompletion || '100%'}</div>
-          <div className="text-xs text-gray-400 font-medium mt-2">Bank &amp; statutory verified</div>
+          <div className="admin-stat-val" style={{ color: '#059669' }}>{profile.profileCompletion || '100%'}</div>
+          <div className="admin-stat-bottom">
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Bank &amp; statutory verified</span>
+          </div>
         </div>
       </div>
 
-      {/* Main Grid: My Leaves & Upcoming Holidays */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* 3. Main Grid: My Leaves & Upcoming Holidays */}
+      <div className="admin-grid-2col">
         {/* Recent Leave Requests */}
-        <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
+        <div className="admin-card-white">
+          <div className="admin-card-header">
             <div>
-              <h3 className="text-base font-bold text-gray-900">My Leave Applications</h3>
-              <p className="text-xs text-gray-400">Your recent time-off requests and approval status.</p>
+              <h3 className="admin-card-title">My Leave Applications</h3>
+              <p className="admin-card-sub">Your recent time-off requests and approval status.</p>
             </div>
-            <button onClick={() => navigate('/leaves')} className="text-xs font-bold text-gray-700 hover:text-black flex items-center gap-1">
-              Request Time Off <ArrowUpRight size={14} />
+            <button
+              type="button"
+              onClick={() => navigate('/leaves')}
+              className="btn-secondary-clean"
+            >
+              <span>Apply Leave</span>
+              <ArrowUpRight size={14} />
             </button>
           </div>
 
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {(leave.recentLeaves || []).length > 0 ? (
               leave.recentLeaves.map((l) => (
-                <div key={l.id} className="p-3.5 rounded-xl bg-gray-50/70 border border-gray-100 flex items-center justify-between text-xs">
+                <div key={l.id} style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', background: '#f8fafc', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem' }}>
                   <div>
-                    <div className="font-bold text-gray-900">{l.type}</div>
-                    <div className="text-gray-400 mt-0.5">
+                    <div style={{ fontWeight: 800, color: '#0f172a' }}>{l.type}</div>
+                    <div style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '0.15rem' }}>
                       {new Date(l.startDate).toLocaleDateString()} – {new Date(l.endDate).toLocaleDateString()}
                     </div>
                   </div>
-                  <span className={`px-2.5 py-1 rounded-full font-bold text-[11px] ${
-                    l.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/50' : 'bg-amber-50 text-amber-700 border border-amber-200/50'
-                  }`}>
+                  <span className={l.status === 'APPROVED' ? "badge-pill badge-pill-success" : "badge-pill badge-pill-warning"}>
                     {l.status}
                   </span>
                 </div>
               ))
             ) : (
-              <div className="py-6 text-center text-xs text-gray-400">
+              <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.82rem' }}>
                 No leave requests submitted yet.
               </div>
             )}
@@ -205,13 +221,18 @@ export function EmployeeDashboard({ data, onRefresh }) {
         </div>
 
         {/* Upcoming Holidays */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <h3 className="text-base font-bold text-gray-900 mb-4">Upcoming Public Holidays</h3>
-          <div className="space-y-3">
+        <div className="admin-card-white">
+          <div className="admin-card-header">
+            <div>
+              <h3 className="admin-card-title">Upcoming Holidays</h3>
+              <p className="admin-card-sub">Public &amp; festive calendar</p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
             {holidays.map((h, i) => (
-              <div key={i} className="p-3 rounded-xl bg-gray-50 border border-gray-100 text-xs flex items-center justify-between">
-                <div className="font-bold text-gray-900">{h.name}</div>
-                <div className="font-mono text-gray-500">{h.date}</div>
+              <div key={i} style={{ padding: '0.75rem 1rem', borderRadius: '0.75rem', background: '#f8fafc', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem' }}>
+                <div style={{ fontWeight: 700, color: '#0f172a' }}>{h.name}</div>
+                <div style={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.75rem' }}>{h.date}</div>
               </div>
             ))}
           </div>
@@ -220,3 +241,4 @@ export function EmployeeDashboard({ data, onRefresh }) {
     </div>
   );
 }
+

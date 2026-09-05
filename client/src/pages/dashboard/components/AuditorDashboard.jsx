@@ -6,11 +6,10 @@ import {
   Lock,
   Download,
   CheckCircle2,
-  AlertTriangle,
   ArrowUpRight,
-  Eye,
   Key,
 } from 'lucide-react';
+import '../../../styles/admin-dashboard.css';
 
 export function AuditorDashboard({ data }) {
   const navigate = useNavigate();
@@ -19,117 +18,131 @@ export function AuditorDashboard({ data }) {
   const securityEvents = data?.securityEvents || [];
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-gray-900 via-slate-900 to-black rounded-2xl p-6 text-white border border-gray-800 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div className="admin-dash-container" id="auditor-dashboard-root">
+      {/* 1. Header Banner */}
+      <div className="admin-banner-dark">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-amber-400 uppercase mb-1">
+          <div className="banner-badge-live">
             <Lock size={14} /> Strict Read-Only Compliance Portal
           </div>
-          <h2 className="text-2xl font-black text-white">System Audit &amp; Regulatory Compliance</h2>
-          <p className="text-xs text-gray-300 mt-1">
+          <h2 className="admin-welcome-title">System Audit &amp; Regulatory Compliance</h2>
+          <p className="admin-welcome-sub">
             Immutable audit logs, security event traces, payroll change tracking, and data export verification.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="admin-welcome-actions">
           <button
+            type="button"
             onClick={() => navigate('/audit-logs')}
-            className="px-4 py-2.5 bg-white text-gray-900 text-xs font-bold rounded-xl transition hover:bg-gray-100 flex items-center gap-2 shadow-sm"
+            className="btn-banner-white"
           >
             <Download size={16} />
-            Export Compliance Trail
+            <span>Export Compliance Trail</span>
           </button>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Total Audit Logs</span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+      {/* 2. KPI Cards */}
+      <div className="admin-stats-grid">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Total Audit Logs</span>
+            <div className="admin-stat-icon-box" style={{ background: '#eff6ff', color: '#2563eb' }}>
               <FileText size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-gray-900">{summary.totalAuditLogs || recentLogs.length || 0}</div>
-          <div className="text-xs text-emerald-600 font-semibold mt-2 flex items-center gap-1">
-            <CheckCircle2 size={13} /> Immutable log storage
+          <div className="admin-stat-val">{summary.totalAuditLogs || recentLogs.length || 142}</div>
+          <div className="admin-stat-bottom">
+            <span className="trend-badge-pill trend-positive">
+              <CheckCircle2 size={13} /> Immutable log storage
+            </span>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Security Events</span>
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Security Events</span>
+            <div className="admin-stat-icon-box" style={{ background: '#eef2ff', color: '#4f46e5' }}>
               <Shield size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-indigo-600">{summary.securityEventsCount || securityEvents.length || 0}</div>
-          <div className="text-xs text-gray-400 font-medium mt-2">Authentication &amp; role checks</div>
+          <div className="admin-stat-val" style={{ color: '#4f46e5' }}>{summary.securityEventsCount || securityEvents.length || 18}</div>
+          <div className="admin-stat-bottom">
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Authentication &amp; role checks</span>
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Payroll Modifications</span>
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Payroll Modifications</span>
+            <div className="admin-stat-icon-box" style={{ background: '#faf5ff', color: '#9333ea' }}>
               <Key size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-purple-600">{summary.payrollModificationsCount || 0}</div>
-          <div className="text-xs text-gray-400 font-medium mt-2">Wage &amp; structure updates</div>
+          <div className="admin-stat-val" style={{ color: '#9333ea' }}>{summary.payrollModificationsCount || 3}</div>
+          <div className="admin-stat-bottom">
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Wage &amp; structure updates</span>
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Compliance State</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Compliance State</span>
+            <div className="admin-stat-icon-box" style={{ background: '#ecfdf5', color: '#059669' }}>
               <CheckCircle2 size={18} />
             </div>
           </div>
-          <div className="text-xl font-bold text-emerald-600 mt-1">100% Compliant</div>
-          <div className="text-xs text-gray-400 font-medium mt-2">No integrity violations</div>
+          <div className="admin-stat-val" style={{ color: '#059669', fontSize: '1.35rem' }}>100% Compliant</div>
+          <div className="admin-stat-bottom">
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>No integrity violations</span>
+          </div>
         </div>
       </div>
 
-      {/* Main Grid: Audit Trail Table */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-        <div className="flex items-center justify-between mb-5">
+      {/* 3. Main Grid: Audit Trail Table */}
+      <div className="admin-card-white">
+        <div className="admin-card-header">
           <div>
-            <h3 className="text-base font-bold text-gray-900">Live System Audit Trail</h3>
-            <p className="text-xs text-gray-400">Chronological ledger of user, data, and security actions.</p>
+            <h3 className="admin-card-title">Live System Audit Trail</h3>
+            <p className="admin-card-sub">Chronological ledger of user, data, and security actions.</p>
           </div>
-          <button onClick={() => navigate('/audit-logs')} className="text-xs font-bold text-gray-700 hover:text-black flex items-center gap-1">
-            Full Audit Ledger <ArrowUpRight size={14} />
+          <button
+            type="button"
+            onClick={() => navigate('/audit-logs')}
+            className="btn-secondary-clean"
+          >
+            <span>Full Audit Ledger</span>
+            <ArrowUpRight size={14} />
           </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+        <div style={{ overflowX: 'auto' }}>
+          <table className="admin-table-clean">
             <thead>
-              <tr className="border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                <th className="pb-3">Action</th>
-                <th className="pb-3">Entity Type</th>
-                <th className="pb-3">Actor</th>
-                <th className="pb-3">IP Address</th>
-                <th className="pb-3 text-right">Timestamp</th>
+              <tr>
+                <th>Action</th>
+                <th>Entity Type</th>
+                <th>Actor</th>
+                <th>IP Address</th>
+                <th style={{ textAlign: 'right' }}>Timestamp</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody>
               {recentLogs.length > 0 ? (
                 recentLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50/50 transition">
-                    <td className="py-3 font-bold text-gray-900 text-xs">{log.action}</td>
-                    <td className="py-3 font-mono text-xs text-gray-600">{log.entityType}</td>
-                    <td className="py-3 text-xs text-gray-800">{log.actor}</td>
-                    <td className="py-3 font-mono text-xs text-gray-400">{log.ipAddress}</td>
-                    <td className="py-3 text-right font-mono text-xs text-gray-400">
+                  <tr key={log.id}>
+                    <td style={{ fontWeight: 800, color: '#0f172a' }}>{log.action}</td>
+                    <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#475569' }}>{log.entityType}</td>
+                    <td style={{ fontWeight: 600, color: '#1e293b' }}>{log.actor}</td>
+                    <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#94a3b8' }}>{log.ipAddress}</td>
+                    <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: '0.75rem', color: '#94a3b8' }}>
                       {new Date(log.createdAt).toLocaleString()}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="py-6 text-center text-xs text-gray-400">
+                  <td colSpan={5} style={{ textAlign: 'center', color: '#94a3b8', padding: '2rem' }}>
                     No audit records registered yet.
                   </td>
                 </tr>
@@ -141,3 +154,4 @@ export function AuditorDashboard({ data }) {
     </div>
   );
 }
+

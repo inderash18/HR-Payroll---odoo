@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import api from '../../api/client';
+import { getRoleDashboardPath } from '../../config/navigation.config';
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -37,9 +38,11 @@ export function LoginPage() {
 
     try {
       const user = await login(email, password);
-      navigate('/dashboard', { replace: true });
+      const targetPath = getRoleDashboardPath(user?.role);
+      navigate(targetPath, { replace: true });
     } catch (err) {
       let msg = err.message || 'Invalid email or password.';
+
       if (err.status === 429) {
         msg = 'Too many login attempts. Please try again shortly.';
       } else if (err.code === 'NETWORK_ERROR' || err.status === 0) {

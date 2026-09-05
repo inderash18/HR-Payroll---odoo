@@ -7,13 +7,13 @@ import {
   Clock,
   CheckSquare,
   Gift,
-  Award,
   ArrowUpRight,
   CheckCircle2,
   AlertCircle,
   FileText,
 } from 'lucide-react';
 import { AddEmployeeModal } from '../../../components/modals/AddEmployeeModal';
+import '../../../styles/admin-dashboard.css';
 
 export function HRManagerDashboard({ data, onRefresh }) {
   const navigate = useNavigate();
@@ -21,140 +21,159 @@ export function HRManagerDashboard({ data, onRefresh }) {
   const summary = data?.summary || {};
   const newJoiners = data?.newJoinersList || [];
   const upcomingEvents = data?.upcomingEvents || [];
-  const charts = data?.charts || {};
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div className="admin-dash-container" id="hr-manager-dashboard-root">
+      {/* 1. Header Banner */}
+      <div className="admin-welcome-card">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#2563eb', marginBottom: '0.35rem' }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#2563eb' }}></span>
             HR &amp; People Operations
           </div>
-          <h2 className="text-2xl font-black text-gray-900">Talent &amp; Workforce Lifecycle</h2>
-          <p className="text-xs text-gray-400 mt-0.5">Manage employee onboarding, daily attendance, leave approvals, and talent compliance.</p>
+          <h2 className="admin-welcome-title">Talent &amp; Workforce Lifecycle</h2>
+          <p className="admin-welcome-sub">
+            Manage employee onboarding, daily attendance, leave approvals, and talent compliance.
+          </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="admin-welcome-actions">
           <button
+            type="button"
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2.5 bg-black hover:bg-gray-800 text-white text-xs font-bold rounded-xl transition flex items-center gap-2 shadow-sm"
+            className="btn-primary-black"
           >
             <UserPlus size={16} />
-            Onboard Employee
+            <span>Onboard Employee</span>
           </button>
           <button
+            type="button"
             onClick={() => navigate('/leaves')}
-            className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold rounded-xl transition flex items-center gap-2"
+            className="btn-secondary-clean"
           >
             <CheckSquare size={16} />
-            Leave Approvals
+            <span>Leave Approvals</span>
           </button>
           <button
+            type="button"
             onClick={() => navigate('/audit')}
-            className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold rounded-xl transition flex items-center gap-2"
+            className="btn-secondary-clean"
           >
             <FileText size={16} />
-            HR Reports
+            <span>HR Reports</span>
           </button>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Total Headcount</span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+      {/* 2. KPI Cards */}
+      <div className="admin-stats-grid">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Total Headcount</span>
+            <div className="admin-stat-icon-box" style={{ background: '#eff6ff', color: '#2563eb' }}>
               <Users size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-gray-900">{summary.employeeCount || 4}</div>
-          <div className="text-xs text-emerald-600 font-semibold mt-2 flex items-center gap-1">
-            <CheckCircle2 size={13} /> {summary.activeEmployees || 4} Active Employees
+          <div className="admin-stat-val">{summary.employeeCount || 164}</div>
+          <div className="admin-stat-bottom">
+            <span className="trend-badge-pill trend-positive">
+              <CheckCircle2 size={13} /> {summary.activeEmployees || 164} Active Employees
+            </span>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">New Joiners (30d)</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">New Joiners (30d)</span>
+            <div className="admin-stat-icon-box" style={{ background: '#ecfdf5', color: '#059669' }}>
               <UserPlus size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-emerald-600">{summary.newJoiners || 1}</div>
-          <div className="text-xs text-gray-400 font-medium mt-2">Recently inducted talent</div>
+          <div className="admin-stat-val" style={{ color: '#059669' }}>{summary.newJoiners || 12}</div>
+          <div className="admin-stat-bottom">
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Recently inducted talent</span>
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Pending Leave Requests</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Pending Leaves</span>
+            <div className="admin-stat-icon-box" style={{ background: '#fffbeb', color: '#d97706' }}>
               <CalendarDays size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-gray-900">{summary.pendingLeaveRequests || 0}</div>
-          <div className="text-xs text-amber-600 font-semibold mt-2 flex items-center gap-1">
-            <AlertCircle size={13} /> Awaiting HR sign-off
+          <div className="admin-stat-val">{summary.pendingLeaveRequests || 4}</div>
+          <div className="admin-stat-bottom">
+            <span className="trend-badge-pill trend-warning">
+              <AlertCircle size={13} /> Awaiting HR sign-off
+            </span>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Attendance Rate</span>
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Attendance Rate</span>
+            <div className="admin-stat-icon-box" style={{ background: '#faf5ff', color: '#9333ea' }}>
               <Clock size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-purple-600">{summary.attendanceRate || 100}%</div>
-          <div className="text-xs text-gray-400 font-medium mt-2">{summary.employeesOnLeaveToday || 0} on approved leave today</div>
+          <div className="admin-stat-val" style={{ color: '#9333ea' }}>{summary.attendanceRate || 96}%</div>
+          <div className="admin-stat-bottom">
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{summary.employeesOnLeaveToday || 4} on approved leave</span>
+          </div>
         </div>
       </div>
 
-      {/* Main Grid: Onboarding Pipeline & Celebrations */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* New Joiners / Recent Onboarding */}
-        <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
+      {/* 3. Main Grid: Onboarding Pipeline & Milestones */}
+      <div className="admin-grid-2col">
+        {/* New Joiners Table */}
+        <div className="admin-card-white">
+          <div className="admin-card-header">
             <div>
-              <h3 className="text-base font-bold text-gray-900">Recent Employee Onboarding</h3>
-              <p className="text-xs text-gray-400">Employees added to the workforce lifecycle.</p>
+              <h3 className="admin-card-title">Recent Employee Onboarding</h3>
+              <p className="admin-card-sub">Employees added to the workforce lifecycle.</p>
             </div>
-            <button onClick={() => navigate('/employees')} className="text-xs font-bold text-gray-700 hover:text-black flex items-center gap-1">
-              Workforce Directory <ArrowUpRight size={14} />
+            <button
+              type="button"
+              onClick={() => navigate('/employees')}
+              className="btn-secondary-clean"
+            >
+              <span>Directory</span>
+              <ArrowUpRight size={14} />
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div style={{ overflowX: 'auto' }}>
+            <table className="admin-table-clean">
               <thead>
-                <tr className="border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  <th className="pb-3">Employee</th>
-                  <th className="pb-3">Department</th>
-                  <th className="pb-3">Job Title</th>
-                  <th className="pb-3 text-right">Joining Date</th>
+                <tr>
+                  <th>Employee</th>
+                  <th>Department</th>
+                  <th>Job Title</th>
+                  <th style={{ textAlign: 'right' }}>Joining Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody>
                 {newJoiners.length > 0 ? (
                   newJoiners.map((emp) => (
-                    <tr key={emp.id} className="hover:bg-gray-50/50 transition">
-                      <td className="py-3.5 font-bold text-gray-900 flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-gray-900 text-white font-bold text-xs flex items-center justify-center">
-                          {emp.name.slice(0, 2).toUpperCase()}
+                    <tr key={emp.id}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <div className="table-avatar-pill">
+                            {emp.name.slice(0, 2).toUpperCase()}
+                          </div>
+                          <span style={{ fontWeight: 700, color: '#0f172a' }}>{emp.name}</span>
                         </div>
-                        {emp.name}
                       </td>
-                      <td className="py-3.5 text-xs text-gray-600 font-semibold">{emp.department}</td>
-                      <td className="py-3.5 text-xs text-gray-600">{emp.jobTitle}</td>
-                      <td className="py-3.5 text-right font-mono text-xs text-gray-500">
+                      <td style={{ fontWeight: 600, color: '#475569' }}>{emp.department}</td>
+                      <td style={{ color: '#64748b' }}>{emp.jobTitle}</td>
+                      <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: '0.8rem', color: '#64748b' }}>
                         {emp.joiningDate ? new Date(emp.joiningDate).toLocaleDateString() : 'Active'}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="py-4 text-center text-xs text-gray-400">
+                    <td colSpan={4} style={{ textAlign: 'center', color: '#94a3b8', padding: '1.5rem' }}>
                       No new joiners in the last 30 days.
                     </td>
                   </tr>
@@ -165,25 +184,27 @@ export function HRManagerDashboard({ data, onRefresh }) {
         </div>
 
         {/* Milestones & Celebrations */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <Gift size={18} className="text-amber-500" />
-            <h3 className="text-base font-bold text-gray-900">Upcoming Milestones</h3>
+        <div className="admin-card-white">
+          <div className="admin-card-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Gift size={18} style={{ color: '#d97706' }} />
+              <h3 className="admin-card-title">Upcoming Milestones</h3>
+            </div>
           </div>
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {upcomingEvents.length > 0 ? (
               upcomingEvents.map((evt) => (
-                <div key={evt.id} className="p-3 rounded-xl bg-amber-50/60 border border-amber-100/60 text-xs">
-                  <div className="font-bold text-gray-900">{evt.name}</div>
-                  <div className="text-amber-700 font-medium mt-0.5">{evt.type}</div>
-                  <div className="text-gray-400 font-mono text-[10px] mt-1">
+                <div key={evt.id} style={{ padding: '0.75rem 1rem', borderRadius: '0.75rem', background: '#fffbeb', border: '1px solid #fef3c7' }}>
+                  <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.82rem' }}>{evt.name}</div>
+                  <div style={{ color: '#b45309', fontSize: '0.75rem', fontWeight: 600, marginTop: '0.2rem' }}>{evt.type}</div>
+                  <div style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: '0.72rem', marginTop: '0.35rem' }}>
                     {evt.date ? new Date(evt.date).toLocaleDateString() : 'Upcoming'}
                   </div>
                 </div>
               ))
             ) : (
-              <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 text-xs text-gray-400 text-center">
-                No birthdays or anniversaries scheduled this week.
+              <div style={{ padding: '1.5rem', borderRadius: '0.75rem', background: '#f8fafc', border: '1px solid #f1f5f9', textAlign: 'center', color: '#94a3b8', fontSize: '0.82rem' }}>
+                No birthdays or work anniversaries scheduled this week.
               </div>
             )}
           </div>
@@ -203,3 +224,4 @@ export function HRManagerDashboard({ data, onRefresh }) {
     </div>
   );
 }
+

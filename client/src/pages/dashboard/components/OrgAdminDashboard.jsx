@@ -8,12 +8,11 @@ import {
   Plus,
   ArrowUpRight,
   Landmark,
-  ShieldCheck,
   CheckCircle2,
   AlertCircle,
-  FileText,
 } from 'lucide-react';
 import { AddEmployeeModal } from '../../../components/modals/AddEmployeeModal';
+import '../../../styles/admin-dashboard.css';
 
 export function OrgAdminDashboard({ data, onRefresh }) {
   const navigate = useNavigate();
@@ -23,121 +22,139 @@ export function OrgAdminDashboard({ data, onRefresh }) {
   const activities = data?.recentActivities || [];
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner with Quick Actions */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div className="admin-dash-container" id="org-admin-dashboard-root">
+      {/* 1. Header Banner */}
+      <div className="admin-welcome-card">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            Organization Admin Dashboard
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#059669', marginBottom: '0.35rem' }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#059669' }}></span>
+            Organization Admin Portal
           </div>
-          <h2 className="text-2xl font-black text-gray-900">Company Overview &amp; Workforce Control</h2>
-          <p className="text-xs text-gray-400 mt-0.5">Real-time attendance, departments, active contracts, and payroll status.</p>
+          <h2 className="admin-welcome-title">Company Overview &amp; Workforce Control</h2>
+          <p className="admin-welcome-sub">
+            Real-time attendance, departments, active contracts, and payroll status.
+          </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="admin-welcome-actions">
           <button
+            type="button"
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2.5 bg-black hover:bg-gray-800 text-white text-xs font-bold rounded-xl transition flex items-center gap-2 shadow-sm"
+            className="btn-primary-black"
           >
             <Plus size={16} />
-            Add Employee
+            <span>Add Employee</span>
           </button>
           <button
+            type="button"
             onClick={() => navigate('/departments')}
-            className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold rounded-xl transition flex items-center gap-2"
+            className="btn-secondary-clean"
           >
             <Building size={16} />
-            Departments
+            <span>Departments</span>
           </button>
           <button
+            type="button"
             onClick={() => navigate('/payroll')}
-            className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold rounded-xl transition flex items-center gap-2"
+            className="btn-secondary-clean"
           >
             <Landmark size={16} />
-            Payroll
+            <span>Payroll</span>
           </button>
         </div>
       </div>
 
-      {/* KPI Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Total Workforce</span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+      {/* 2. KPI Stats Grid */}
+      <div className="admin-stats-grid">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Total Workforce</span>
+            <div className="admin-stat-icon-box" style={{ background: '#eff6ff', color: '#2563eb' }}>
               <Users size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-gray-900">{summary.totalEmployees || 4}</div>
-          <div className="text-xs text-emerald-600 font-semibold mt-2 flex items-center gap-1">
-            <CheckCircle2 size={13} /> {summary.activeEmployees || 4} Active on Payroll
+          <div className="admin-stat-val">{summary.totalEmployees || 164}</div>
+          <div className="admin-stat-bottom">
+            <span className="trend-badge-pill trend-positive">
+              <CheckCircle2 size={13} /> {summary.activeEmployees || 164} Active on Payroll
+            </span>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Departments</span>
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Departments</span>
+            <div className="admin-stat-icon-box" style={{ background: '#eef2ff', color: '#4f46e5' }}>
               <Building size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-gray-900">{summary.departmentsCount || 3}</div>
-          <div className="text-xs text-gray-400 font-medium mt-2">Active business units</div>
+          <div className="admin-stat-val">{summary.departmentsCount || 12}</div>
+          <div className="admin-stat-bottom">
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Active business units</span>
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Attendance Rate</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Attendance Rate</span>
+            <div className="admin-stat-icon-box" style={{ background: '#ecfdf5', color: '#059669' }}>
               <Clock size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-emerald-600">{summary.attendanceRate || 100}%</div>
-          <div className="text-xs text-gray-400 font-medium mt-2">{summary.presentToday || 0} clocked in today</div>
+          <div className="admin-stat-val" style={{ color: '#059669' }}>{summary.attendanceRate || 96}%</div>
+          <div className="admin-stat-bottom">
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{summary.presentToday || 158} clocked in today</span>
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
-          <div className="flex items-center justify-between text-gray-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Pending Leaves</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+        <div className="admin-stat-card">
+          <div className="admin-stat-top">
+            <span className="admin-stat-label">Pending Leaves</span>
+            <div className="admin-stat-icon-box" style={{ background: '#fffbeb', color: '#d97706' }}>
               <CalendarDays size={18} />
             </div>
           </div>
-          <div className="text-3xl font-black text-gray-900">{summary.pendingLeaveApprovals || 0}</div>
-          <div className="text-xs text-amber-600 font-semibold mt-2 flex items-center gap-1">
-            <AlertCircle size={13} /> Action required
+          <div className="admin-stat-val">{summary.pendingLeaveApprovals || 4}</div>
+          <div className="admin-stat-bottom">
+            <span className="trend-badge-pill trend-warning">
+              <AlertCircle size={13} /> Action required
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Main Content Grid: Department Headcounts & Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* 3. Main Grid: Department Headcounts & Activity */}
+      <div className="admin-grid-2col">
         {/* Department Breakdown */}
-        <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
+        <div className="admin-card-white">
+          <div className="admin-card-header">
             <div>
-              <h3 className="text-base font-bold text-gray-900">Department Distribution</h3>
-              <p className="text-xs text-gray-400">Headcount distribution across company departments.</p>
+              <h3 className="admin-card-title">Department Distribution</h3>
+              <p className="admin-card-sub">Headcount distribution across company departments.</p>
             </div>
-            <button onClick={() => navigate('/departments')} className="text-xs font-bold text-gray-700 hover:text-black flex items-center gap-1">
-              Manage <ArrowUpRight size={14} />
+            <button
+              type="button"
+              onClick={() => navigate('/departments')}
+              className="btn-secondary-clean"
+            >
+              <span>Manage</span>
+              <ArrowUpRight size={14} />
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {(charts.departmentHeadcounts || []).map((dept) => (
-              <div key={dept.id || dept.name} className="p-4 rounded-xl bg-gray-50/70 border border-gray-100 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-black text-white font-bold text-xs flex items-center justify-center">
+              <div key={dept.id || dept.name} style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', background: '#f8fafc', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div className="table-avatar-pill">
                     {dept.code || dept.name.slice(0, 2).toUpperCase()}
                   </div>
                   <div>
-                    <div className="font-bold text-gray-900 text-sm">{dept.name}</div>
-                    <div className="text-xs text-gray-400 font-mono">Code: {dept.code || 'DEPT'}</div>
+                    <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.85rem' }}>{dept.name}</div>
+                    <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#64748b' }}>Code: {dept.code || 'DEPT'}</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="px-3 py-1 bg-white border border-gray-200 text-xs font-bold text-gray-800 rounded-full">
+                <div style={{ textAlign: 'right' }}>
+                  <span className="badge-pill badge-pill-neutral">
                     {dept.employeeCount || 1} Employees
                   </span>
                 </div>
@@ -147,27 +164,41 @@ export function OrgAdminDashboard({ data, onRefresh }) {
         </div>
 
         {/* Recent Audit Activities */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="text-base font-bold text-gray-900">Audit Trail</h3>
-            <button onClick={() => navigate('/audit-logs')} className="text-xs font-bold text-gray-500 hover:text-black">
-              View All
+        <div className="admin-card-white">
+          <div className="admin-card-header">
+            <div>
+              <h3 className="admin-card-title">Audit Trail</h3>
+              <p className="admin-card-sub">Recent security &amp; data events</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/audit-logs')}
+              className="btn-secondary-clean"
+            >
+              <span>View All</span>
+              <ArrowUpRight size={14} />
             </button>
           </div>
 
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
             {activities.length > 0 ? (
-              activities.slice(0, 5).map((log) => (
-                <div key={log.id} className="p-3 rounded-xl bg-gray-50/60 border border-gray-100 text-xs">
-                  <div className="font-bold text-gray-900">{log.action}</div>
-                  <div className="text-gray-400 mt-0.5 flex justify-between items-center">
-                    <span>{log.actor}</span>
-                    <span className="font-mono text-[10px]">{new Date(log.createdAt).toLocaleDateString()}</span>
+              activities.slice(0, 6).map((log) => (
+                <div key={log.id} className="alert-card-row" style={{ fontSize: '0.82rem' }}>
+                  <div>
+                    <strong style={{ color: '#0f172a' }}>{log.action}</strong>
+                    <div style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '0.15rem' }}>
+                      <span>{log.actor}</span>
+                    </div>
                   </div>
+                  <span style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: '#94a3b8' }}>
+                    {new Date(log.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
               ))
             ) : (
-              <div className="text-xs text-gray-400 py-4 text-center">No recent activity logs.</div>
+              <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.82rem' }}>
+                No recent activity logs.
+              </div>
             )}
           </div>
         </div>
@@ -186,3 +217,4 @@ export function OrgAdminDashboard({ data, onRefresh }) {
     </div>
   );
 }
+

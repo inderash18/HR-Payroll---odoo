@@ -478,3 +478,218 @@
   background: #f1f5f9;
   color: #475569;
 }
+
+/* ====================================================
+   ROLE-SPECIFIC HERO BANNERS & DASHBOARD CARDS
+   ==================================================== */
+
+.admin-banner-dark {
+  background: linear-gradient(135deg, #0b0f17 0%, #1e293b 100%);
+  border: 1px solid #1e293b;
+  border-radius: 1.25rem;
+  padding: 1.75rem 2rem;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.admin-banner-dark .admin-welcome-title {
+  color: #ffffff;
+}
+
+.admin-banner-dark .admin-welcome-sub {
+  color: #94a3b8;
+}
+
+.banner-badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #34d399;
+  margin-bottom: 0.35rem;
+}
+
+.banner-badge-live .pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34d399;
+  animation: pulse 1.5s infinite;
+}
+
+.btn-banner-glass {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 0.55rem 1.15rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  backdrop-filter: blur(8px);
+}
+
+.btn-banner-glass:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.btn-banner-white {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  color: #0f172a;
+  border: none;
+  padding: 0.55rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-banner-white:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+/* Quick Action / Status Helpers */
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.badge-pill-success {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge-pill-warning {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.badge-pill-neutral {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.badge-pill-primary {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.btn-action-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+}
+
+.btn-action-dark {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.btn-action-dark:hover {
+  background: #000000;
+}
+
+.btn-action-subtle {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.btn-action-subtle:hover {
+  background: #e2e8f0;
+}
+
+.btn-action-success {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.btn-action-success:hover {
+  background: #059669;
+}
+
+.btn-action-danger {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.btn-action-danger:hover {
+  background: #dc2626;
+}
+
+.table-avatar-pill {
+  width: 32px;
+  height: 32px;
+  border-radius: 0.5rem;
+  background: #0f172a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* RESPONSIVE LAYOUT OVERRIDES */
+@media (max-width: 768px) {
+  .admin-welcome-card,
+  .admin-banner-dark {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.25rem;
+  }
+
+  .admin-welcome-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-grid-2col {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-footer-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+

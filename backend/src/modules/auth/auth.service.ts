@@ -3,6 +3,7 @@ import { PrismaService } from '@common/database/prisma.service';
 import { TokenService } from '@common/auth/token.service';
 import { AuditService } from '@modules/audit/audit.service';
 import { OutboxService } from '@modules/outbox/outbox.service';
+import { DevFixedAuthService } from './dev-fixed-auth.service';
 import * as bcrypt from 'bcrypt';
 import {
   LoginDto,
@@ -46,6 +47,7 @@ export class AuthService {
     private readonly tokenService: TokenService,
     private readonly auditService: AuditService,
     private readonly outboxService: OutboxService,
+    private readonly devFixedAuthService?: DevFixedAuthService,
   ) {}
 
   async registerOrganization(dto: RegisterDto): Promise<AuthTokens> {
@@ -135,6 +137,65 @@ export class AuthService {
     dto: LoginDto,
     meta?: { ipAddress?: string; userAgent?: string },
   ): Promise<AuthTokens> {
+    // 1. Check Development Fixed-Auth Fallback (strictly disabled in production)
+    if (this.devFixedAuthService?.isEnabled()) {
+      const devUser = this.devFixedAuthService.matchCredentials(dto.email, dto.password);
+      if (devUser) {
+        this.logger.log(`🔧 Development fixed authentication successful for user: ${devUser.email} [${devUser.role}]`);
+
+        const { rawToken, tokenHash, expiresAt } = this.tokenService.generateRefreshToken();
+
+        // Store dev session in in-memory store
+        this.devFixedAuthService.createDevSession(tokenHash, devUser, expiresAt);
+
+        // Safe audit logging (non-blocking if DB is offline)
+        try {
+          await this.auditService.log({
+            organizationId: devUser.organizationId,
+            userId: devUser.id,
+            action: 'DEV_LOGIN_SUCCESS',
+            entityType: 'User',
+            entityId: devUser.id,
+            ipAddress: meta?.ipAddress,
+            userAgent: meta?.userAgent,
+          });
+        } catch {
+          this.logger.debug('Audit log omitted for dev-fixed login (DB offline)');
+        }
+
+        const accessToken = this.tokenService.signAccessToken({
+          sub: devUser.id,
+          email: devUser.email,
+          organizationId: devUser.organizationId,
+          legalEntityId: devUser.legalEntityId,
+          role: devUser.role,
+        });
+
+        return {
+          accessToken,
+          refreshToken: rawToken,
+          expiresIn: '15m',
+          user: {
+            id: devUser.id,
+            email: devUser.email,
+            firstName: devUser.firstName,
+            lastName: devUser.lastName,
+            role: devUser.role,
+            organizationId: devUser.organizationId,
+            legalEntityId: devUser.legalEntityId,
+          },
+        };
+      }
+
+      // If user entered a configured dev email with invalid password, reject immediately with generic error
+      const isKnownDevEmail = this.devFixedAuthService
+        .getConfiguredDevUsers()
+        .some((u) => u.email === dto.email.trim().toLowerCase());
+      if (isKnownDevEmail) {
+        throw new UnauthorizedError('Invalid credentials');
+      }
+    }
+
     let org: any;
     let user: any;
 
@@ -285,6 +346,43 @@ export class AuthService {
 
     const tokenHash = this.tokenService.hashToken(rawRefreshToken);
 
+    // Check Dev Fixed-Auth in-memory session store
+    if (this.devFixedAuthService?.isEnabled()) {
+      const newTokens = this.tokenService.generateRefreshToken();
+      const devSession = this.devFixedAuthService.validateAndRotateDevSession(
+        tokenHash,
+        newTokens.tokenHash,
+        newTokens.expiresAt,
+      );
+
+      if (devSession) {
+        const accessToken = this.tokenService.signAccessToken({
+          sub: devSession.userId,
+          email: devSession.email,
+          organizationId: devSession.organizationId,
+          legalEntityId: devSession.legalEntityId,
+          role: devSession.role,
+        });
+
+        const devProfile = this.devFixedAuthService.getDevProfile(devSession.userId);
+
+        return {
+          accessToken,
+          refreshToken: newTokens.rawToken,
+          expiresIn: '15m',
+          user: {
+            id: devSession.userId,
+            email: devSession.email,
+            firstName: devProfile?.firstName || 'Development',
+            lastName: devProfile?.lastName || 'User',
+            role: devSession.role,
+            organizationId: devSession.organizationId,
+            legalEntityId: devSession.legalEntityId,
+          },
+        };
+      }
+    }
+
     const tokenRecord = await this.prisma.refreshToken.findUnique({
       where: { tokenHash },
       include: {
@@ -382,10 +480,20 @@ export class AuthService {
     if (!rawRefreshToken) return;
 
     const tokenHash = this.tokenService.hashToken(rawRefreshToken);
-    await this.prisma.refreshToken.updateMany({
-      where: { tokenHash, revokedAt: null },
-      data: { revokedAt: new Date() },
-    });
+
+    if (this.devFixedAuthService?.isEnabled()) {
+      const devRevoked = this.devFixedAuthService.revokeDevSession(tokenHash);
+      if (devRevoked) return;
+    }
+
+    try {
+      await this.prisma.refreshToken.updateMany({
+        where: { tokenHash, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+    } catch (err) {
+      this.logger.debug('Logout DB update skipped (offline/error)');
+    }
   }
 
   async requestPasswordReset(dto: RequestPasswordResetDto): Promise<{ message: string }> {
@@ -545,6 +653,13 @@ export class AuthService {
   }
 
   async getProfile(userId: string) {
+    if (this.devFixedAuthService?.isEnabled() && this.devFixedAuthService.isDevUserId(userId)) {
+      const devProfile = this.devFixedAuthService.getDevProfile(userId);
+      if (devProfile) {
+        return devProfile;
+      }
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {

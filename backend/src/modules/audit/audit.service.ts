@@ -10,6 +10,11 @@ export class AuditService {
   constructor(private readonly prisma: PrismaService) {}
 
   async log(dto: CreateAuditLogDto, tx?: Prisma.TransactionClient): Promise<void> {
+    if (dto.organizationId === 'dev-local-org' || dto.organizationId?.startsWith('dev-')) {
+      this.logger.log(`[DEV AUDIT] ${dto.action} for dev user ${dto.userId || 'anonymous'}`);
+      return;
+    }
+
     try {
       const client = tx || this.prisma;
       await client.auditLog.create({

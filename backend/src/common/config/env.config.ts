@@ -30,6 +30,18 @@ export const envSchema = z.object({
   SMTP_FROM: z.string().default('no-reply@peoplepay360.local'),
 
   STORAGE_LOCAL_PATH: z.string().default('./uploads'),
+
+  // Development-only fixed credentials fallback (strictly disabled in production)
+  DEV_FIXED_AUTH_ENABLED: z
+    .preprocess((val) => val === 'true' || val === true, z.boolean())
+    .default(false),
+  DEV_FIXED_AUTH_EMAIL: z.string().optional().default('devadmin@peoplepay360.local'),
+  DEV_FIXED_AUTH_PASSWORD: z.string().optional().default('ChangeThisDevPassword'),
+  DEV_FIXED_AUTH_ROLE: z
+    .enum(['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'EMPLOYEE'])
+    .default('ADMIN'),
+  DEV_FIXED_AUTH_NAME: z.string().optional().default('Development Admin'),
+  DEV_FIXED_AUTH_USERS_JSON: z.string().optional().default(''),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

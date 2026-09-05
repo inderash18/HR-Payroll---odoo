@@ -52,3 +52,9 @@ export class DomainRuleError extends AppError {
   public readonly statusCode = HttpStatus.UNPROCESSABLE_ENTITY;
   public readonly errorCode = 'DOMAIN_RULE_VIOLATION';
 }
+
+export class DatabaseUnavailableError extends AppError {
+  public readonly statusCode = HttpStatus.SERVICE_UNAVAILABLE;
+  public readonly errorCode = 'DATABASE_UNAVAILABLE';
+}
+

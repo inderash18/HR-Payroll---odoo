@@ -115,6 +115,15 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           errorCode = 'FOREIGN_KEY_VIOLATION';
           message = 'Referenced related record does not exist or cannot be modified.';
           break;
+        case 'P1000':
+        case 'P1001':
+        case 'P1002':
+        case 'P1003':
+        case 'P1017':
+          statusCode = HttpStatus.SERVICE_UNAVAILABLE;
+          errorCode = 'DATABASE_UNAVAILABLE';
+          message = 'The local development database is unavailable.';
+          break;
         default:
           statusCode = HttpStatus.BAD_REQUEST;
           errorCode = `DB_${prismaErr.code}`;
@@ -135,7 +144,19 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         message = 'Request body contains invalid JSON.';
       }
     }
-    // 5. JWT Authentication Errors
+    // 5. Database Connection / Initialization Errors
+    else if (
+      exception instanceof Error &&
+      (exception.name === 'PrismaClientInitializationError' ||
+        exception.name === 'PrismaClientRustPanicError' ||
+        exception.message.includes("Can't reach database server") ||
+        exception.message.includes('ECONNREFUSED'))
+    ) {
+      statusCode = HttpStatus.SERVICE_UNAVAILABLE;
+      errorCode = 'DATABASE_UNAVAILABLE';
+      message = 'The local development database is unavailable.';
+    }
+    // 6. JWT Authentication Errors
     else if (exception instanceof Error && exception.name === 'TokenExpiredError') {
       statusCode = HttpStatus.UNAUTHORIZED;
       errorCode = 'ACCESS_TOKEN_EXPIRED';
@@ -145,7 +166,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       errorCode = 'INVALID_ACCESS_TOKEN';
       message = 'Authentication token is invalid.';
     }
-    // 6. Generic Unexpected Errors
+    // 7. Generic Unexpected Errors
     else if (exception instanceof Error) {
       message = exception.message || 'An unexpected internal server error occurred.';
       this.logger.error(`Unhandled Exception at ${request.method} ${request.url}: ${exception.message}`, exception.stack);

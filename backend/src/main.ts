@@ -58,21 +58,6 @@ async function bootstrap() {
     new TransformResponseInterceptor(),
   );
 
-  // Global JSON 404 Route Not Found Handler (No plain text or HTML 404s)
-  const fastifyInstance = app.getHttpAdapter().getInstance();
-  fastifyInstance.setNotFoundHandler((request: any, reply: any) => {
-    reply
-      .status(404)
-      .header('Content-Type', 'application/json; charset=utf-8')
-      .send({
-        success: false,
-        error: {
-          code: 'API_ROUTE_NOT_FOUND',
-          message: `API route ${request.method} ${request.url} was not found.`,
-        },
-      });
-  });
-
   // Swagger Documentation Setup
   const config = new DocumentBuilder()
     .setTitle('PeoplePay360 HR & Payroll API')

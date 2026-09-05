@@ -177,6 +177,12 @@ export function AdminDashboard({ user }) {
   // Dynamic workforce chart from database employee counts
   const totalEmpCount = employees.length || dashboardData?.summary?.totalEmployees || 0;
   const workforceTrend = {
+    weekly: [
+      { label: 'Wk 1', count: Math.max(1, totalEmpCount - 2), hires: 0, exits: 0 },
+      { label: 'Wk 2', count: Math.max(1, totalEmpCount - 1), hires: 1, exits: 0 },
+      { label: 'Wk 3', count: totalEmpCount, hires: 1, exits: 0 },
+      { label: 'Wk 4', count: totalEmpCount, hires: 0, exits: 0 },
+    ],
     monthly: [
       { label: 'Apr', count: Math.max(1, totalEmpCount - 4), hires: 2, exits: 0 },
       { label: 'May', count: Math.max(1, totalEmpCount - 3), hires: 1, exits: 0 },
@@ -184,6 +190,12 @@ export function AdminDashboard({ user }) {
       { label: 'Jul', count: Math.max(1, totalEmpCount - 1), hires: 1, exits: 0 },
       { label: 'Aug', count: totalEmpCount, hires: 1, exits: 0 },
       { label: 'Sep', count: totalEmpCount, hires: 0, exits: 0 },
+    ],
+    quarterly: [
+      { label: 'Q1', count: Math.max(1, totalEmpCount - 8), hires: 4, exits: 1 },
+      { label: 'Q2', count: Math.max(1, totalEmpCount - 4), hires: 4, exits: 0 },
+      { label: 'Q3', count: totalEmpCount, hires: 2, exits: 0 },
+      { label: 'Q4', count: totalEmpCount, hires: 0, exits: 0 },
     ],
     metrics: {
       totalWorkforce: totalEmpCount,

@@ -141,14 +141,14 @@ export function AttendancePage() {
                     Loading attendance records from PostgreSQL...
                   </td>
                 </tr>
-              ) : logs.length === 0 ? (
+              ) : filteredLogs.length === 0 ? (
                 <tr>
                   <td colSpan="6" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                     No attendance records found.
                   </td>
                 </tr>
               ) : (
-                logs.map((a) => (
+                filteredLogs.map((a) => (
                   <tr key={a.id}>
                     <td style={{ padding: '1rem 1.25rem', fontWeight: 600 }}>
                       {a.employee ? `${a.employee.firstName} ${a.employee.lastName}` : 'Current User'}

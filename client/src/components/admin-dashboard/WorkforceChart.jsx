@@ -10,7 +10,7 @@ export function WorkforceChart({ trendData }) {
   const metrics = trendData.metrics || {};
 
   // Calculate bar height percentages relative to max in dataset
-  const maxVal = Math.max(...dataset.map((d) => d.count), 250);
+  const maxVal = Math.max(...dataset.map((d) => d.count), 10);
 
   return (
     <div className="admin-card-white" id="admin-workforce-overview-card">

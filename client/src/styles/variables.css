@@ -4,13 +4,13 @@
   --bg-app: #ffffff;
   --bg-surface: #f8fafc;
   --bg-elevated: #f1f5f9;
-  --bg-sidebar: #0d0f12;
+  --bg-sidebar: #ffffff;
   
-  --primary: #0f1217;
-  --primary-hover: #1e2229;
-  --primary-soft: #f1f5f9;
+  --primary: #e5e7eb;
+  --primary-hover: #d1d5db;
+  --primary-soft: #f3f4f6;
   
-  --text-main: #0f172a;
+  --text-main: #000000;
   --text-secondary: #334155;
   --text-muted: #64748b;
   --text-light: #94a3b8;

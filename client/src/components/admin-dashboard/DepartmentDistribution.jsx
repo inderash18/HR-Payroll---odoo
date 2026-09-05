@@ -55,7 +55,7 @@ export function DepartmentDistribution({ departments = [] }) {
                 </td>
               </tr>
             ) : (
-              departments.map((dept) => {
+              departments.slice(0, 5).map((dept) => {
                 const empCount = dept.employees ?? dept.employeeCount ?? dept._count?.employees ?? 0;
                 const attRate = dept.attendance ?? 100;
                 const status = dept.status || (attRate >= 90 ? 'Healthy' : 'Needs Attention');
@@ -102,6 +102,24 @@ export function DepartmentDistribution({ departments = [] }) {
           </tbody>
         </table>
       </div>
+
+      {departments.length > 5 && (
+        <div 
+          style={{ 
+            padding: '1rem', 
+            textAlign: 'center', 
+            borderTop: '1px solid var(--border-subtle)',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            color: 'var(--primary)',
+            cursor: 'pointer'
+          }}
+          onClick={() => navigate('/departments')}
+          className="clickable-footer"
+        >
+          View all {departments.length} departments
+        </div>
+      )}
     </div>
   );
 }

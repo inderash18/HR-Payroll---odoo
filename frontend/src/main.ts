@@ -1,4 +1,4 @@
-import { createIcons, LayoutDashboard, Users, Building2, Briefcase, FileSignature, CalendarClock, Clock, CalendarRange, Landmark, LineChart, Settings, Search, Bell, ChevronDown, UserPlus, FileText, CheckCircle, Clock4, AlertTriangle, User } from 'lucide';
+import { createIcons, LayoutDashboard, Users, Briefcase, CalendarClock, Search, Bell, ChevronDown, UserPlus, FileText, CheckCircle, Clock4, AlertTriangle } from 'lucide';
 import './style.css';
 
 const app = document.getElementById('app');
@@ -6,7 +6,6 @@ const app = document.getElementById('app');
 if (app) {
   app.innerHTML = `
     <div class="hr-dashboard">
-      <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="brand">
           <div class="brand-icon-wrapper">
@@ -19,50 +18,46 @@ if (app) {
           </div>
           <div class="brand-text">
             <h2>PeoplePay360</h2>
-            <span>HR Management</span>
+            <span>HR</span>
           </div>
         </div>
 
         <nav class="nav-menu">
           <a href="#" class="nav-item active"><i data-lucide="layout-dashboard"></i> Dashboard</a>
           <a href="#" class="nav-item"><i data-lucide="users"></i> Employees</a>
-          <a href="#" class="nav-item"><i data-lucide="building-2"></i> Departments</a>
-          <a href="#" class="nav-item"><i data-lucide="briefcase"></i> Job Positions</a>
-          <a href="#" class="nav-item"><i data-lucide="file-signature"></i> Contracts</a>
-          <a href="#" class="nav-item"><i data-lucide="calendar-clock"></i> Working Schedules</a>
-          <a href="#" class="nav-item"><i data-lucide="clock"></i> Attendance</a>
-          <a href="#" class="nav-item"><i data-lucide="calendar-range"></i> Time Off</a>
-          <a href="#" class="nav-item"><i data-lucide="landmark"></i> Payroll</a>
-          <a href="#" class="nav-item"><i data-lucide="line-chart"></i> Reports</a>
-          <div class="nav-divider"></div>
-          <a href="#" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+          <a href="#" class="nav-item"><i data-lucide="calendar-clock"></i> Attendance</a>
+          <a href="#" class="nav-item"><i data-lucide="briefcase"></i> Payroll</a>
+          <a href="#" class="nav-item"><i data-lucide="file-text"></i> Contracts</a>
         </nav>
+
+        <div class="sidebar-footer">
+          <div class="mini-card">
+            <span>Payroll total</span>
+            <strong>$148.2K</strong>
+          </div>
+        </div>
       </aside>
 
-      <!-- MAIN CONTENT -->
       <main class="main-content">
-        <!-- HEADER -->
         <header class="topbar">
           <div class="header-titles">
-            <h1>HR Dashboard</h1>
-            <p>Overview of your workforce and HR activities</p>
+            <p class="eyebrow">Overview</p>
+            <h1>Dashboard</h1>
           </div>
-          
+
           <div class="header-actions">
             <div class="search-bar">
               <i data-lucide="search"></i>
-              <input type="text" placeholder="Search employees, departments, contracts...">
+              <input type="text" placeholder="Search employees, payroll, contracts...">
             </div>
-            
-            <button class="icon-btn notification-btn">
+
+            <button class="icon-btn" aria-label="Notifications">
               <i data-lucide="bell"></i>
-              <span class="badge">3</span>
+              <span class="badge">2</span>
             </button>
-            
+
             <div class="user-profile">
-              <div class="avatar">
-                <img src="https://ui-avatars.com/api/?name=HR+Manager&background=eef2ff&color=4f46e5" alt="HR Manager">
-              </div>
+              <div class="avatar">SJ</div>
               <div class="user-info">
                 <span class="user-name">Sarah Jenkins</span>
                 <span class="user-role">HR Manager</span>
@@ -72,303 +67,196 @@ if (app) {
           </div>
         </header>
 
-        <!-- DASHBOARD GRID -->
-        <div class="dashboard-layout">
-          
-          <!-- CENTRAL AREA -->
-          <div class="central-area">
-            
-            <!-- SECTION 1: KPIs -->
-            <section class="kpi-grid">
-              <div class="kpi-card clickable">
+        <div class="content-shell">
+          <section class="panel summary-panel">
+            <div class="panel-header">
+              <h2>Workforce snapshot</h2>
+              <button class="btn-text">This month</button>
+            </div>
+
+            <div class="kpi-grid">
+              <article class="kpi-card">
                 <div class="kpi-header">
                   <div class="kpi-icon blue"><i data-lucide="users"></i></div>
-                  <span class="trend positive">+6 this month</span>
+                  <span class="trend positive">+6%</span>
                 </div>
                 <div class="kpi-value">125</div>
-                <div class="kpi-label">Total Employees</div>
-              </div>
-              
-              <div class="kpi-card clickable">
+                <div class="kpi-label">Employees</div>
+              </article>
+
+              <article class="kpi-card">
                 <div class="kpi-header">
                   <div class="kpi-icon green"><i data-lucide="check-circle"></i></div>
-                  <span class="trend neutral">94.4% of workforce</span>
+                  <span class="trend neutral">93.8%</span>
                 </div>
                 <div class="kpi-value">118</div>
-                <div class="kpi-label">Active Employees</div>
-              </div>
-              
-              <div class="kpi-card clickable">
+                <div class="kpi-label">Active</div>
+              </article>
+
+              <article class="kpi-card">
                 <div class="kpi-header">
-                  <div class="kpi-icon orange"><i data-lucide="calendar-range"></i></div>
-                  <span class="trend neutral">4.0% of workforce</span>
+                  <div class="kpi-icon orange"><i data-lucide="clock4"></i></div>
+                  <span class="trend neutral">4.0%</span>
                 </div>
                 <div class="kpi-value">5</div>
-                <div class="kpi-label">On Leave</div>
-              </div>
-              
-              <div class="kpi-card clickable alert-state">
+                <div class="kpi-label">On leave</div>
+              </article>
+
+              <article class="kpi-card alert-card">
                 <div class="kpi-header">
-                  <div class="kpi-icon red"><i data-lucide="clock4"></i></div>
-                  <span class="trend negative">Requires attention</span>
+                  <div class="kpi-icon red"><i data-lucide="alert-triangle"></i></div>
+                  <span class="trend negative">Action</span>
                 </div>
                 <div class="kpi-value">7</div>
-                <div class="kpi-label">Pending Requests</div>
-              </div>
-            </section>
-
-            <!-- MIDDLE CHARTS GRID -->
-            <div class="charts-grid">
-              
-              <!-- SECTION 2: ATTENDANCE -->
-              <div class="card attendance-card">
-                <div class="card-header">
-                  <h2>Today's Attendance</h2>
-                  <button class="btn-text">View Attendance</button>
-                </div>
-                <div class="card-body attendance-body">
-                  <div class="chart-container">
-                    <div class="donut-chart attendance-chart">
-                      <div class="donut-inner">
-                        <span class="donut-val">94.2%</span>
-                        <span class="donut-lbl">Rate</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="attendance-stats">
-                    <div class="stat-row"><span class="dot green"></span> Present <strong>108</strong></div>
-                    <div class="stat-row"><span class="dot yellow"></span> Late <strong>7</strong></div>
-                    <div class="stat-row"><span class="dot red"></span> Absent <strong>6</strong></div>
-                    <div class="stat-row"><span class="dot blue"></span> On Leave <strong>4</strong></div>
-                  </div>
-                </div>
-                <div class="card-footer alert-footer">
-                  <span><i data-lucide="alert-triangle"></i> 3 Missing Check-outs</span>
-                  <span><i data-lucide="alert-triangle"></i> 2 Manual Corrections</span>
-                </div>
-              </div>
-
-              <!-- SECTION 3: TIME OFF -->
-              <div class="card timeoff-card">
-                <div class="card-header">
-                  <h2>Time Off Requests</h2>
-                  <button class="btn-text">View Requests</button>
-                </div>
-                <div class="card-body">
-                  <div class="status-bars">
-                    <div class="status-bar-item">
-                      <div class="status-lbl">Pending <span class="badge orange">7</span></div>
-                      <div class="bar-bg"><div class="bar-fill orange" style="width: 25%"></div></div>
-                    </div>
-                    <div class="status-bar-item">
-                      <div class="status-lbl">Approved <span class="badge green">18</span></div>
-                      <div class="bar-bg"><div class="bar-fill green" style="width: 65%"></div></div>
-                    </div>
-                    <div class="status-bar-item">
-                      <div class="status-lbl">Refused <span class="badge red">2</span></div>
-                      <div class="bar-bg"><div class="bar-fill red" style="width: 10%"></div></div>
-                    </div>
-                  </div>
-                  
-                  <h3 class="sub-heading">Recent Requests</h3>
-                  <ul class="request-list">
-                    <li>
-                      <div class="req-info">
-                        <strong>Arun Kumar</strong>
-                        <span>Casual Leave</span>
-                      </div>
-                      <span class="status-tag pending">Pending</span>
-                    </li>
-                    <li>
-                      <div class="req-info">
-                        <strong>Priya S</strong>
-                        <span>Sick Leave</span>
-                      </div>
-                      <span class="status-tag approved">Approved</span>
-                    </li>
-                    <li>
-                      <div class="req-info">
-                        <strong>Karthik R</strong>
-                        <span>Annual Leave</span>
-                      </div>
-                      <span class="status-tag pending">Pending</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+                <div class="kpi-label">Pending</div>
+              </article>
             </div>
+          </section>
 
-            <!-- BOTTOM CHARTS GRID -->
-            <div class="charts-grid">
-              
-              <!-- SECTION 4: EMPLOYEE OVERVIEW -->
-              <div class="card employee-card">
-                <div class="card-header">
-                  <h2>Employee Overview</h2>
-                  <button class="btn-text">View Employees</button>
-                </div>
-                <div class="card-body">
-                  <div class="bar-chart-container">
-                    <div class="bar-item">
-                      <div class="bar-label">IT</div>
-                      <div class="bar-track"><div class="bar-fill blue" style="width: 100%"></div></div>
-                      <div class="bar-value">42</div>
-                    </div>
-                    <div class="bar-item">
-                      <div class="bar-label">Sales</div>
-                      <div class="bar-track"><div class="bar-fill blue" style="width: 75%"></div></div>
-                      <div class="bar-value">31</div>
-                    </div>
-                    <div class="bar-item">
-                      <div class="bar-label">Operations</div>
-                      <div class="bar-track"><div class="bar-fill blue" style="width: 60%"></div></div>
-                      <div class="bar-value">25</div>
-                    </div>
-                    <div class="bar-item">
-                      <div class="bar-label">Finance</div>
-                      <div class="bar-track"><div class="bar-fill blue" style="width: 35%"></div></div>
-                      <div class="bar-value">15</div>
-                    </div>
-                    <div class="bar-item">
-                      <div class="bar-label">HR</div>
-                      <div class="bar-track"><div class="bar-fill blue" style="width: 28%"></div></div>
-                      <div class="bar-value">12</div>
-                    </div>
-                  </div>
-                </div>
+          <div class="module-grid">
+            <article class="panel">
+              <div class="panel-header">
+                <h2>Attendance</h2>
+                <button class="btn-text">View all</button>
               </div>
 
-              <!-- SECTION 5: CONTRACT STATUS -->
-              <div class="card contract-card">
-                <div class="card-header">
-                  <h2>Contract Status</h2>
-                  <button class="btn-text">Review Contracts</button>
+              <div class="attendance-summary">
+                <div class="donut-wrap">
+                  <div class="donut-chart">
+                    <div class="donut-inner">
+                      <span>94%</span>
+                    </div>
+                  </div>
                 </div>
-                <div class="card-body">
-                  <div class="contract-stats">
-                    <div class="c-stat">
-                      <span class="c-val">112</span>
-                      <span class="c-lbl">Active Contracts</span>
-                    </div>
-                    <div class="c-stat highlight-red">
-                      <span class="c-val">3</span>
-                      <span class="c-lbl">Expiring This Month</span>
-                    </div>
-                    <div class="c-stat">
-                      <span class="c-val">2</span>
-                      <span class="c-lbl">Expired</span>
-                    </div>
-                    <div class="c-stat">
-                      <span class="c-val">8</span>
-                      <span class="c-lbl">Draft</span>
-                    </div>
-                  </div>
-                  
-                  <div class="alert-box warning mt-4">
-                    <i data-lucide="alert-triangle"></i>
-                    <span><strong>Action Required:</strong> 3 contracts expire this month.</span>
-                  </div>
+
+                <div class="attendance-breakdown">
+                  <div class="stat-row"><span class="dot green"></span> Present <strong>108</strong></div>
+                  <div class="stat-row"><span class="dot yellow"></span> Late <strong>7</strong></div>
+                  <div class="stat-row"><span class="dot red"></span> Absent <strong>6</strong></div>
+                  <div class="stat-row"><span class="dot blue"></span> Leave <strong>4</strong></div>
                 </div>
               </div>
-            </div>
+            </article>
 
+            <article class="panel">
+              <div class="panel-header">
+                <h2>Leave requests</h2>
+                <button class="btn-text">Review</button>
+              </div>
+
+              <div class="leave-stack">
+                <div class="pill-row">
+                  <span class="pill approved">18 approved</span>
+                  <span class="pill pending">7 pending</span>
+                </div>
+
+                <ul class="mini-list">
+                  <li>
+                    <div>
+                      <strong>Arun Kumar</strong>
+                      <small>Casual leave</small>
+                    </div>
+                    <span class="status-tag pending">Pending</span>
+                  </li>
+                  <li>
+                    <div>
+                      <strong>Priya S</strong>
+                      <small>Sick leave</small>
+                    </div>
+                    <span class="status-tag approved">Approved</span>
+                  </li>
+                </ul>
+              </div>
+            </article>
           </div>
 
-          <!-- RIGHT PANEL -->
-          <aside class="right-panel">
-            
-            <!-- SECTION 8: QUICK ACTIONS -->
-            <div class="panel-section">
-              <h2 class="panel-title">Quick Actions</h2>
-              <div class="quick-actions-grid">
-                <button class="action-btn"><i data-lucide="user-plus"></i> Add Employee</button>
-                <button class="action-btn"><i data-lucide="file-signature"></i> Create Contract</button>
-                <button class="action-btn"><i data-lucide="check-circle"></i> Review Leave Requests</button>
-                <button class="action-btn"><i data-lucide="clock"></i> View Attendance</button>
-              </div>
+          <section class="panel list-panel">
+            <div class="panel-header">
+              <h2>Priority items</h2>
+              <button class="btn-text">Review</button>
             </div>
 
-            <!-- SECTION 6: HR ATTENTION -->
-            <div class="panel-section">
-              <div class="section-header">
-                <h2 class="panel-title">HR Attention</h2>
-                <a href="#" class="link-small">View All</a>
-              </div>
-              <ul class="alert-list">
-                <li class="alert-item clickable">
-                  <i data-lucide="alert-triangle" class="text-orange"></i>
-                  <span>3 contracts expiring soon</span>
-                </li>
-                <li class="alert-item clickable">
-                  <i data-lucide="alert-triangle" class="text-red"></i>
-                  <span>3 employees missing checkout</span>
-                </li>
-                <li class="alert-item clickable">
-                  <i data-lucide="alert-triangle" class="text-orange"></i>
-                  <span>5 pending leave requests</span>
-                </li>
-                <li class="alert-item clickable">
-                  <i data-lucide="alert-triangle" class="text-blue"></i>
-                  <span>2 attendance corrections</span>
-                </li>
-              </ul>
-            </div>
-
-            <!-- SECTION 7: RECENT EMPLOYEES -->
-            <div class="panel-section">
-              <div class="section-header">
-                <h2 class="panel-title">Recently Added</h2>
-                <a href="#" class="link-small">View All Employees</a>
-              </div>
-              <ul class="recent-employees">
-                <li>
-                  <div class="emp-avatar">AK</div>
-                  <div class="emp-details">
-                    <strong>Arun Kumar</strong>
-                    <span>Software Developer • IT</span>
-                  </div>
-                  <div class="emp-date">Sep 02</div>
-                </li>
-                <li>
-                  <div class="emp-avatar">PS</div>
-                  <div class="emp-details">
-                    <strong>Priya S</strong>
-                    <span>HR Executive • HR</span>
-                  </div>
-                  <div class="emp-date">Aug 28</div>
-                </li>
-                <li>
-                  <div class="emp-avatar">KR</div>
-                  <div class="emp-details">
-                    <strong>Karthik R</strong>
-                    <span>Sales Executive • Sales</span>
-                  </div>
-                  <div class="emp-date">Aug 25</div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- SECTION 9: HR INSIGHTS -->
-            <div class="panel-section insights-card">
-              <h2 class="panel-title">HR Insights</h2>
-              <ul class="insights-list">
-                <li><span class="bullet green"></span> Attendance improved by 2.4% compared with last month.</li>
-                <li><span class="bullet orange"></span> 3 employee contracts require renewal this month.</li>
-                <li><span class="bullet blue"></span> 7 leave requests are waiting for approval.</li>
-              </ul>
-            </div>
-
-          </aside>
+            <ul class="task-list">
+              <li>
+                <span class="task-bullet warning"></span>
+                <div class="task-copy">
+                  <strong>3 contracts expiring soon</strong>
+                  <small>Action required this week</small>
+                </div>
+                <span class="task-tag high">High</span>
+              </li>
+              <li>
+                <span class="task-bullet danger"></span>
+                <div class="task-copy">
+                  <strong>3 employees missing checkout</strong>
+                  <small>Attendance review</small>
+                </div>
+                <span class="task-tag medium">Medium</span>
+              </li>
+              <li>
+                <span class="task-bullet info"></span>
+                <div class="task-copy">
+                  <strong>5 leave approvals waiting</strong>
+                  <small>Manager follow-up</small>
+                </div>
+                <span class="task-tag low">Low</span>
+              </li>
+            </ul>
+          </section>
         </div>
       </main>
+
+      <aside class="rail-panel">
+        <section class="panel side-panel">
+          <div class="panel-header compact">
+            <h2>Quick actions</h2>
+          </div>
+
+          <div class="action-list">
+            <button class="action-btn"><i data-lucide="user-plus"></i> Add employee</button>
+            <button class="action-btn"><i data-lucide="file-text"></i> Create contract</button>
+            <button class="action-btn"><i data-lucide="check-circle"></i> Approve leaves</button>
+          </div>
+        </section>
+
+        <section class="panel side-panel">
+          <div class="panel-header compact">
+            <h2>Team pulse</h2>
+          </div>
+
+          <div class="pulse-list">
+            <div class="pulse-item">
+              <span>Attendance</span>
+              <strong>+2.4%</strong>
+            </div>
+            <div class="pulse-item">
+              <span>Retention</span>
+              <strong>96.7%</strong>
+            </div>
+            <div class="pulse-item">
+              <span>Leave use</span>
+              <strong>11 days</strong>
+            </div>
+          </div>
+        </section>
+      </aside>
     </div>
   `;
 
   createIcons({
     icons: {
-      LayoutDashboard, Users, Building2, Briefcase, FileSignature, CalendarClock, 
-      Clock, CalendarRange, Landmark, LineChart, Settings, Search, Bell, ChevronDown,
-      UserPlus, FileText, CheckCircle, Clock4, AlertTriangle, User
+      LayoutDashboard,
+      Users,
+      Briefcase,
+      CalendarClock,
+      Search,
+      Bell,
+      ChevronDown,
+      UserPlus,
+      FileText,
+      CheckCircle,
+      Clock4,
+      AlertTriangle
     }
   });
 }

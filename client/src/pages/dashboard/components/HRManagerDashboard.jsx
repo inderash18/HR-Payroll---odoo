@@ -73,10 +73,10 @@ export function HRManagerDashboard({ data, onRefresh }) {
               <Users size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{summary.employeeCount || 164}</div>
+          <div className="admin-stat-val">{summary.employeeCount || 0}</div>
           <div className="admin-stat-bottom">
             <span className="trend-badge-pill trend-positive">
-              <CheckCircle2 size={13} /> {summary.activeEmployees || 164} Active Employees
+              <CheckCircle2 size={13} /> {summary.activeEmployees || 0} Active Employees
             </span>
           </div>
         </div>
@@ -88,7 +88,7 @@ export function HRManagerDashboard({ data, onRefresh }) {
               <UserPlus size={18} />
             </div>
           </div>
-          <div className="admin-stat-val" style={{ color: '#059669' }}>{summary.newJoiners || 12}</div>
+          <div className="admin-stat-val" style={{ color: '#059669' }}>{summary.newJoiners || 0}</div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Recently inducted talent</span>
           </div>
@@ -101,7 +101,7 @@ export function HRManagerDashboard({ data, onRefresh }) {
               <CalendarDays size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{summary.pendingLeaveRequests || 4}</div>
+          <div className="admin-stat-val">{summary.pendingLeaveRequests || 0}</div>
           <div className="admin-stat-bottom">
             <span className="trend-badge-pill trend-warning">
               <AlertCircle size={13} /> Awaiting HR sign-off
@@ -116,9 +116,9 @@ export function HRManagerDashboard({ data, onRefresh }) {
               <Clock size={18} />
             </div>
           </div>
-          <div className="admin-stat-val" style={{ color: '#9333ea' }}>{summary.attendanceRate || 96}%</div>
+          <div className="admin-stat-val" style={{ color: '#9333ea' }}>{summary.attendanceRate || 0}%</div>
           <div className="admin-stat-bottom">
-            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{summary.employeesOnLeaveToday || 4} on approved leave</span>
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{summary.employeesOnLeaveToday || 0} on approved leave</span>
           </div>
         </div>
       </div>

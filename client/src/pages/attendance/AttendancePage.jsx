@@ -10,6 +10,7 @@ export function AttendancePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+  const [errorToast, setErrorToast] = useState(null);
 
   const isAdmin = ['ADMIN', 'HR_MANAGER', 'SUPER_ADMIN', 'ORGANIZATION_ADMIN'].includes(user?.role);
 
@@ -37,7 +38,8 @@ export function AttendancePage() {
       setTimeout(() => setToastMessage(null), 3000);
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Clock-in failed');
+      setErrorToast(err.response?.data?.message || err.message || 'Clock-in failed');
+      setTimeout(() => setErrorToast(null), 3000);
     } finally {
       setActionLoading(false);
     }
@@ -51,7 +53,8 @@ export function AttendancePage() {
       setTimeout(() => setToastMessage(null), 3000);
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Clock-out failed');
+      setErrorToast(err.response?.data?.message || err.message || 'Clock-out failed');
+      setTimeout(() => setErrorToast(null), 3000);
     } finally {
       setActionLoading(false);
     }
@@ -174,10 +177,19 @@ export function AttendancePage() {
       </div>
 
       {toastMessage && (
-        <div id="toast-container">
-          <div className="toast">
-            <CheckCircle2 size={16} color="var(--green)" />
+        <div id="toast-container" style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999 }}>
+          <div className="toast" style={{ background: '#dcfce7', color: '#166534', padding: '1rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+            <CheckCircle2 size={16} color="#16a34a" />
             <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
+      
+      {errorToast && (
+        <div id="error-toast-container" style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999 }}>
+          <div className="toast" style={{ background: '#fef2f2', color: '#991b1b', padding: '1rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+            <span style={{ fontWeight: 'bold' }}>Error:</span>
+            <span>{errorToast}</span>
           </div>
         </div>
       )}

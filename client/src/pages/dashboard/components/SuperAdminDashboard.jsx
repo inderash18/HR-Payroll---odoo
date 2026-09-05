@@ -52,7 +52,7 @@ export function SuperAdminDashboard({ data }) {
               <Building size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{summary.totalOrganizations || organizations.length || 2}</div>
+          <div className="admin-stat-val">{summary.totalOrganizations || organizations.length || 0}</div>
           <div className="admin-stat-bottom">
             <span className="trend-badge-pill trend-positive">
               <CheckCircle2 size={13} /> Active SaaS Tenants
@@ -67,7 +67,7 @@ export function SuperAdminDashboard({ data }) {
               <Users size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{summary.totalUsersAcrossOrgs || 270}</div>
+          <div className="admin-stat-val">{summary.totalUsersAcrossOrgs || 0}</div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Across all tenant accounts</span>
           </div>
@@ -80,7 +80,7 @@ export function SuperAdminDashboard({ data }) {
               <Globe size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{summary.totalEmployeesPlatform || 174}</div>
+          <div className="admin-stat-val">{summary.totalEmployeesPlatform || 0}</div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Active payroll-ready personnel</span>
           </div>

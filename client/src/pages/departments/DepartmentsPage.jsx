@@ -8,6 +8,7 @@ export function DepartmentsPage() {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ code: '', name: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -28,13 +29,14 @@ export function DepartmentsPage() {
   const handleCreate = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage(null);
     try {
       await api.post('/departments', formData);
       setShowModal(false);
       setFormData({ code: '', name: '' });
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to create department');
+      setErrorMessage(err.response?.data?.message || err.message || 'Failed to create department');
     } finally {
       setIsSubmitting(false);
     }
@@ -105,10 +107,15 @@ export function DepartmentsPage() {
           <div className="modal-card">
             <div className="modal-header">
               <h3 className="modal-title">Create New Department</h3>
-              <button className="modal-close-btn" onClick={() => setShowModal(false)}>
+              <button className="modal-close-btn" onClick={() => { setShowModal(false); setErrorMessage(null); }}>
                 &times;
               </button>
             </div>
+            {errorMessage && (
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1rem', marginTop: '1rem' }}>
+                {errorMessage}
+              </div>
+            )}
             <form onSubmit={handleCreate}>
               <div className="modal-form-group">
                 <label>Department Code</label>

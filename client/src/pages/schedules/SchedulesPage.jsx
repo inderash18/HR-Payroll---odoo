@@ -12,6 +12,7 @@ export function SchedulesPage() {
     type: 'FIXED',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -32,6 +33,7 @@ export function SchedulesPage() {
   const handleCreate = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage(null);
     try {
       await api.post('/schedules', {
         ...formData,
@@ -47,7 +49,7 @@ export function SchedulesPage() {
       setFormData({ name: '', timezone: 'Asia/Kolkata', type: 'FIXED' });
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to create schedule');
+      setErrorMessage(err.response?.data?.message || err.message || 'Failed to create schedule');
     } finally {
       setIsSubmitting(false);
     }
@@ -122,10 +124,15 @@ export function SchedulesPage() {
           <div className="modal-card">
             <div className="modal-header">
               <h3 className="modal-title">Create Working Schedule</h3>
-              <button className="modal-close-btn" onClick={() => setShowModal(false)}>
+              <button className="modal-close-btn" onClick={() => { setShowModal(false); setErrorMessage(null); }}>
                 &times;
               </button>
             </div>
+            {errorMessage && (
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1rem', marginTop: '1rem' }}>
+                {errorMessage}
+              </div>
+            )}
             <form onSubmit={handleCreate}>
               <div className="modal-form-group">
                 <label>Schedule Name</label>

@@ -143,7 +143,7 @@ export function EmployeeDashboard({ data, onRefresh }) {
               <CalendarDays size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{leave.totalAllocatedDays || 24} Days</div>
+          <div className="admin-stat-val">{leave.totalAllocatedDays || 0} Days</div>
           <div className="admin-stat-bottom">
             <span className="trend-badge-pill trend-positive">
               <CheckCircle2 size={13} /> {leave.pendingRequestsCount || 0} Pending Approvals

@@ -14,6 +14,7 @@ export function UsersPage() {
     role: 'ADMIN',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -34,13 +35,14 @@ export function UsersPage() {
   const handleCreate = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage(null);
     try {
       await api.post('/users', formData);
       setShowModal(false);
       setFormData({ firstName: '', lastName: '', email: '', password: '', role: 'ADMIN' });
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to create user');
+      setErrorMessage(err.response?.data?.message || err.message || 'Failed to create user');
     } finally {
       setIsSubmitting(false);
     }
@@ -121,10 +123,15 @@ export function UsersPage() {
           <div className="modal-card">
             <div className="modal-header">
               <h3 className="modal-title">Create New User</h3>
-              <button className="modal-close-btn" onClick={() => setShowModal(false)}>
+              <button className="modal-close-btn" onClick={() => { setShowModal(false); setErrorMessage(null); }}>
                 &times;
               </button>
             </div>
+            {errorMessage && (
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1rem', marginTop: '1rem' }}>
+                {errorMessage}
+              </div>
+            )}
             <form onSubmit={handleCreate}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="modal-form-group">

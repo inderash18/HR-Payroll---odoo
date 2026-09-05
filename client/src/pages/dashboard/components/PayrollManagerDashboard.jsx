@@ -72,7 +72,7 @@ export function PayrollManagerDashboard({ data }) {
           <div className="admin-stat-val" style={{ fontSize: '1.45rem' }}>{summary.payrollCycleStatus || 'READY_TO_RUN'}</div>
           <div className="admin-stat-bottom">
             <span className="trend-badge-pill trend-positive">
-              <CheckCircle2 size={13} /> {summary.employeesReadyForPayroll || 164} Contracts Ready
+              <CheckCircle2 size={13} /> {summary.employeesReadyForPayroll || 0} Contracts Ready
             </span>
           </div>
         </div>
@@ -85,7 +85,7 @@ export function PayrollManagerDashboard({ data }) {
             </div>
           </div>
           <div className="admin-stat-val" style={{ color: '#059669', fontSize: '1.45rem' }}>
-            ₹{Number(summary.grossSalaryAmount || 18450000).toLocaleString('en-IN')}
+            ₹{Number(summary.grossSalaryAmount || 0).toLocaleString('en-IN')}
           </div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Current cycle gross computation</span>
@@ -100,7 +100,7 @@ export function PayrollManagerDashboard({ data }) {
             </div>
           </div>
           <div className="admin-stat-val" style={{ color: '#9333ea', fontSize: '1.45rem' }}>
-            ₹{Number(summary.netPayrollPayable || 15920000).toLocaleString('en-IN')}
+            ₹{Number(summary.netPayrollPayable || 0).toLocaleString('en-IN')}
           </div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>After statutory deductions</span>

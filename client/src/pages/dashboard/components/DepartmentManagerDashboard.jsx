@@ -80,7 +80,7 @@ export function DepartmentManagerDashboard({ data, onRefresh }) {
               <Users size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{summary.teamSize || teamMembers.length || 32}</div>
+          <div className="admin-stat-val">{summary.teamSize || teamMembers.length || 0}</div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Assigned department members</span>
           </div>
@@ -93,10 +93,10 @@ export function DepartmentManagerDashboard({ data, onRefresh }) {
               <Clock size={18} />
             </div>
           </div>
-          <div className="admin-stat-val" style={{ color: '#059669' }}>{summary.presentToday || 30}</div>
+          <div className="admin-stat-val" style={{ color: '#059669' }}>{summary.presentToday || 0}</div>
           <div className="admin-stat-bottom">
             <span className="trend-badge-pill trend-positive">
-              {summary.teamAttendanceRate || 95}% attendance rate
+              {summary.teamAttendanceRate || 0}% attendance rate
             </span>
           </div>
         </div>
@@ -108,7 +108,7 @@ export function DepartmentManagerDashboard({ data, onRefresh }) {
               <CalendarDays size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{summary.onLeaveToday || 2}</div>
+          <div className="admin-stat-val">{summary.onLeaveToday || 0}</div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Approved time off</span>
           </div>
@@ -121,7 +121,7 @@ export function DepartmentManagerDashboard({ data, onRefresh }) {
               <CheckSquare size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{summary.pendingLeaveApprovals || pendingApprovals.length || 1}</div>
+          <div className="admin-stat-val">{summary.pendingLeaveApprovals || pendingApprovals.length || 0}</div>
           <div className="admin-stat-bottom">
             <span className="trend-badge-pill trend-warning">
               <AlertCircle size={13} /> Requires decision

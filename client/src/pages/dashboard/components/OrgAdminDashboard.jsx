@@ -72,10 +72,10 @@ export function OrgAdminDashboard({ data, onRefresh }) {
               <Users size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{summary.totalEmployees || 164}</div>
+          <div className="admin-stat-val">{summary.totalEmployees || 0}</div>
           <div className="admin-stat-bottom">
             <span className="trend-badge-pill trend-positive">
-              <CheckCircle2 size={13} /> {summary.activeEmployees || 164} Active on Payroll
+              <CheckCircle2 size={13} /> {summary.activeEmployees || 0} Active on Payroll
             </span>
           </div>
         </div>
@@ -87,7 +87,7 @@ export function OrgAdminDashboard({ data, onRefresh }) {
               <Building size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{summary.departmentsCount || 12}</div>
+          <div className="admin-stat-val">{summary.departmentsCount || 0}</div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Active business units</span>
           </div>
@@ -100,9 +100,9 @@ export function OrgAdminDashboard({ data, onRefresh }) {
               <Clock size={18} />
             </div>
           </div>
-          <div className="admin-stat-val" style={{ color: '#059669' }}>{summary.attendanceRate || 96}%</div>
+          <div className="admin-stat-val" style={{ color: '#059669' }}>{summary.attendanceRate || 0}%</div>
           <div className="admin-stat-bottom">
-            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{summary.presentToday || 158} clocked in today</span>
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{summary.presentToday || 0} clocked in today</span>
           </div>
         </div>
 
@@ -113,7 +113,7 @@ export function OrgAdminDashboard({ data, onRefresh }) {
               <CalendarDays size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{summary.pendingLeaveApprovals || 4}</div>
+          <div className="admin-stat-val">{summary.pendingLeaveApprovals || 0}</div>
           <div className="admin-stat-bottom">
             <span className="trend-badge-pill trend-warning">
               <AlertCircle size={13} /> Action required
@@ -155,7 +155,7 @@ export function OrgAdminDashboard({ data, onRefresh }) {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <span className="badge-pill badge-pill-neutral">
-                    {dept.employeeCount || 1} Employees
+                    {dept.employeeCount || 0} Employees
                   </span>
                 </div>
               </div>

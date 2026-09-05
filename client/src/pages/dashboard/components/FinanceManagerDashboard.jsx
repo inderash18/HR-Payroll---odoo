@@ -62,7 +62,7 @@ export function FinanceManagerDashboard({ data }) {
             </div>
           </div>
           <div className="admin-stat-val" style={{ fontSize: '1.45rem' }}>
-            ₹{Number(summary.totalPayrollExpense || 18450000).toLocaleString('en-IN')}
+            ₹{Number(summary.totalPayrollExpense || 0).toLocaleString('en-IN')}
           </div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Approved monthly gross</span>
@@ -77,7 +77,7 @@ export function FinanceManagerDashboard({ data }) {
             </div>
           </div>
           <div className="admin-stat-val" style={{ color: '#059669', fontSize: '1.45rem' }}>
-            ₹{Number(summary.totalNetPayable || 15920000).toLocaleString('en-IN')}
+            ₹{Number(summary.totalNetPayable || 0).toLocaleString('en-IN')}
           </div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Net bank transfer payable</span>
@@ -92,7 +92,7 @@ export function FinanceManagerDashboard({ data }) {
             </div>
           </div>
           <div className="admin-stat-val" style={{ color: '#9333ea', fontSize: '1.45rem' }}>
-            ₹{Number(summary.totalTaxAndDeductions || 2530000).toLocaleString('en-IN')}
+            ₹{Number(summary.totalTaxAndDeductions || 0).toLocaleString('en-IN')}
           </div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>PF, PT, TDS statutory withholding</span>
@@ -106,7 +106,7 @@ export function FinanceManagerDashboard({ data }) {
               <Clock size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{summary.pendingApprovalsCount || 1}</div>
+          <div className="admin-stat-val">{summary.pendingApprovalsCount || 0}</div>
           <div className="admin-stat-bottom">
             <span className="trend-badge-pill trend-warning">
               {summary.pendingApprovalsCount > 0 ? 'Payrun batches waiting' : 'All payruns validated'}
@@ -148,7 +148,7 @@ export function FinanceManagerDashboard({ data }) {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.88rem' }}>
-                    ₹{Number(dept.estimatedMonthlyCost || 1250000).toLocaleString('en-IN')} / mo
+                    ₹{Number(dept.estimatedMonthlyCost || 0).toLocaleString('en-IN')} / mo
                   </div>
                   <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Monthly allocation</span>
                 </div>

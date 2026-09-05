@@ -18,6 +18,8 @@ export function LeavesPage() {
   const [showReqModal, setShowReqModal] = useState(false);
   const [showAllocModal, setShowAllocModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [toastMessage, setToastMessage] = useState(null);
 
   // Form states
   const [reqForm, setReqForm] = useState({
@@ -30,9 +32,11 @@ export function LeavesPage() {
   });
 
   const [allocForm, setAllocForm] = useState({
+    employeeId: '',
     leaveTypeId: '',
-    allocatedDays: 18,
-    effectiveYear: new Date().getFullYear(),
+    allocatedAmount: 18,
+    validFrom: `${new Date().getFullYear()}-01-01`,
+    validUntil: `${new Date().getFullYear()}-12-31`,
   });
 
   const loadData = async () => {
@@ -61,24 +65,29 @@ export function LeavesPage() {
   const handleApprove = async (id) => {
     try {
       await api.patch(`/leaves/requests/${id}/approve`);
+      setToastMessage('Leave request approved');
+      setTimeout(() => setToastMessage(null), 3000);
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Approval failed');
+      setErrorMessage(err.response?.data?.message || err.message || 'Approval failed');
     }
   };
 
   const handleReject = async (id) => {
     try {
       await api.patch(`/leaves/requests/${id}/reject`, { rejectionReason: 'Rejected by administrator' });
+      setToastMessage('Leave request rejected');
+      setTimeout(() => setToastMessage(null), 3000);
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Rejection failed');
+      setErrorMessage(err.response?.data?.message || err.message || 'Rejection failed');
     }
   };
 
   const handleCreateRequest = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage(null);
     try {
       await api.post('/leaves/requests', {
         ...reqForm,
@@ -96,7 +105,7 @@ export function LeavesPage() {
       });
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to submit request');
+      setErrorMessage(err.response?.data?.message || err.message || 'Failed to submit request');
     } finally {
       setIsSubmitting(false);
     }
@@ -105,17 +114,17 @@ export function LeavesPage() {
   const handleCreateAlloc = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage(null);
     try {
       await api.post('/leaves/allocations', {
         ...allocForm,
-        allocatedDays: Number(allocForm.allocatedDays),
-        effectiveYear: Number(allocForm.effectiveYear),
+        allocatedAmount: Number(allocForm.allocatedAmount),
         status: 'APPROVED',
       });
       setShowAllocModal(false);
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to allocate leave');
+      setErrorMessage(err.response?.data?.message || err.message || 'Failed to allocate leave');
     } finally {
       setIsSubmitting(false);
     }
@@ -152,6 +161,21 @@ export function LeavesPage() {
             </button>
           </div>
         </div>
+
+        {errorMessage && !showReqModal && !showAllocModal && (
+          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1rem', marginTop: '1rem' }}>
+            {errorMessage}
+          </div>
+        )}
+
+        {toastMessage && (
+          <div id="toast-container" style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999 }}>
+            <div className="toast" style={{ background: '#dcfce7', color: '#166534', padding: '1rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+              <Check size={16} color="#16a34a" />
+              <span>{toastMessage}</span>
+            </div>
+          </div>
+        )}
 
         <div style={{ overflowX: 'auto' }}>
           <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -240,10 +264,15 @@ export function LeavesPage() {
           <div className="modal-card">
             <div className="modal-header">
               <h3 className="modal-title">Submit Time Off Request</h3>
-              <button className="modal-close-btn" onClick={() => setShowReqModal(false)}>
+              <button className="modal-close-btn" onClick={() => { setShowReqModal(false); setErrorMessage(null); }}>
                 &times;
               </button>
             </div>
+            {errorMessage && (
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1rem', marginTop: '1rem' }}>
+                {errorMessage}
+              </div>
+            )}
             <form onSubmit={handleCreateRequest}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 {canAllocate && (
@@ -349,44 +378,76 @@ export function LeavesPage() {
           <div className="modal-card">
             <div className="modal-header">
               <h3 className="modal-title">Allocate Annual Leave Days</h3>
-              <button className="modal-close-btn" onClick={() => setShowAllocModal(false)}>
+              <button className="modal-close-btn" onClick={() => { setShowAllocModal(false); setErrorMessage(null); }}>
                 &times;
               </button>
             </div>
+            {errorMessage && (
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1rem', marginTop: '1rem' }}>
+                {errorMessage}
+              </div>
+            )}
             <form onSubmit={handleCreateAlloc}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="modal-form-group">
+                  <label>Employee</label>
+                  <select
+                    required
+                    value={allocForm.employeeId}
+                    onChange={(e) => setAllocForm({ ...allocForm, employeeId: e.target.value })}
+                  >
+                    <option value="">Select Employee...</option>
+                    {employees.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.firstName} {e.lastName} ({e.employeeNum})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="modal-form-group">
+                  <label>Leave Type</label>
+                  <select
+                    required
+                    value={allocForm.leaveTypeId}
+                    onChange={(e) => setAllocForm({ ...allocForm, leaveTypeId: e.target.value })}
+                  >
+                    <option value="">Select Type...</option>
+                    {leaveTypes.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name} ({t.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div className="modal-form-group">
-                <label>Leave Type</label>
-                <select
+                <label>Number of Days Allocated</label>
+                <input
+                  type="number"
                   required
-                  value={allocForm.leaveTypeId}
-                  onChange={(e) => setAllocForm({ ...allocForm, leaveTypeId: e.target.value })}
-                >
-                  <option value="">Select Type...</option>
-                  {leaveTypes.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name} ({t.code})
-                    </option>
-                  ))}
-                </select>
+                  value={allocForm.allocatedAmount}
+                  onChange={(e) => setAllocForm({ ...allocForm, allocatedAmount: e.target.value })}
+                />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="modal-form-group">
-                  <label>Number of Days</label>
+                  <label>Valid From</label>
                   <input
-                    type="number"
+                    type="date"
                     required
-                    value={allocForm.allocatedDays}
-                    onChange={(e) => setAllocForm({ ...allocForm, allocatedDays: e.target.value })}
+                    value={allocForm.validFrom}
+                    onChange={(e) => setAllocForm({ ...allocForm, validFrom: e.target.value })}
                   />
                 </div>
                 <div className="modal-form-group">
-                  <label>Effective Year</label>
+                  <label>Valid Until</label>
                   <input
-                    type="number"
+                    type="date"
                     required
-                    value={allocForm.effectiveYear}
-                    onChange={(e) => setAllocForm({ ...allocForm, effectiveYear: e.target.value })}
+                    value={allocForm.validUntil}
+                    onChange={(e) => setAllocForm({ ...allocForm, validUntil: e.target.value })}
                   />
                 </div>
               </div>

@@ -51,7 +51,7 @@ export function AuditorDashboard({ data }) {
               <FileText size={18} />
             </div>
           </div>
-          <div className="admin-stat-val">{summary.totalAuditLogs || recentLogs.length || 142}</div>
+          <div className="admin-stat-val">{summary.totalAuditLogs || recentLogs.length || 0}</div>
           <div className="admin-stat-bottom">
             <span className="trend-badge-pill trend-positive">
               <CheckCircle2 size={13} /> Immutable log storage
@@ -66,7 +66,7 @@ export function AuditorDashboard({ data }) {
               <Shield size={18} />
             </div>
           </div>
-          <div className="admin-stat-val" style={{ color: '#4f46e5' }}>{summary.securityEventsCount || securityEvents.length || 18}</div>
+          <div className="admin-stat-val" style={{ color: '#4f46e5' }}>{summary.securityEventsCount || securityEvents.length || 0}</div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Authentication &amp; role checks</span>
           </div>
@@ -79,7 +79,7 @@ export function AuditorDashboard({ data }) {
               <Key size={18} />
             </div>
           </div>
-          <div className="admin-stat-val" style={{ color: '#9333ea' }}>{summary.payrollModificationsCount || 3}</div>
+          <div className="admin-stat-val" style={{ color: '#9333ea' }}>{summary.payrollModificationsCount || 0}</div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Wage &amp; structure updates</span>
           </div>

@@ -12,6 +12,7 @@ export function SecurityPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [msg, setMsg] = useState({ text: '', type: '' });
+  const [toastMessage, setToastMessage] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [sessions, setSessions] = useState([]);
 
@@ -67,7 +68,8 @@ export function SecurityPage() {
         await logout();
         navigate('/login', { replace: true });
       } catch (err) {
-        alert(err.response?.data?.message || err.message || 'Failed to logout all devices');
+        setToastMessage({ text: err.response?.data?.message || err.message || 'Failed to logout all devices', type: 'error' });
+        setTimeout(() => setToastMessage(null), 3500);
       }
     }
   };
@@ -82,6 +84,15 @@ export function SecurityPage() {
           Manage passwords, active browser sessions, and security credentials
         </p>
       </div>
+
+      {toastMessage && (
+        <div id="toast-container" style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999 }}>
+          <div className="toast" style={{ background: toastMessage.type === 'error' ? '#fef2f2' : '#dcfce7', color: toastMessage.type === 'error' ? '#b91c1c' : '#166534', padding: '1rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+            <CheckCircle2 size={16} color={toastMessage.type === 'error' ? '#dc2626' : '#16a34a'} />
+            <span>{toastMessage.text}</span>
+          </div>
+        </div>
+      )}
 
       <div className="security-grid">
         {/* PASSWORD CHANGE CARD */}

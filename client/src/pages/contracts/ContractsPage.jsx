@@ -11,6 +11,7 @@ export function ContractsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -51,6 +52,7 @@ export function ContractsPage() {
   const handleCreate = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage(null);
     try {
       await api.post('/contracts', {
         ...formData,
@@ -69,7 +71,7 @@ export function ContractsPage() {
       });
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to create contract');
+      setErrorMessage(err.response?.data?.message || err.message || 'Failed to create contract');
     } finally {
       setIsSubmitting(false);
     }
@@ -162,10 +164,16 @@ export function ContractsPage() {
           <div className="modal-card">
             <div className="modal-header">
               <h3 className="modal-title">Create Compensation Contract</h3>
-              <button className="modal-close-btn" onClick={() => setShowModal(false)}>
+              <button className="modal-close-btn" onClick={() => { setShowModal(false); setErrorMessage(null); }}>
                 &times;
               </button>
             </div>
+
+            {errorMessage && (
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1rem', marginTop: '1rem' }}>
+                {errorMessage}
+              </div>
+            )}
 
             <form onSubmit={handleCreate}>
               <div className="modal-form-group">

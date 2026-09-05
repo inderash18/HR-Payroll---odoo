@@ -1,0 +1,166 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  EMPLOYEE
+  HR_MANAGER
+  HR_PAYROLL_USER
+  HR_PAYROLL_MANAGER
+  ADMIN
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+enum PayrunStatus {
+  DRAFT
+  COMPUTING
+  COMPUTED
+  WARNINGS_FOUND
+  VALIDATED
+  PAID
+  CANCELLED
+}
+
+enum LeaveStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  LATE
+  EARLY_LEAVE
+  ON_LEAVE
+}
+
+enum AttendanceCorrectionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RuleCategoryType {
+  EARNING
+  ALLOWANCE
+  DEDUCTION
+  TAX
+  EMPLOYER_CONTRIBUTION
+}
+
+model Organization {
+  id              String           @id @default(uuid())
+  name            String
+  code            String           @unique
+  currency        String           @default("USD")
+  timezone        String           @default("UTC")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  users           User[]
+  auditLogs       AuditLog[]
+  outboxEvents    OutboxEvent[]
+  idempotencyKeys IdempotencyKey[]
+
+  @@map("organizations")
+}
+
+model User {
+  id              String       @id @default(uuid())
+  organizationId  String       @map("organization_id")
+  email           String
+  passwordHash    String       @map("password_hash")
+  firstName       String       @map("first_name")
+  lastName        String       @map("last_name")
+  role            Role         @default(EMPLOYEE)
+  isActive        Boolean      @default(true) @map("is_active")
+  lastLoginAt     DateTime?    @map("last_login_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  auditLogs       AuditLog[]
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@map("users")
+}
+
+model AuditLog {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  userId         String?      @map("user_id")
+  action         String
+  entityType     String       @map("entity_type")
+  entityId       String       @map("entity_id")
+  oldValues      Json?        @map("old_values")
+  newValues      Json?        @map("new_values")
+  ipAddress      String?      @map("ip_address")
+  userAgent      String?      @map("user_agent")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, entityType, entityId])
+  @@index([organizationId, createdAt])
+  @@map("audit_logs")
+}
+
+model OutboxEvent {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  eventType      String       @map("event_type")
+  payload        Json
+  status         OutboxStatus @default(PENDING)
+  retryCount     Int          @default(0) @map("retry_count")
+  lastError      String?      @map("last_error")
+  processedAt    DateTime?    @map("processed_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@index([status, createdAt])
+  @@map("outbox_events")
+}
+
+model IdempotencyKey {
+  key             String       @id
+  organizationId  String       @map("organization_id")
+  userId          String?      @map("user_id")
+  requestPath     String       @map("request_path")
+  requestBodyHash String       @map("request_body_hash")
+  statusCode      Int?         @map("status_code")
+  responseBody    Json?        @map("response_body")
+  lockedAt        DateTime     @default(now()) @map("locked_at")
+  expiresAt       DateTime     @map("expires_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, expiresAt])
+  @@map("idempotency_keys")
+}

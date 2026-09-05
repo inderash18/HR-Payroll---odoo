@@ -4,16 +4,12 @@ import { useAuth } from '../contexts/AuthContext';
 import {
   LayoutGrid,
   Users,
-  Layers,
-  Briefcase,
-  Calendar,
   Clock,
   CalendarDays,
   Landmark,
   LineChart,
-  UserCheck,
   FileText,
-  Shield,
+  User,
   Settings,
   LogOut,
 } from 'lucide-react';
@@ -28,84 +24,121 @@ export function Sidebar() {
     navigate('/login', { replace: true });
   };
 
-  const navItems = [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'] },
-    { to: '/employees', label: 'Employees', icon: Users, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
-    { to: '/departments', label: 'Departments', icon: Layers, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
-    { to: '/contracts', label: 'Contracts', icon: Briefcase, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
-    { to: '/schedules', label: 'Schedules', icon: Calendar, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
-    { to: '/attendance', label: 'Attendance', icon: Clock, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'] },
-    { to: '/leaves', label: 'Leaves & Time Off', icon: CalendarDays, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'] },
-    { to: '/payroll', label: 'Payroll', icon: Landmark, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
-    { to: '/payslips', label: 'Payslips', icon: LineChart, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'] },
-    { to: '/users', label: 'Users', icon: UserCheck, roles: ['ADMIN', 'HR_MANAGER'] },
-    { to: '/audit', label: 'Audit Logs', icon: FileText, roles: ['ADMIN'] },
-    { to: '/security', label: 'Account Security', icon: Shield, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'] },
-    { to: '/settings', label: 'Settings', icon: Settings, roles: ['ADMIN'] },
+  const navLinks = [
+    {
+      to: '/dashboard',
+      label: 'Dashboard',
+      icon: LayoutGrid,
+      roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
+    },
+    {
+      to: '/employees',
+      label: 'Employees',
+      icon: Users,
+      roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'],
+    },
+    {
+      to: '/attendance',
+      label: 'Attendance',
+      icon: Clock,
+      roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
+    },
+    {
+      to: '/leaves',
+      label: 'Time Off',
+      icon: CalendarDays,
+      roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
+    },
+    {
+      to: '/payroll',
+      label: 'Payroll',
+      icon: Landmark,
+      roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'],
+    },
+    {
+      to: '/payslips',
+      label: 'Payslips',
+      icon: LineChart,
+      roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
+    },
+    {
+      to: '/audit',
+      label: 'Reports',
+      icon: FileText,
+      roles: ['ADMIN', 'HR_MANAGER'],
+    },
   ];
 
-  const visibleNavItems = navItems.filter((item) => hasRole(...item.roles));
+  const visibleLinks = navLinks.filter((item) => hasRole(...item.roles));
 
   return (
-    <aside className="sidebar-dark">
-      {/* Brand Circular Logo Button */}
+    <aside className="sidebar-dark" id="main-application-sidebar">
+      {/* BRAND HEADER */}
       <div
-        className="sidebar-logo"
-        id="sidebar-logo-btn"
-        title="PeoplePay360"
+        className="sidebar-brand-container"
+        id="sidebar-brand-header"
         onClick={() => navigate('/dashboard')}
       >
-        <div
-          style={{
-            width: '38px',
-            height: '38px',
-            borderRadius: '50%',
-            background: '#ffffff',
-            color: '#0d0f12',
-            fontWeight: 800,
-            fontSize: '0.95rem',
-            display: 'grid',
-            placeItems: 'center',
-            boxShadow: '0 4px 12px rgba(255,255,255,0.15)',
-          }}
-        >
-          360
+        <div className="sidebar-brand-logo">360</div>
+        <div className="sidebar-brand-text">
+          <span className="sidebar-brand-title">PeoplePay360</span>
+          <span className="sidebar-brand-sub">HR &amp; Payroll</span>
         </div>
       </div>
 
-      {/* Main Nav Items */}
+      {/* MAIN NAVIGATION LIST */}
       <nav className="sidebar-nav">
-        {visibleNavItems.map((item) => {
+        {visibleLinks.map((item) => {
           const Icon = item.icon;
-          const isActive = location.pathname === item.to || 
+          const isActive =
+            location.pathname === item.to ||
             (item.to === '/employees' && location.pathname.startsWith('/employees/')) ||
             (item.to === '/payroll' && location.pathname.startsWith('/payroll/')) ||
             (item.to === '/payslips' && location.pathname.startsWith('/payslips/')) ||
-            (item.to === '/security' && location.pathname === '/sessions') ||
             (item.to === '/audit' && location.pathname === '/audit-logs');
 
           return (
             <NavLink
               key={item.to}
               to={item.to}
-              className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
-              data-tooltip={item.label}
+              className={`sidebar-nav-link ${isActive ? 'active' : ''}`}
+              id={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
             >
-              <Icon size={20} strokeWidth={2.2} />
+              <Icon size={18} />
+              <span>{item.label}</span>
             </NavLink>
           );
         })}
       </nav>
 
-      {/* Sidebar Bottom Sign Out */}
+      {/* BOTTOM ACTION LINKS */}
       <div className="sidebar-bottom">
+        <NavLink
+          to="/profile"
+          className={`sidebar-nav-link ${location.pathname.startsWith('/profile') ? 'active' : ''}`}
+          id="sidebar-link-my-profile"
+        >
+          <User size={18} />
+          <span>My Profile</span>
+        </NavLink>
+
+        <NavLink
+          to="/settings"
+          className={`sidebar-nav-link ${location.pathname === '/settings' ? 'active' : ''}`}
+          id="sidebar-link-settings"
+        >
+          <Settings size={18} />
+          <span>Settings</span>
+        </NavLink>
+
         <button
-          className="sidebar-nav-item logout-btn"
-          id="btn-logout"
-          data-tooltip="Sign Out"
+          type="button"
+          className="sidebar-nav-link logout"
+          id="sidebar-link-logout"
           onClick={handleLogout}
         >
-          <LogOut size={20} strokeWidth={2.2} />
+          <LogOut size={18} />
+          <span>Logout</span>
         </button>
       </div>
     </aside>

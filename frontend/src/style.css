@@ -106,46 +106,6 @@ body.login-page #app {
   margin-bottom: 1.5rem;
 }
 
-.quick-logins {
-  background: #f1f5f9;
-  border-radius: 0.75rem;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid #e2e8f0;
-}
-
-.quick-logins h4 {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #475569;
-  margin-bottom: 0.5rem;
-}
-
-.quick-btn-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-}
-
-.btn-quick {
-  background: white;
-  border: 1px solid #cbd5e1;
-  padding: 0.4rem 0.6rem;
-  border-radius: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  color: var(--text-main);
-  text-align: left;
-  transition: all 0.15s ease;
-}
-
-.btn-quick:hover {
-  border-color: var(--primary-color);
-  background: var(--primary-light);
-}
-
 .form-group {
   margin-bottom: 1.25rem;
 }

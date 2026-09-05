@@ -98,28 +98,18 @@ function renderLogin(container: HTMLElement) {
         <p>Sign in with your organizational credentials.</p>
       </div>
 
-      <div class="quick-logins">
-        <h4>⚡ Quick Fill Demo Roles (PostgreSQL Database)</h4>
-        <div class="quick-btn-group">
-          <button class="btn-quick" id="btn-demo-admin">👑 Admin</button>
-          <button class="btn-quick" id="btn-demo-payroll">💰 Payroll Mgr</button>
-          <button class="btn-quick" id="btn-demo-hr">👥 HR Manager</button>
-          <button class="btn-quick" id="btn-demo-emp">💼 Employee</button>
-        </div>
-      </div>
-
       <form id="login-form">
         <div class="form-group">
           <label>Work Email</label>
           <div class="input-wrapper">
-            <input type="email" id="login-email" placeholder="name@peoplepay360.local" required value="admin@peoplepay360.local">
+            <input type="email" id="login-email" placeholder="name@peoplepay360.local" required>
           </div>
         </div>
 
         <div class="form-group">
           <label>Password</label>
           <div class="input-wrapper">
-            <input type="password" id="login-password" placeholder="••••••••" required value="Admin@123456">
+            <input type="password" id="login-password" placeholder="••••••••" required>
           </div>
         </div>
 
@@ -140,37 +130,8 @@ function renderLogin(container: HTMLElement) {
     </div>
   `;
 
-  // Demo role shortcuts
   const emailInput = document.getElementById('login-email') as HTMLInputElement;
   const passwordInput = document.getElementById('login-password') as HTMLInputElement;
-
-  document.getElementById('btn-demo-admin')?.addEventListener('click', () => {
-    if (emailInput && passwordInput) {
-      emailInput.value = 'admin@peoplepay360.local';
-      passwordInput.value = 'Admin@123456';
-    }
-  });
-
-  document.getElementById('btn-demo-payroll')?.addEventListener('click', () => {
-    if (emailInput && passwordInput) {
-      emailInput.value = 'payroll.manager@peoplepay360.local';
-      passwordInput.value = 'Payroll@123456';
-    }
-  });
-
-  document.getElementById('btn-demo-hr')?.addEventListener('click', () => {
-    if (emailInput && passwordInput) {
-      emailInput.value = 'hr.manager@peoplepay360.local';
-      passwordInput.value = 'Hr@123456';
-    }
-  });
-
-  document.getElementById('btn-demo-emp')?.addEventListener('click', () => {
-    if (emailInput && passwordInput) {
-      emailInput.value = 'employee@peoplepay360.local';
-      passwordInput.value = 'Emp@123456';
-    }
-  });
 
   // Login Form Submission
   const form = document.getElementById('login-form') as HTMLFormElement;

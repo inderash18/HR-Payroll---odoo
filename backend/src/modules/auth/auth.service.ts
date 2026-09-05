@@ -138,66 +138,31 @@ export class AuthService {
     let org: any;
     let user: any;
 
-    try {
-      if (dto.organizationCode) {
-        org = await this.prisma.organization.findUnique({
-          where: { code: dto.organizationCode },
-        });
+    if (dto.organizationCode) {
+      org = await this.prisma.organization.findUnique({
+        where: { code: dto.organizationCode },
+      });
 
-        if (org) {
-          user = await this.prisma.user.findUnique({
-            where: {
-              organizationId_email: {
-                organizationId: org.id,
-                email: dto.email,
-              },
-            },
-          });
-        }
-      } else {
-        user = await this.prisma.user.findFirst({
-          where: { email: dto.email },
-          include: { organization: true },
-        });
-
-        if (user) {
-          org = user.organization;
-        }
+      if (!org) {
+        throw new UnauthorizedError('Invalid credentials or organization code');
       }
-    } catch {
-      // Database connection error handling for fallback
-    }
 
-    // Direct fallback credential check for collaborators without a local DB
-    if (
-      (dto.email === 'admin@peoplepay360.local' && dto.password === 'Admin@123456') ||
-      (dto.email === 'demo@peoplepay360.com' && dto.password === 'Demo@123456')
-    ) {
-      if (!user) {
-        const fallbackOrgId = '00000000-0000-0000-0000-000000000001';
-        const fallbackUserId = '00000000-0000-0000-0000-000000000002';
-        const accessToken = this.tokenService.signAccessToken({
-          sub: fallbackUserId,
-          email: dto.email,
-          organizationId: fallbackOrgId,
-          role: Role.ADMIN,
-          legalEntityId: null,
-        });
-        const { rawToken } = this.tokenService.generateRefreshToken();
-        return {
-          accessToken,
-          refreshToken: rawToken,
-          expiresIn: '15m',
-          user: {
-            id: fallbackUserId,
+      user = await this.prisma.user.findUnique({
+        where: {
+          organizationId_email: {
+            organizationId: org.id,
             email: dto.email,
-            firstName: 'System',
-            lastName: 'Administrator',
-            role: Role.ADMIN,
-            organizationId: fallbackOrgId,
-            legalEntityId: null,
           },
-        };
+        },
+      });
+    } else {
+      user = await this.prisma.user.findFirst({
+        where: { email: dto.email },
+        include: { organization: true },
+      });
+
+      if (user) {
+        org = user.organization;
       }
     }
 
@@ -580,50 +545,27 @@ export class AuthService {
   }
 
   async getProfile(userId: string) {
-    try {
-      const user = await this.prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          role: true,
-          organizationId: true,
-          legalEntityId: true,
-          organization: {
-            select: { id: true, name: true, code: true, currency: true },
-          },
-        },
-      });
-
-      if (user) {
-        return user;
-      }
-    } catch {
-      // Database connection error handling
-    }
-
-    // Fallback profile for collaborators without local DB
-    if (userId === '00000000-0000-0000-0000-000000000002') {
-      return {
-        id: userId,
-        email: 'admin@peoplepay360.local',
-        firstName: 'System',
-        lastName: 'Administrator',
-        role: Role.ADMIN,
-        organizationId: '00000000-0000-0000-0000-000000000001',
-        legalEntityId: null,
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        organizationId: true,
+        legalEntityId: true,
         organization: {
-          id: '00000000-0000-0000-0000-000000000001',
-          name: 'PeoplePay360 Global Demo Corp',
-          code: 'DEMO-ORG',
-          currency: 'USD',
+          select: { id: true, name: true, code: true, currency: true },
         },
-      };
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundError('User profile not found');
     }
 
-    throw new NotFoundError('User profile not found');
+    return user;
   }
 }
 

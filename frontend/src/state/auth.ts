@@ -33,41 +33,17 @@ export const authStore = {
     notify();
 
     try {
-      // Check current authenticated session via HttpOnly cookies
+      // Check current authenticated session via HttpOnly cookies from PostgreSQL
       const response = await api.get<{ success: boolean; data: User }>('/auth/me');
       state.user = response.data || (response as any);
       state.isLoading = false;
       notify();
       return state.user;
     } catch {
-      const savedUser = localStorage.getItem('peoplepay_session_user');
-      if (savedUser) {
-        try {
-          state.user = JSON.parse(savedUser);
-        } catch {
-          state.user = null;
-        }
-      } else {
-        // Auto-login as Admin Jerome Bell for immediate review
-        state.user = {
-          id: 'usr-1',
-          email: 'admin@peoplepay360.local',
-          firstName: 'Jerome',
-          lastName: 'Bell',
-          role: 'ADMIN',
-          organizationId: 'DEMO-ORG',
-          organization: {
-            id: 'DEMO-ORG',
-            name: 'PeoplePay360 Global',
-            code: 'DEMO-ORG',
-            currency: 'USD',
-          },
-        } as any;
-        localStorage.setItem('peoplepay_session_user', JSON.stringify(state.user));
-      }
+      state.user = null;
       state.isLoading = false;
       notify();
-      return state.user;
+      return null;
     }
   },
 
@@ -77,44 +53,16 @@ export const authStore = {
     notify();
 
     try {
-      const response = await api.post('/auth/login', { email, password });
-      const user = response.data?.user || response.user || response.data;
-
-      // Fetch fresh profile from /auth/me
-      try {
-        const profile = await api.get<{ success: boolean; data: User }>('/auth/me');
-        state.user = profile.data || (profile as any);
-      } catch {
-        state.user = user;
-      }
-
-      localStorage.setItem('peoplepay_session_user', JSON.stringify(state.user));
+      await api.post('/auth/login', { email, password });
+      
+      // Fetch authoritative user profile from PostgreSQL
+      const profile = await api.get<{ success: boolean; data: User }>('/auth/me');
+      state.user = profile.data || (profile as any);
       state.isLoading = false;
       notify();
       return state.user;
     } catch (err: any) {
-      // Graceful offline fallback for Admin Jerome Bell
-      if (email.toLowerCase().includes('admin') || email.toLowerCase().includes('jerome')) {
-        state.user = {
-          id: 'usr-1',
-          email: email || 'admin@peoplepay360.local',
-          firstName: 'Jerome',
-          lastName: 'Bell',
-          role: 'ADMIN',
-          organizationId: 'DEMO-ORG',
-          organization: {
-            id: 'DEMO-ORG',
-            name: 'PeoplePay360 Global',
-            code: 'DEMO-ORG',
-            currency: 'USD',
-          },
-        } as any;
-        localStorage.setItem('peoplepay_session_user', JSON.stringify(state.user));
-        state.isLoading = false;
-        notify();
-        return state.user;
-      }
-
+      state.user = null;
       state.isLoading = false;
       state.error = err.message || 'Authentication failed';
       notify();
@@ -128,7 +76,6 @@ export const authStore = {
     } catch (e) {
       console.warn('Logout API error:', e);
     }
-    localStorage.removeItem('peoplepay_session_user');
     state.user = null;
     state.error = null;
     state.isLoading = false;

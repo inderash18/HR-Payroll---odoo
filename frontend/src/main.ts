@@ -16,21 +16,6 @@ import {
   DashboardOverview,
   Department,
 } from './api/types';
-import {
-  setAdminToastHandler,
-  renderAdminDashboard,
-  renderUserManagementView,
-  renderRolesPermissionsView,
-  renderOrganizationView,
-  renderEmployeesView,
-  renderPositionsGradesView,
-  renderWorkflowsApprovalsView,
-  renderAuditLogsView,
-  renderSystemSettingsView,
-  renderSecurityView,
-  renderStorageDocumentsView,
-  renderNotificationsView,
-} from './modules/views';
 import './style.css';
 
 // Helpers to extract data from standardized JSON API responses
@@ -82,8 +67,6 @@ let activeTab: string = 'dashboard';
 async function initApp() {
   const app = document.getElementById('app');
   if (!app) return;
-
-  setAdminToastHandler(showToast);
 
   // Global tab switch listener (e.g. from KPI cards)
   window.addEventListener('switch-tab', (e: any) => {
@@ -234,42 +217,46 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
         </div>
 
         <nav class="nav-menu">
-          <div class="nav-group-title">👑 Admin Modules</div>
+          <div class="nav-group-title">Workforce & Operations</div>
           <a href="#" class="nav-item ${activeTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard">
-            <i data-lucide="layout-dashboard"></i> Dashboard
-          </a>
-          <a href="#" class="nav-item ${activeTab === 'users' ? 'active' : ''}" data-tab="users">
-            <i data-lucide="users"></i> User Management
-          </a>
-          <a href="#" class="nav-item ${activeTab === 'roles' ? 'active' : ''}" data-tab="roles">
-            <i data-lucide="shield"></i> Roles & Permissions
-          </a>
-          <a href="#" class="nav-item ${activeTab === 'organization' ? 'active' : ''}" data-tab="organization">
-            <i data-lucide="building-2"></i> Organization
+            <i data-lucide="layout-dashboard"></i> HR Dashboard
           </a>
           <a href="#" class="nav-item ${activeTab === 'employees' ? 'active' : ''}" data-tab="employees">
-            <i data-lucide="user-check"></i> Employees
+            <i data-lucide="users"></i> Employees
           </a>
-          <a href="#" class="nav-item ${activeTab === 'positions' ? 'active' : ''}" data-tab="positions">
-            <i data-lucide="briefcase"></i> Positions & Grades
+          <a href="#" class="nav-item ${activeTab === 'departments' ? 'active' : ''}" data-tab="departments">
+            <i data-lucide="building-2"></i> Departments
           </a>
-          <a href="#" class="nav-item ${activeTab === 'workflows' ? 'active' : ''}" data-tab="workflows">
-            <i data-lucide="git-branch"></i> Workflows & Approvals
+          <a href="#" class="nav-item ${activeTab === 'contracts' ? 'active' : ''}" data-tab="contracts">
+            <i data-lucide="file-signature"></i> Contracts
+          </a>
+          <a href="#" class="nav-item ${activeTab === 'schedules' ? 'active' : ''}" data-tab="schedules">
+            <i data-lucide="calendar-clock"></i> Working Schedules
+          </a>
+          <a href="#" class="nav-item ${activeTab === 'attendance' ? 'active' : ''}" data-tab="attendance">
+            <i data-lucide="clock"></i> Attendance
+          </a>
+          <a href="#" class="nav-item ${activeTab === 'leaves' ? 'active' : ''}" data-tab="leaves">
+            <i data-lucide="calendar-range"></i> Time Off & Leaves
+          </a>
+
+          <div class="nav-group-title">Payroll Management</div>
+          <a href="#" class="nav-item ${activeTab === 'payroll' ? 'active' : ''}" data-tab="payroll">
+            <i data-lucide="landmark"></i> Payroll & Payruns
+          </a>
+          <a href="#" class="nav-item ${activeTab === 'payslips' ? 'active' : ''}" data-tab="payslips">
+            <i data-lucide="line-chart"></i> Payslips
+          </a>
+
+          <div class="nav-group-title">Administration</div>
+          <a href="#" class="nav-item ${activeTab === 'users' ? 'active' : ''}" data-tab="users">
+            <i data-lucide="user-check"></i> User Accounts
           </a>
           <a href="#" class="nav-item ${activeTab === 'audit' ? 'active' : ''}" data-tab="audit">
             <i data-lucide="file-text"></i> Audit Logs
           </a>
           <a href="#" class="nav-item ${activeTab === 'settings' ? 'active' : ''}" data-tab="settings">
             <i data-lucide="settings"></i> System Settings
-          </a>
-          <a href="#" class="nav-item ${activeTab === 'security' ? 'active' : ''}" data-tab="security">
-            <i data-lucide="lock"></i> Security
-          </a>
-          <a href="#" class="nav-item ${activeTab === 'storage' ? 'active' : ''}" data-tab="storage">
-            <i data-lucide="folder-lock"></i> Storage & Documents
-          </a>
-          <a href="#" class="nav-item ${activeTab === 'notifications' ? 'active' : ''}" data-tab="notifications">
-            <i data-lucide="bell"></i> Notifications
           </a>
         </nav>
 
@@ -478,52 +465,16 @@ function loadActiveTabContent() {
 
   switch (activeTab) {
     case 'dashboard':
-      if (headerTitle) headerTitle.innerText = 'Dashboard';
-      renderAdminDashboard(contentArea);
-      break;
-    case 'users':
-      if (headerTitle) headerTitle.innerText = 'User Management';
-      renderUserManagementView(contentArea);
-      break;
-    case 'roles':
-      if (headerTitle) headerTitle.innerText = 'Roles & Permissions';
-      renderRolesPermissionsView(contentArea);
-      break;
-    case 'organization':
-      if (headerTitle) headerTitle.innerText = 'Organization Structure';
-      renderOrganizationView(contentArea);
+      if (headerTitle) headerTitle.innerText = 'HR & Workforce Dashboard';
+      loadDashboardView(contentArea);
       break;
     case 'employees':
       if (headerTitle) headerTitle.innerText = 'Employees Directory';
-      renderEmployeesView(contentArea);
+      loadEmployeesView(contentArea);
       break;
-    case 'positions':
-      if (headerTitle) headerTitle.innerText = 'Positions & Grades';
-      renderPositionsGradesView(contentArea);
-      break;
-    case 'workflows':
-      if (headerTitle) headerTitle.innerText = 'Workflows & Approvals';
-      renderWorkflowsApprovalsView(contentArea);
-      break;
-    case 'audit':
-      if (headerTitle) headerTitle.innerText = 'Audit Logs';
-      renderAuditLogsView(contentArea);
-      break;
-    case 'settings':
-      if (headerTitle) headerTitle.innerText = 'System Settings';
-      renderSystemSettingsView(contentArea);
-      break;
-    case 'security':
-      if (headerTitle) headerTitle.innerText = 'Security Management';
-      renderSecurityView(contentArea);
-      break;
-    case 'storage':
-      if (headerTitle) headerTitle.innerText = 'Storage & Documents';
-      renderStorageDocumentsView(contentArea);
-      break;
-    case 'notifications':
-      if (headerTitle) headerTitle.innerText = 'Notifications & Templates';
-      renderNotificationsView(contentArea);
+    case 'departments':
+      if (headerTitle) headerTitle.innerText = 'Departments';
+      loadDepartmentsView(contentArea);
       break;
     case 'contracts':
       if (headerTitle) headerTitle.innerText = 'Compensation Contracts';
@@ -549,21 +500,21 @@ function loadActiveTabContent() {
       if (headerTitle) headerTitle.innerText = 'Generated Payslips';
       loadPayslipsView(contentArea);
       break;
-    case 'legacy_dashboard':
-      loadDashboardView(contentArea);
+    case 'users':
+      if (headerTitle) headerTitle.innerText = 'User Management';
+      loadUsersView(contentArea);
       break;
-    case 'legacy_employees':
-      loadEmployeesView(contentArea);
+    case 'audit':
+      if (headerTitle) headerTitle.innerText = 'Security Audit Logs';
+      loadAuditLogsView(contentArea);
       break;
-    case 'legacy_departments':
-      loadDepartmentsView(contentArea);
-      break;
-    case 'legacy_settings':
+    case 'settings':
+      if (headerTitle) headerTitle.innerText = 'System Settings';
       loadSettingsView(contentArea);
       break;
     default:
-      if (headerTitle) headerTitle.innerText = 'Dashboard';
-      renderAdminDashboard(contentArea);
+      if (headerTitle) headerTitle.innerText = 'HR & Workforce Dashboard';
+      loadDashboardView(contentArea);
       break;
   }
 
@@ -2052,6 +2003,140 @@ function loadSettingsView(container: HTMLElement) {
     </div>
   `;
   refreshIcons();
+}
+
+// ----------------------------------------------------
+// 11. USER MANAGEMENT VIEW (FETCHES REAL POSTGRESQL USERS)
+// ----------------------------------------------------
+async function loadUsersView(container: HTMLElement) {
+  container.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; height: 300px; color: var(--text-muted);">
+      <div style="text-align: center;">
+        <i data-lucide="refresh-cw" class="animate-spin" style="width: 32px; height: 32px; margin-bottom: 0.5rem;"></i>
+        <p>Loading Users from PostgreSQL...</p>
+      </div>
+    </div>
+  `;
+  refreshIcons();
+
+  try {
+    const res = await api.get('/users?limit=50').catch(() => ({ data: [] }));
+    const users = extractList<any>(res);
+
+    container.innerHTML = `
+      <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--text-main);">User Accounts & RBAC</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Authorized system user accounts persisted in PostgreSQL <code>User</code> table</p>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="overflow-x: auto;">
+          <table class="data-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-color); text-align: left; background: var(--surface-light);">
+                <th style="padding: 1rem 1.5rem; font-weight: 600; font-size: 0.85rem; color: var(--text-muted);">USER</th>
+                <th style="padding: 1rem; font-weight: 600; font-size: 0.85rem; color: var(--text-muted);">EMAIL</th>
+                <th style="padding: 1rem; font-weight: 600; font-size: 0.85rem; color: var(--text-muted);">ROLE</th>
+                <th style="padding: 1rem; font-weight: 600; font-size: 0.85rem; color: var(--text-muted);">STATUS</th>
+                <th style="padding: 1rem 1.5rem; font-weight: 600; font-size: 0.85rem; color: var(--text-muted);">CREATED</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${
+                users.length > 0
+                  ? users
+                      .map(
+                        (u) => `
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                      <td style="padding: 1rem 1.5rem; font-weight: 600;">${u.firstName || ''} ${u.lastName || ''}</td>
+                      <td style="padding: 1rem;">${u.email}</td>
+                      <td style="padding: 1rem;"><span class="badge ${u.role === 'ADMIN' ? 'blue' : 'neutral'}">${u.role}</span></td>
+                      <td style="padding: 1rem;"><span class="badge ${u.isActive !== false ? 'green' : 'red'}">${u.isActive !== false ? 'ACTIVE' : 'INACTIVE'}</span></td>
+                      <td style="padding: 1rem 1.5rem; color: var(--text-muted);">${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}</td>
+                    </tr>
+                  `,
+                      )
+                      .join('')
+                  : `<tr><td colspan="5" style="padding: 2rem; text-align: center; color: var(--text-muted);">No user accounts found.</td></tr>`
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    refreshIcons();
+  } catch (err: any) {
+    container.innerHTML = `<div class="card" style="padding: 2rem; color: #ef4444;">Error loading users: ${err.message}</div>`;
+  }
+}
+
+// ----------------------------------------------------
+// 12. SECURITY AUDIT LOGS VIEW (FETCHES REAL AUDIT TRAIL)
+// ----------------------------------------------------
+async function loadAuditLogsView(container: HTMLElement) {
+  container.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; height: 300px; color: var(--text-muted);">
+      <div style="text-align: center;">
+        <i data-lucide="refresh-cw" class="animate-spin" style="width: 32px; height: 32px; margin-bottom: 0.5rem;"></i>
+        <p>Loading Audit Trail from PostgreSQL...</p>
+      </div>
+    </div>
+  `;
+  refreshIcons();
+
+  try {
+    const res = await api.get('/audit-logs?limit=50').catch(() => ({ data: [] }));
+    const logs = extractList<any>(res);
+
+    container.innerHTML = `
+      <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--text-main);">Security Audit Trail</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Immutable audit records persisted in PostgreSQL <code>audit_logs</code> table</p>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="overflow-x: auto;">
+          <table class="data-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-color); text-align: left; background: var(--surface-light);">
+                <th style="padding: 1rem 1.5rem; font-weight: 600; font-size: 0.85rem; color: var(--text-muted);">TIMESTAMP</th>
+                <th style="padding: 1rem; font-weight: 600; font-size: 0.85rem; color: var(--text-muted);">ACTION</th>
+                <th style="padding: 1rem; font-weight: 600; font-size: 0.85rem; color: var(--text-muted);">ENTITY</th>
+                <th style="padding: 1rem; font-weight: 600; font-size: 0.85rem; color: var(--text-muted);">ACTOR</th>
+                <th style="padding: 1rem 1.5rem; font-weight: 600; font-size: 0.85rem; color: var(--text-muted);">ENTITY ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${
+                logs.length > 0
+                  ? logs
+                      .map(
+                        (l) => `
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                      <td style="padding: 1rem 1.5rem; color: var(--text-muted);">${new Date(l.createdAt).toLocaleString()}</td>
+                      <td style="padding: 1rem;"><span class="badge blue">${l.action}</span></td>
+                      <td style="padding: 1rem; font-weight: 600;">${l.entityType}</td>
+                      <td style="padding: 1rem;">${l.user ? `${l.user.firstName || ''} ${l.user.lastName || ''} (${l.user.email})` : 'System'}</td>
+                      <td style="padding: 1rem 1.5rem;"><code style="background: var(--surface-light); padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.8rem;">${l.entityId || 'N/A'}</code></td>
+                    </tr>
+                  `,
+                      )
+                      .join('')
+                  : `<tr><td colspan="5" style="padding: 2rem; text-align: center; color: var(--text-muted);">No audit records found yet.</td></tr>`
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    refreshIcons();
+  } catch (err: any) {
+    container.innerHTML = `<div class="card" style="padding: 2rem; color: #ef4444;">Error loading audit trail: ${err.message}</div>`;
+  }
 }
 
 // Start application

@@ -43,7 +43,7 @@ export const employeeRepository = {
     return prisma.employee.findFirst({
       where: { organizationId, id },
       include: {
-        department: true,
+        department: { include: { manager: true } },
         jobPosition: true,
         workingSchedule: { include: { lines: true } },
         contracts: {

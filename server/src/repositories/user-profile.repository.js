@@ -40,7 +40,13 @@ export class UserProfileRepository {
         organization: true,
         employee: {
           include: {
-            department: true,
+            department: {
+              include: {
+                manager: {
+                  select: { id: true, firstName: true, lastName: true, email: true, role: true },
+                },
+              },
+            },
             jobPosition: true,
             workingSchedule: true,
             contracts: {
@@ -91,7 +97,13 @@ export class UserProfileRepository {
             bankName: user.employee.bankName,
             bankAccountMasked: user.employee.bankAccountMasked,
             joiningDate: user.employee.joiningDate,
-            department: user.employee.department ? { id: user.employee.department.id, name: user.employee.department.name } : null,
+            department: user.employee.department
+              ? {
+                  id: user.employee.department.id,
+                  name: user.employee.department.name,
+                  manager: user.employee.department.manager || null,
+                }
+              : null,
             jobPosition: user.employee.jobPosition ? { id: user.employee.jobPosition.id, title: user.employee.jobPosition.title } : null,
             workingSchedule: user.employee.workingSchedule ? { id: user.employee.workingSchedule.id, name: user.employee.workingSchedule.name } : null,
             activeContract: user.employee.contracts?.[0] || null,

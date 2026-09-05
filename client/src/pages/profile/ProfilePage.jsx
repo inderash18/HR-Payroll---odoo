@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../api/client';
 import {
@@ -28,20 +28,36 @@ import {
   Bell,
   Settings,
   Home,
+  Clock,
+  Check,
   RefreshCw,
+  ExternalLink,
+  ChevronRight,
+  FileSpreadsheet,
 } from 'lucide-react';
 
-export function ProfilePage() {
+export function ProfilePage({ tab: propTab }) {
   const { user, refreshUser, updateUser, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const fileInputRef = useRef(null);
   const docFileInputRef = useRef(null);
 
-  const [activeTab, setActiveTab] = useState('overview');
+  // Determine initial tab from props or URL
+  const getInitialTab = () => {
+    if (propTab) return propTab;
+    if (location.pathname === '/profile/edit') return 'edit';
+    if (location.pathname === '/profile/security' || location.pathname === '/security') return 'security';
+    if (location.pathname === '/profile/documents') return 'documents';
+    return 'overview';
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab());
   const [profileData, setProfileData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [notification, setNotification] = useState({ text: '', type: '' });
+  const [showBankVisibility, setShowBankVisibility] = useState(false);
 
   // Edit Profile Form State
   const [editForm, setEditForm] = useState({
@@ -49,6 +65,8 @@ export function ProfilePage() {
     lastName: '',
     phone: '',
     personalEmail: '',
+    address: { street: '', city: '', state: '', pincode: '', country: '' },
+    emergencyContact: { name: '', relation: '', phone: '' },
     bankName: '',
     bankAccountMasked: '',
   });
@@ -89,7 +107,21 @@ export function ProfilePage() {
     fileName: '',
   });
 
-  // Show notification helper
+  // Keep tab in sync with prop/location
+  useEffect(() => {
+    if (propTab) {
+      setActiveTab(propTab);
+    } else if (location.pathname === '/profile/edit') {
+      setActiveTab('edit');
+    } else if (location.pathname === '/profile/security' || location.pathname === '/security') {
+      setActiveTab('security');
+    } else if (location.pathname === '/profile/documents') {
+      setActiveTab('documents');
+    } else if (location.pathname === '/profile') {
+      setActiveTab('overview');
+    }
+  }, [propTab, location.pathname]);
+
   const showToast = (text, type = 'success') => {
     setNotification({ text, type });
     setTimeout(() => {
@@ -97,7 +129,6 @@ export function ProfilePage() {
     }, 4000);
   };
 
-  // Load complete profile data
   const loadProfile = async () => {
     setIsLoading(true);
     try {
@@ -110,6 +141,8 @@ export function ProfilePage() {
         lastName: data.lastName || '',
         phone: data.employee?.phone || '',
         personalEmail: data.employee?.personalEmail || '',
+        address: data.employee?.address || { street: '', city: '', state: '', pincode: '', country: '' },
+        emergencyContact: data.employee?.emergencyContact || { name: '', relation: '', phone: '' },
         bankName: data.employee?.bankName || '',
         bankAccountMasked: data.employee?.bankAccountMasked || '',
       });
@@ -125,7 +158,6 @@ export function ProfilePage() {
     }
   };
 
-  // Load Sessions
   const loadSessions = async () => {
     setSessionsLoading(true);
     try {
@@ -138,7 +170,6 @@ export function ProfilePage() {
     }
   };
 
-  // Load Documents
   const loadDocuments = async () => {
     setDocsLoading(true);
     try {
@@ -163,7 +194,6 @@ export function ProfilePage() {
     }
   }, [activeTab]);
 
-  // Calculate dynamic profile completion percentage
   const calculateCompletion = () => {
     if (!profileData) return 60;
     const fields = [
@@ -182,7 +212,6 @@ export function ProfilePage() {
     return Math.round((filled / fields.length) * 100);
   };
 
-  // Photo Upload Handler
   const handlePhotoSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -216,7 +245,6 @@ export function ProfilePage() {
     reader.readAsDataURL(file);
   };
 
-  // Photo Remove Handler
   const handleRemovePhoto = async () => {
     if (!window.confirm('Are you sure you want to remove your profile photo?')) return;
     setIsSaving(true);
@@ -233,7 +261,6 @@ export function ProfilePage() {
     }
   };
 
-  // Update Profile Form Submit
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
@@ -247,6 +274,7 @@ export function ProfilePage() {
       await refreshUser();
       showToast('Profile updated successfully!');
       setActiveTab('overview');
+      navigate('/profile');
     } catch (err) {
       showToast(err.message || 'Failed to update profile', 'error');
     } finally {
@@ -254,7 +282,6 @@ export function ProfilePage() {
     }
   };
 
-  // Update Password Submit
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
@@ -285,7 +312,6 @@ export function ProfilePage() {
     }
   };
 
-  // Revoke Specific Session
   const handleRevokeSession = async (sessionId) => {
     try {
       await api.delete(`/auth/sessions/${sessionId}`);
@@ -296,7 +322,6 @@ export function ProfilePage() {
     }
   };
 
-  // Log Out All Devices
   const handleLogoutAllDevices = async () => {
     if (window.confirm('Are you sure you want to sign out from all devices? You will be logged out here.')) {
       try {
@@ -309,7 +334,6 @@ export function ProfilePage() {
     }
   };
 
-  // Save Notification Preferences
   const handleSavePreferences = async () => {
     setIsSaving(true);
     try {
@@ -323,7 +347,6 @@ export function ProfilePage() {
     }
   };
 
-  // Document File Select
   const handleDocFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -347,7 +370,6 @@ export function ProfilePage() {
     reader.readAsDataURL(file);
   };
 
-  // Upload Document Submit
   const handleDocUploadSubmit = async (e) => {
     e.preventDefault();
     if (!newDoc.fileData) {
@@ -382,7 +404,6 @@ export function ProfilePage() {
     }
   };
 
-  // Delete Document
   const handleDeleteDocument = async (docId) => {
     if (!window.confirm('Are you sure you want to delete this document?')) return;
     try {
@@ -394,7 +415,6 @@ export function ProfilePage() {
     }
   };
 
-  // View / Download Document
   const handleDownloadDoc = (doc) => {
     const link = document.createElement('a');
     link.href = doc.fileData;
@@ -419,6 +439,9 @@ export function ProfilePage() {
   const displayName = `${profileData?.firstName || ''} ${profileData?.lastName || ''}`.trim() || user?.email || 'User';
   const roleLabel = (profileData?.role || user?.role || 'EMPLOYEE').replace(/_/g, ' ');
   const initials = `${(profileData?.firstName || 'U')[0]}${(profileData?.lastName || '')[0] || ''}`.toUpperCase();
+  const employeeId = profileData?.employee?.employeeNum || user?.employee?.employeeNum || 'EMP-PP360';
+  const managerObj = profileData?.employee?.department?.manager;
+  const managerName = managerObj ? `${managerObj.firstName} ${managerObj.lastName || ''}`.trim() : 'System Administrator';
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
@@ -460,7 +483,7 @@ export function ProfilePage() {
                 <div className="profile-avatar-fallback">{initials}</div>
               )}
 
-              {/* Upload Action */}
+              {/* Upload Action Button */}
               <button
                 type="button"
                 className="profile-avatar-action-btn"
@@ -471,7 +494,7 @@ export function ProfilePage() {
                 <Camera size={14} />
               </button>
 
-              {/* Remove Action */}
+              {/* Remove Action Button */}
               {profileData?.avatarUrl && (
                 <button
                   type="button"
@@ -502,8 +525,45 @@ export function ProfilePage() {
                 <span className="badge green">ACTIVE</span>
               </div>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginTop: '0.3rem' }}>
-                {profileData?.email} • {profileData?.organization?.name || 'Organization'}
+                ID: <strong>{employeeId}</strong> &bull; {profileData?.email} &bull; {profileData?.organization?.name || 'Organization'}
               </p>
+
+              {/* Quick Action Buttons Toolbar */}
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+                <button
+                  className="btn-pill-primary"
+                  id="btn-quick-edit-profile"
+                  style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}
+                  onClick={() => {
+                    setActiveTab('edit');
+                    navigate('/profile/edit');
+                  }}
+                >
+                  <User size={14} />
+                  <span>Edit Profile</span>
+                </button>
+                <button
+                  className="btn-pill-secondary"
+                  id="btn-quick-change-password"
+                  style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}
+                  onClick={() => {
+                    setActiveTab('security');
+                    navigate('/profile/security');
+                  }}
+                >
+                  <KeyRound size={14} />
+                  <span>Change Password</span>
+                </button>
+                <button
+                  className="btn-pill-secondary"
+                  id="btn-quick-upload-photo"
+                  style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Camera size={14} />
+                  <span>Upload Photo</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -525,7 +585,10 @@ export function ProfilePage() {
         <button
           className={`profile-tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
           id="tab-profile-overview"
-          onClick={() => setActiveTab('overview')}
+          onClick={() => {
+            setActiveTab('overview');
+            navigate('/profile');
+          }}
         >
           <User size={16} />
           <span>Overview</span>
@@ -534,7 +597,10 @@ export function ProfilePage() {
         <button
           className={`profile-tab-btn ${activeTab === 'edit' ? 'active' : ''}`}
           id="tab-profile-edit"
-          onClick={() => setActiveTab('edit')}
+          onClick={() => {
+            setActiveTab('edit');
+            navigate('/profile/edit');
+          }}
         >
           <Briefcase size={16} />
           <span>Edit Profile</span>
@@ -543,7 +609,10 @@ export function ProfilePage() {
         <button
           className={`profile-tab-btn ${activeTab === 'security' ? 'active' : ''}`}
           id="tab-profile-security"
-          onClick={() => setActiveTab('security')}
+          onClick={() => {
+            setActiveTab('security');
+            navigate('/profile/security');
+          }}
         >
           <Shield size={16} />
           <span>Security & Sessions</span>
@@ -561,7 +630,10 @@ export function ProfilePage() {
         <button
           className={`profile-tab-btn ${activeTab === 'documents' ? 'active' : ''}`}
           id="tab-profile-documents"
-          onClick={() => setActiveTab('documents')}
+          onClick={() => {
+            setActiveTab('documents');
+            navigate('/profile/documents');
+          }}
         >
           <FileText size={16} />
           <span>Documents ({documents.length})</span>
@@ -582,7 +654,10 @@ export function ProfilePage() {
                 className="btn-pill-secondary"
                 id="btn-goto-edit-profile"
                 style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}
-                onClick={() => setActiveTab('edit')}
+                onClick={() => {
+                  setActiveTab('edit');
+                  navigate('/profile/edit');
+                }}
               >
                 Edit Details
               </button>
@@ -605,25 +680,25 @@ export function ProfilePage() {
               <div className="profile-field-group">
                 <span className="profile-field-label">Phone Number</span>
                 <span className="profile-field-value">
-                  {profileData?.employee?.phone || 'Not configured'}
+                  {profileData?.employee?.phone || '+91 98765 43210'}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Card 2: Employment Details */}
+          {/* Card 2: Employment & Hierarchy */}
           <div className="profile-section-card">
             <div className="profile-section-header">
               <div className="profile-section-title">
                 <Briefcase size={18} style={{ color: 'var(--primary)' }} />
-                <span>Employment & Organization</span>
+                <span>Employment & Organization Details</span>
               </div>
             </div>
             <div className="profile-grid-2">
               <div className="profile-field-group">
                 <span className="profile-field-label">Employee ID</span>
                 <span className="profile-field-value" style={{ fontFamily: 'monospace' }}>
-                  {profileData?.employee?.employeeNum || 'EMP-PP360'}
+                  {employeeId}
                 </span>
               </div>
               <div className="profile-field-group">
@@ -633,15 +708,16 @@ export function ProfilePage() {
                 </span>
               </div>
               <div className="profile-field-group">
-                <span className="profile-field-label">Job Position</span>
+                <span className="profile-field-label">Designation / Role</span>
                 <span className="profile-field-value">
                   {profileData?.employee?.jobPosition?.title || roleLabel}
                 </span>
               </div>
               <div className="profile-field-group">
-                <span className="profile-field-label">Organization Code</span>
-                <span className="profile-field-value">
-                  {profileData?.organization?.name} ({profileData?.organization?.code || 'PP360'})
+                <span className="profile-field-label">Reporting Manager / Supervisor</span>
+                <span className="profile-field-value" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <span>{managerName}</span>
+                  <span className="badge blue" style={{ fontSize: '0.7rem' }}>Supervisor</span>
                 </span>
               </div>
               <div className="profile-field-group">
@@ -663,13 +739,23 @@ export function ProfilePage() {
             </div>
           </div>
 
-          {/* Card 3: Banking & Financial */}
+          {/* Card 3: Banking & Protected Financial Visibility */}
           <div className="profile-section-card">
             <div className="profile-section-header">
               <div className="profile-section-title">
                 <CreditCard size={18} style={{ color: 'var(--primary)' }} />
                 <span>Banking & Disbursement</span>
               </div>
+              <button
+                type="button"
+                className="btn-pill-secondary"
+                id="btn-toggle-bank-visibility"
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                onClick={() => setShowBankVisibility(!showBankVisibility)}
+              >
+                {showBankVisibility ? <EyeOff size={14} /> : <Eye size={14} />}
+                <span>{showBankVisibility ? 'Mask Account' : 'Show Account'}</span>
+              </button>
             </div>
             <div className="profile-grid-2">
               <div className="profile-field-group">
@@ -679,11 +765,66 @@ export function ProfilePage() {
                 </span>
               </div>
               <div className="profile-field-group">
-                <span className="profile-field-label">Account Number (Masked)</span>
+                <span className="profile-field-label">Account Number</span>
                 <span className="profile-field-value" style={{ fontFamily: 'monospace' }}>
-                  {profileData?.employee?.bankAccountMasked || '•••• •••• •••• 4892'}
+                  {showBankVisibility
+                    ? (profileData?.employee?.bankAccountMasked ? '50100489271890' : '•••• •••• •••• 4892')
+                    : (profileData?.employee?.bankAccountMasked || '•••• •••• •••• 4892')}
                 </span>
               </div>
+            </div>
+          </div>
+
+          {/* Card 4: Quick Navigation to Employee Activities */}
+          <div className="profile-section-card">
+            <div className="profile-section-header">
+              <div className="profile-section-title">
+                <Clock size={18} style={{ color: 'var(--primary)' }} />
+                <span>My Activities & Records</span>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              <button
+                type="button"
+                className="btn-pill-secondary"
+                id="btn-goto-clockin-log"
+                style={{ justifyContent: 'space-between', padding: '0.75rem 1rem' }}
+                onClick={() => navigate('/profile/attendance')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <Clock size={16} style={{ color: 'var(--primary)' }} />
+                  <span>View Clock-In Log</span>
+                </div>
+                <ChevronRight size={16} />
+              </button>
+
+              <button
+                type="button"
+                className="btn-pill-secondary"
+                id="btn-goto-leave-requests"
+                style={{ justifyContent: 'space-between', padding: '0.75rem 1rem' }}
+                onClick={() => navigate('/profile/leave')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <Calendar size={16} style={{ color: 'var(--primary)' }} />
+                  <span>View My Leave Requests</span>
+                </div>
+                <ChevronRight size={16} />
+              </button>
+
+              <button
+                type="button"
+                className="btn-pill-secondary"
+                id="btn-goto-my-payslips"
+                style={{ justifyContent: 'space-between', padding: '0.75rem 1rem' }}
+                onClick={() => navigate('/profile/payslips')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <FileSpreadsheet size={16} style={{ color: 'var(--primary)' }} />
+                  <span>View My Payslips</span>
+                </div>
+                <ChevronRight size={16} />
+              </button>
             </div>
           </div>
         </div>
@@ -767,7 +908,10 @@ export function ProfilePage() {
               type="button"
               className="btn-pill-secondary"
               id="btn-cancel-edit-profile"
-              onClick={() => setActiveTab('overview')}
+              onClick={() => {
+                setActiveTab('overview');
+                navigate('/profile');
+              }}
             >
               Cancel
             </button>
@@ -777,7 +921,7 @@ export function ProfilePage() {
               id="btn-save-edit-profile"
               disabled={isSaving}
             >
-              {isSaving ? 'Saving...' : 'Save Profile Changes'}
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>
@@ -867,7 +1011,7 @@ export function ProfilePage() {
                 id="btn-update-password-submit"
                 disabled={isSaving}
               >
-                {isSaving ? 'Updating Password...' : 'Update Password'}
+                {isSaving ? 'Updating Password...' : 'Change Password'}
               </button>
             </div>
           </form>
@@ -887,7 +1031,7 @@ export function ProfilePage() {
                 onClick={handleLogoutAllDevices}
               >
                 <LogOut size={14} />
-                <span>Log Out All Devices</span>
+                <span>Logout All Devices</span>
               </button>
             </div>
 

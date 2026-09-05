@@ -59,7 +59,7 @@ export const ROLE_NAVIGATION = {
     { to: '/attendance', label: 'Attendance', icon: Clock },
     { to: '/leaves', label: 'Leave Requests', icon: CalendarDays },
     { to: '/departments', label: 'Departments', icon: Building },
-    { to: '/profile/documents', label: 'Documents', icon: Award },
+    { to: '/documents', label: 'Documents', icon: Award },
     { to: '/audit', label: 'HR Reports', icon: FileText },
   ],
 
@@ -111,7 +111,7 @@ export const ROLE_NAVIGATION = {
     { to: '/attendance', label: 'Attendance', icon: Clock },
     { to: '/leaves', label: 'Apply Leave', icon: CalendarDays },
     { to: '/payslips', label: 'My Payslips', icon: LineChart },
-    { to: '/profile/documents', label: 'Documents', icon: Award },
+    { to: '/documents', label: 'Documents', icon: Award },
   ],
 
   AUDITOR: [

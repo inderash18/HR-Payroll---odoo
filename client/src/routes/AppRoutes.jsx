@@ -128,6 +128,7 @@ export function AppRoutes() {
         <Route path="/profile/edit" element={<ProfilePage tab="edit" />} />
         <Route path="/profile/security" element={<ProfilePage tab="security" />} />
         <Route path="/profile/documents" element={<ProfilePage tab="documents" />} />
+        <Route path="/documents" element={<ProfilePage tab="documents" />} />
         <Route path="/profile/attendance" element={<AttendancePage />} />
         <Route path="/profile/leave" element={<LeavesPage />} />
         <Route path="/profile/payslips" element={<PayslipsPage />} />

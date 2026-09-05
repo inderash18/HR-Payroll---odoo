@@ -63,6 +63,7 @@ export function Sidebar() {
           const Icon = item.icon;
           const isActive =
             location.pathname === item.to ||
+            (item.to === '/documents' && (location.pathname === '/documents' || location.pathname === '/profile/documents')) ||
             (item.to === '/employees' && location.pathname.startsWith('/employees/')) ||
             (item.to === '/payroll' && location.pathname.startsWith('/payroll/')) ||
             (item.to === '/payslips' && location.pathname.startsWith('/payslips/')) ||
@@ -72,6 +73,7 @@ export function Sidebar() {
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.to === '/dashboard' || item.to === '/documents' || item.to === '/profile'}
               className={() => `sidebar-nav-link ${isActive ? 'active' : ''}`}
               id={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
             >
@@ -109,7 +111,10 @@ export function Sidebar() {
       <div className="sidebar-bottom">
         <NavLink
           to="/profile"
-          className={() => `sidebar-nav-link ${location.pathname === '/profile' ? 'active' : ''}`}
+          end
+          className={() =>
+            `sidebar-nav-link ${location.pathname === '/profile' || location.pathname === '/profile/overview' || location.pathname === '/profile/edit' || location.pathname === '/profile/security' ? 'active' : ''}`
+          }
           id="sidebar-link-my-profile"
         >
           <User size={18} />
@@ -118,7 +123,10 @@ export function Sidebar() {
 
         <NavLink
           to="/settings"
-          className={() => `sidebar-nav-link ${location.pathname === '/settings' ? 'active' : ''}`}
+          end
+          className={() =>
+            `sidebar-nav-link ${location.pathname === '/settings' || location.pathname === '/profile/settings' ? 'active' : ''}`
+          }
           id="sidebar-link-settings"
         >
           <Settings size={18} />

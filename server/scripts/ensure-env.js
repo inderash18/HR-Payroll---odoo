@@ -14,7 +14,7 @@ PORT=3000
 API_PREFIX=/api/v1
 APP_NAME=PeoplePay360
 
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/peoplepay360?schema=public"
+DATABASE_URL="postgresql://postgres:password123@192.168.102.160:5432/peoplepay360?schema=public"
 
 JWT_ACCESS_SECRET="super_secret_access_key_change_in_production_min_32_chars"
 JWT_ACCESS_EXPIRES_IN="15m"

@@ -23,7 +23,7 @@ for (const envPath of possibleEnvPaths) {
 
 const databaseUrl =
   process.env.DATABASE_URL ||
-  'postgresql://postgres:postgres@localhost:5432/peoplepay360?schema=public';
+  'postgresql://postgres:password123@192.168.102.160:5432/peoplepay360?schema=public';
 
 process.env.DATABASE_URL = databaseUrl;
 

@@ -543,4 +543,29 @@ export class AuthService {
 
     return { message: 'Password updated successfully' };
   }
+
+  async getProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        organizationId: true,
+        legalEntityId: true,
+        organization: {
+          select: { id: true, name: true, code: true, currency: true },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundError('User profile not found');
+    }
+
+    return user;
+  }
 }
+

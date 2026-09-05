@@ -33,16 +33,23 @@ export class TransformResponseInterceptor implements NestInterceptor {
         }
 
         // Standardize pagination list responses
-        if (data && typeof data === 'object' && Array.isArray(data.items) && typeof data.total === 'number') {
-          const page = Number(data.page) || 1;
-          const limit = Number(data.limit) || data.items.length || 20;
-          const total = Number(data.total);
-          const pages = Number(data.totalPages) || Math.ceil(total / (limit || 1)) || 1;
+        const isListObject =
+          data &&
+          typeof data === 'object' &&
+          (Array.isArray(data.items) || Array.isArray(data.data)) &&
+          (data.pagination !== undefined || typeof data.total === 'number');
+
+        if (isListObject) {
+          const list = Array.isArray(data.items) ? data.items : data.data;
+          const paginationObj = data.pagination || {};
+          const total = Number(paginationObj.total ?? data.total) || (Array.isArray(list) ? list.length : 0);
+          const page = Number(paginationObj.page ?? data.page) || 1;
+          const limit = Number(paginationObj.limit ?? data.limit) || 50;
+          const pages = Number(paginationObj.totalPages ?? data.totalPages) || Math.ceil(total / (limit || 1)) || (total === 0 ? 0 : 1);
 
           return {
             success: true,
-            data: data.items,
-            items: data.items, // Backwards-compatible field
+            data: list,
             pagination: {
               page,
               limit,

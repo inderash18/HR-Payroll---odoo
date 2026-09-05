@@ -157,10 +157,7 @@ export class AuthController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get current authenticated user profile via session cookie or token' })
   async getMe(@CurrentUser() user: AuthenticatedUser) {
-    return {
-      success: true,
-      data: user,
-    };
+    return this.authService.getProfile(user.id);
   }
 
   @Public()

@@ -47,6 +47,21 @@ import {
 } from './api/types';
 import './style.css';
 
+// Helpers to extract data from standardized JSON API responses
+function extractList<T>(res: any): T[] {
+  if (!res) return [];
+  if (Array.isArray(res.data)) return res.data;
+  if (Array.isArray(res.items)) return res.items;
+  if (Array.isArray(res)) return res;
+  return [];
+}
+
+function extractData<T>(res: any, defaultValue: T): T {
+  if (!res) return defaultValue;
+  if (res.data !== undefined) return res.data as T;
+  return res as T;
+}
+
 // Initialize Lucide icons on any rendered DOM
 function refreshIcons() {
   createIcons({
@@ -234,6 +249,9 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
     user.role === 'HR_PAYROLL_USER' ||
     user.role === 'ADMIN';
 
+  const displayName = `${user.firstName || 'System'} ${user.lastName || 'Administrator'}`.trim();
+  const displayRole = (user.role || 'ADMIN').replace(/_/g, ' ');
+
   container.innerHTML = `
     <div class="hr-dashboard">
       <!-- SIDEBAR -->
@@ -322,11 +340,11 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
             
             <div class="user-profile">
               <div class="avatar">
-                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(user.firstName + ' ' + user.lastName)}&background=eef2ff&color=4f46e5" alt="${user.firstName}">
+                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eef2ff&color=4f46e5" alt="${displayName}">
               </div>
               <div class="user-info">
-                <span class="user-name">${user.firstName} ${user.lastName}</span>
-                <span class="user-role">${user.role.replace(/_/g, ' ')}</span>
+                <span class="user-name">${displayName}</span>
+                <span class="user-role">${displayRole}</span>
               </div>
               <button class="icon-btn" id="btn-logout" title="Sign Out" style="margin-left: 0.5rem; background: none; border: none; cursor: pointer; color: #6b7280;">
                 <i data-lucide="log-out"></i>
@@ -447,26 +465,33 @@ async function loadDashboardView(container: HTMLElement) {
   try {
     const [overviewRes, employeesRes, attendanceRes, leavesRes, contractsRes] =
       await Promise.all([
-        api.get<{ success: boolean; data: DashboardOverview }>('/dashboard/overview'),
-        api.get<{ items: Employee[] }>('/employees?limit=50').catch(() => ({ items: [] })),
-        api.get<{ items: Attendance[] }>('/attendance?limit=50').catch(() => ({ items: [] })),
-        api.get<{ items: LeaveRequest[] }>('/leaves/requests?limit=50').catch(() => ({ items: [] })),
-        api.get<{ items: Contract[] }>('/contracts?limit=50').catch(() => ({ items: [] })),
+        api.get('/dashboard/overview').catch(() => ({ data: {} })),
+        api.get('/employees?limit=50').catch(() => ({ data: [] })),
+        api.get('/attendance?limit=50').catch(() => ({ data: [] })),
+        api.get('/leaves/requests?limit=50').catch(() => ({ data: [] })),
+        api.get('/contracts?limit=50').catch(() => ({ data: [] })),
       ]);
 
-    const data = overviewRes.data || (overviewRes as any);
-    const employees = employeesRes.items || [];
-    const attendanceLogs = attendanceRes.items || [];
-    const leaveRequests = leavesRes.items || [];
-    const contracts = contractsRes.items || [];
+    const data = extractData<DashboardOverview>(overviewRes, {
+      activeEmployees: 0,
+      activeContracts: 0,
+      pendingLeaves: 0,
+      allTimePaidNet: 0,
+      allTimePaidGross: 0,
+      departmentHeadcounts: [],
+    });
+    const employees = extractList<Employee>(employeesRes);
+    const attendanceLogs = extractList<Attendance>(attendanceRes);
+    const leaveRequests = extractList<LeaveRequest>(leavesRes);
+    const contracts = extractList<Contract>(contractsRes);
 
     // Calculate attendance metrics
     const today = new Date().toISOString().split('T')[0];
-    const todayLogs = attendanceLogs.filter((a) => a.date.startsWith(today));
+    const todayLogs = attendanceLogs.filter((a) => a.date && a.date.startsWith(today));
     const presentCount = todayLogs.filter((a) => a.status === 'PRESENT').length;
     const lateCount = todayLogs.filter((a) => a.status === 'LATE').length;
     const missingCheckoutCount = todayLogs.filter((a) => a.checkIn && !a.checkOut).length;
-    const activeEmpCount = data.activeEmployees || employees.length || 0;
+    const activeEmpCount = data.activeEmployees || employees.filter((e) => e.isActive).length || employees.length || 0;
     const attendanceRate = activeEmpCount > 0 ? Math.round((presentCount / activeEmpCount) * 100) : 100;
 
     // Leave counts
@@ -849,8 +874,8 @@ async function loadEmployeesView(container: HTMLElement) {
   `;
 
   try {
-    const res = await api.get<{ items: Employee[] }>('/employees?limit=50');
-    const employees = res.items || [];
+    const res = await api.get('/employees?limit=50');
+    const employees = extractList<Employee>(res);
 
     container.innerHTML = `
       <div class="card">
@@ -907,8 +932,13 @@ async function loadEmployeesView(container: HTMLElement) {
 }
 
 async function openAddEmployeeModal() {
-  const deptsRes = await api.get<{ items: Department[] }>('/departments?limit=50').catch(() => ({ items: [] }));
-  const schedulesRes = await api.get<WorkingSchedule[]>('/working-schedules').catch(() => []);
+  const [deptsRes, schedulesRes] = await Promise.all([
+    api.get('/departments?limit=50').catch(() => ({ data: [] })),
+    api.get('/working-schedules').catch(() => ({ data: [] })),
+  ]);
+
+  const depts = extractList<Department>(deptsRes);
+  const schedules = extractList<WorkingSchedule>(schedulesRes);
 
   const modalBackdrop = document.createElement('div');
   modalBackdrop.className = 'modal-backdrop';
@@ -941,14 +971,14 @@ async function openAddEmployeeModal() {
               <label>Department</label>
               <select id="emp-dept" style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem; background: white;">
                 <option value="">Select Department...</option>
-                ${(deptsRes.items || []).map((d) => `<option value="${d.id}">${d.name} (${d.code})</option>`).join('')}
+                ${depts.map((d) => `<option value="${d.id}">${d.name} (${d.code})</option>`).join('')}
               </select>
             </div>
             <div class="form-group">
               <label>Working Schedule</label>
               <select id="emp-schedule" style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem; background: white;">
                 <option value="">Select Schedule...</option>
-                ${(schedulesRes || []).map((s) => `<option value="${s.id}">${s.name}</option>`).join('')}
+                ${schedules.map((s) => `<option value="${s.id}">${s.name}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -1003,8 +1033,8 @@ async function openAddEmployeeModal() {
 // ----------------------------------------------------
 async function loadDepartmentsView(container: HTMLElement) {
   try {
-    const res = await api.get<{ items: Department[] }>('/departments?limit=50');
-    const departments = res.items || [];
+    const res = await api.get('/departments?limit=50');
+    const departments = extractList<Department>(res);
 
     container.innerHTML = `
       <div class="card">
@@ -1052,8 +1082,8 @@ async function loadDepartmentsView(container: HTMLElement) {
 // ----------------------------------------------------
 async function loadContractsView(container: HTMLElement) {
   try {
-    const res = await api.get<{ items: Contract[] }>('/contracts?limit=50');
-    const contracts = res.items || [];
+    const res = await api.get('/contracts?limit=50');
+    const contracts = extractList<Contract>(res);
 
     container.innerHTML = `
       <div class="card">
@@ -1109,10 +1139,14 @@ async function loadContractsView(container: HTMLElement) {
 
 async function openAddContractModal() {
   const [empRes, structRes, schRes] = await Promise.all([
-    api.get<{ items: Employee[] }>('/employees?limit=50').catch(() => ({ items: [] })),
-    api.get<SalaryStructure[]>('/payroll/structures').catch(() => []),
-    api.get<WorkingSchedule[]>('/working-schedules').catch(() => []),
+    api.get('/employees?limit=50').catch(() => ({ data: [] })),
+    api.get('/payroll/structures').catch(() => ({ data: [] })),
+    api.get('/working-schedules').catch(() => ({ data: [] })),
   ]);
+
+  const emps = extractList<Employee>(empRes);
+  const structs = extractList<SalaryStructure>(structRes);
+  const schedules = extractList<WorkingSchedule>(schRes);
 
   const modalBackdrop = document.createElement('div');
   modalBackdrop.className = 'modal-backdrop';
@@ -1133,7 +1167,7 @@ async function openAddContractModal() {
               <label>Employee</label>
               <select id="cnt-emp" required style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem; background: white;">
                 <option value="">Select Employee...</option>
-                ${(empRes.items || []).map((e) => `<option value="${e.id}">${e.firstName} ${e.lastName} (${e.employeeNum})</option>`).join('')}
+                ${emps.map((e) => `<option value="${e.id}">${e.firstName} ${e.lastName} (${e.employeeNum})</option>`).join('')}
               </select>
             </div>
             <div class="form-group">
@@ -1144,14 +1178,14 @@ async function openAddContractModal() {
               <label>Salary Structure</label>
               <select id="cnt-struct" required style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem; background: white;">
                 <option value="">Select Structure...</option>
-                ${(structRes || []).map((s) => `<option value="${s.id}">${s.name} (${s.code})</option>`).join('')}
+                ${structs.map((s) => `<option value="${s.id}">${s.name} (${s.code})</option>`).join('')}
               </select>
             </div>
             <div class="form-group">
               <label>Working Schedule</label>
               <select id="cnt-sch" style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 0.5rem; background: white;">
                 <option value="">Select Schedule...</option>
-                ${(schRes || []).map((s) => `<option value="${s.id}">${s.name}</option>`).join('')}
+                ${schedules.map((s) => `<option value="${s.id}">${s.name}</option>`).join('')}
               </select>
             </div>
             <div class="form-group">
@@ -1210,7 +1244,8 @@ async function openAddContractModal() {
 // ----------------------------------------------------
 async function loadSchedulesView(container: HTMLElement) {
   try {
-    const schedules = await api.get<WorkingSchedule[]>('/working-schedules');
+    const res = await api.get('/working-schedules');
+    const schedules = extractList<WorkingSchedule>(res);
 
     container.innerHTML = `
       <div class="card">
@@ -1268,8 +1303,8 @@ async function loadSchedulesView(container: HTMLElement) {
 // ----------------------------------------------------
 async function loadAttendanceView(container: HTMLElement) {
   try {
-    const res = await api.get<{ items: Attendance[] }>('/attendance?limit=50');
-    const logs = res.items || [];
+    const res = await api.get('/attendance?limit=50');
+    const logs = extractList<Attendance>(res);
 
     container.innerHTML = `
       <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
@@ -1356,13 +1391,15 @@ async function loadLeavesView(container: HTMLElement) {
     const user = authStore.getState().user;
     const isHR = user?.role === 'ADMIN' || user?.role === 'HR_MANAGER';
 
-    const [types, allocations, requestsRes] = await Promise.all([
-      api.get<LeaveType[]>('/leaves/types').catch(() => []),
-      api.get<LeaveAllocation[]>('/leaves/allocations').catch(() => []),
-      api.get<{ items: LeaveRequest[] }>('/leaves/requests?limit=50').catch(() => ({ items: [] })),
+    const [typesRes, allocationsRes, requestsRes] = await Promise.all([
+      api.get('/leaves/types').catch(() => ({ data: [] })),
+      api.get('/leaves/allocations').catch(() => ({ data: [] })),
+      api.get('/leaves/requests?limit=50').catch(() => ({ data: [] })),
     ]);
 
-    const requests = requestsRes.items || [];
+    const types = extractList<LeaveType>(typesRes);
+    const allocations = extractList<LeaveAllocation>(allocationsRes);
+    const requests = extractList<LeaveRequest>(requestsRes);
 
     container.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
@@ -1574,12 +1611,13 @@ function openRequestLeaveModal(types: LeaveType[]) {
 // ----------------------------------------------------
 async function loadPayrollView(container: HTMLElement) {
   try {
-    const [payrunsRes, structures] = await Promise.all([
-      api.get<{ items: Payrun[] }>('/payroll/payruns?limit=50').catch(() => ({ items: [] })),
-      api.get<SalaryStructure[]>('/payroll/structures').catch(() => []),
+    const [payrunsRes, structuresRes] = await Promise.all([
+      api.get('/payroll/payruns?limit=50').catch(() => ({ data: [] })),
+      api.get('/payroll/structures').catch(() => ({ data: [] })),
     ]);
 
-    const payruns = payrunsRes.items || [];
+    const payruns = extractList<Payrun>(payrunsRes);
+    const structures = extractList<SalaryStructure>(structuresRes);
 
     container.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
@@ -1796,8 +1834,8 @@ function openCreatePayrunModal(structures: SalaryStructure[]) {
 // ----------------------------------------------------
 async function loadPayslipsView(container: HTMLElement) {
   try {
-    const res = await api.get<{ items: Payslip[] }>('/payroll/payslips?limit=50');
-    const payslips = res.items || [];
+    const res = await api.get('/payroll/payslips?limit=50');
+    const payslips = extractList<Payslip>(res);
 
     container.innerHTML = `
       <div class="card">
@@ -1857,18 +1895,22 @@ async function loadPayslipsView(container: HTMLElement) {
 // ----------------------------------------------------
 function loadSettingsView(container: HTMLElement) {
   const user = authStore.getState().user;
+  const displayName = `${user?.firstName || 'System'} ${user?.lastName || 'Administrator'}`.trim();
+  const initial1 = user?.firstName?.charAt(0) || 'S';
+  const initial2 = user?.lastName?.charAt(0) || 'A';
+
   container.innerHTML = `
     <div style="max-width: 700px;">
       <div class="card" style="padding: 2rem; margin-bottom: 1.5rem;">
         <h2 style="margin-bottom: 1.5rem;">User Profile & Session</h2>
         <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 1.5rem;">
           <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700;">
-            ${user?.firstName.charAt(0)}${user?.lastName.charAt(0)}
+            ${initial1}${initial2}
           </div>
           <div>
-            <h3>${user?.firstName} ${user?.lastName}</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">${user?.email}</p>
-            <span class="badge blue" style="margin-top: 0.5rem;">${user?.role.replace(/_/g, ' ')}</span>
+            <h3>${displayName}</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">${user?.email || 'admin@peoplepay360.local'}</p>
+            <span class="badge blue" style="margin-top: 0.5rem;">${(user?.role || 'ADMIN').replace(/_/g, ' ')}</span>
           </div>
         </div>
       </div>
@@ -1882,7 +1924,7 @@ function loadSettingsView(container: HTMLElement) {
           <strong>Security:</strong> Fastify Helmet + HttpOnly Cookie Auth + SafeMathParser AST Engine
         </p>
         <p style="color: var(--text-muted); font-size: 0.9rem;">
-          <strong>API Prefix:</strong> <code>/api/v1</code> (All endpoints returning JSON)
+          <strong>API Prefix:</strong> <code>/api/v1</code> (All REST API endpoints returning standardized JSON)
         </p>
       </div>
     </div>

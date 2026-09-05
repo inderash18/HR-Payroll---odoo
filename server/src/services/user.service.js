@@ -94,6 +94,62 @@ export const userService = {
   },
 };
 
+import { userProfileRepository } from '../repositories/user-profile.repository.js';
+
+export const profileService = {
+  async getProfile(userId) {
+    const profile = await userProfileRepository.getFullProfile(userId);
+    if (!profile) throw new Error('User profile not found');
+    return profile;
+  },
+
+  async updateProfile(userId, data) {
+    return userProfileRepository.updateProfile(userId, data);
+  },
+
+  async updatePassword(userId, currentPassword, newPassword) {
+    const user = await userRepository.findByIdRaw(userId);
+    if (!user) throw new Error('User not found');
+
+    const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isValid) throw new Error('Current password does not match.');
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await userRepository.updatePassword(userId, newHash);
+    return { success: true, message: 'Password updated successfully' };
+  },
+
+  async uploadAvatar(userId, avatarData) {
+    return userProfileRepository.saveAvatar(userId, avatarData);
+  },
+
+  async deleteAvatar(userId) {
+    return userProfileRepository.removeAvatar(userId);
+  },
+
+  async getPreferences(userId) {
+    return userProfileRepository.getPreferences(userId);
+  },
+
+  async updatePreferences(userId, prefs) {
+    return userProfileRepository.savePreferences(userId, prefs);
+  },
+
+  async getUserDocuments(userId) {
+    return userProfileRepository.getUserDocuments(userId);
+  },
+
+  async uploadUserDocument(userId, doc) {
+    return userProfileRepository.addDocument(userId, doc);
+  },
+
+  async deleteUserDocument(userId, documentId) {
+    const deleted = await userProfileRepository.deleteDocument(userId, documentId);
+    if (!deleted) throw new Error('Document not found or already deleted');
+    return { success: true };
+  },
+};
+
 export const organizationService = {
   async findById(id) {
     const org = await organizationRepository.findById(id);

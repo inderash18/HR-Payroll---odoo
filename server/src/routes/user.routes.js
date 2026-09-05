@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { userController } from '../controllers/user.controller.js';
+import { userController, profileController } from '../controllers/user.controller.js';
 import { organizationController } from '../controllers/user.controller.js';
 import { departmentController } from '../controllers/user.controller.js';
 import { employeeController } from '../controllers/user.controller.js';
@@ -10,9 +10,30 @@ import { ROLES } from '../config/constants.js';
 import { createUserSchema, updateUserSchema } from '../validators/user.validator.js';
 import { createDepartmentSchema, updateDepartmentSchema } from '../validators/department.validator.js';
 import { createEmployeeSchema, updateEmployeeSchema } from '../validators/employee.validator.js';
+import {
+  updateProfileSchema,
+  changePasswordSchema,
+  avatarUploadSchema,
+  preferencesSchema,
+  documentUploadSchema,
+} from '../validators/profile.validator.js';
 
 export const userRoutes = Router();
 userRoutes.use(authenticate);
+
+// Profile endpoints for logged-in user (MUST be before /:id)
+userRoutes.get('/me', profileController.getProfile);
+userRoutes.patch('/me', validate(updateProfileSchema), profileController.updateProfile);
+userRoutes.patch('/me/password', validate(changePasswordSchema), profileController.changePassword);
+userRoutes.post('/me/avatar', validate(avatarUploadSchema), profileController.uploadAvatar);
+userRoutes.delete('/me/avatar', profileController.deleteAvatar);
+userRoutes.get('/me/preferences', profileController.getPreferences);
+userRoutes.patch('/me/preferences', validate(preferencesSchema), profileController.updatePreferences);
+userRoutes.get('/me/documents', profileController.getDocuments);
+userRoutes.post('/me/documents', validate(documentUploadSchema), profileController.uploadDocument);
+userRoutes.delete('/me/documents/:documentId', profileController.deleteDocument);
+
+// General User management
 userRoutes.get('/', authorize(ROLES.ADMIN, ROLES.HR_MANAGER), userController.list);
 userRoutes.get('/:id', authorize(ROLES.ADMIN, ROLES.HR_MANAGER), userController.getById);
 userRoutes.post('/', authorize(ROLES.ADMIN), validate(createUserSchema), userController.create);

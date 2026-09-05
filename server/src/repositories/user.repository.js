@@ -36,6 +36,19 @@ export const userRepository = {
     });
   },
 
+  findByIdRaw: (id) => {
+    return prisma.user.findUnique({
+      where: { id },
+    });
+  },
+
+  updatePassword: (id, passwordHash, tx = prisma) => {
+    return tx.user.update({
+      where: { id },
+      data: { passwordHash },
+    });
+  },
+
   findMany: (organizationId, { skip = 0, take = 50, role, search } = {}) => {
     const where = {
       organizationId,

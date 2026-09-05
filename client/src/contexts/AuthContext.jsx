@@ -49,6 +49,20 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const res = await api.get('/auth/me');
+      setUser(res.data);
+      return res.data;
+    } catch (e) {
+      console.error('Failed to refresh user:', e);
+    }
+  };
+
+  const updateUser = (updater) => {
+    setUser((prev) => (typeof updater === 'function' ? updater(prev) : { ...prev, ...updater }));
+  };
+
   const hasRole = (...roles) => {
     if (!user) return false;
     if (user.role === 'ADMIN') return true;
@@ -63,6 +77,8 @@ export function AuthProvider({ children }) {
         error,
         login,
         logout,
+        refreshUser,
+        updateUser,
         hasRole,
         isAuthenticated: !!user,
       }}

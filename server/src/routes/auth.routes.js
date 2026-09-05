@@ -21,6 +21,7 @@ router.post('/logout', authController.logout);
 router.post('/logout-all', authenticate, authController.logoutAll);
 router.get('/sessions', authenticate, authController.getSessions);
 router.delete('/sessions/:id', authenticate, authController.revokeSession);
+router.delete('/sessions', authenticate, authController.logoutAll);
 router.post('/password-reset/request', authRateLimiter, validate(requestPasswordResetSchema), authController.requestPasswordReset);
 router.post('/password-reset/confirm', authRateLimiter, validate(confirmPasswordResetSchema), authController.confirmPasswordReset);
 router.post('/change-password', authenticate, validate(changePasswordSchema), authController.changePassword);

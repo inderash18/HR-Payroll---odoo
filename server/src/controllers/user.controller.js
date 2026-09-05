@@ -1,4 +1,4 @@
-import { userService, organizationService, departmentService } from '../services/user.service.js';
+import { userService, profileService, organizationService, departmentService } from '../services/user.service.js';
 import { employeeService } from '../services/employee.service.js';
 import { successResponse } from '../utils/response.js';
 
@@ -34,6 +34,102 @@ export const userController = {
     try {
       const user = await userService.update(req.user.organizationId, req.params.id, req.body);
       return successResponse(res, user, 'User updated successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+};
+
+export const profileController = {
+  async getProfile(req, res, next) {
+    try {
+      const profile = await profileService.getProfile(req.user.id);
+      return successResponse(res, profile, 'Profile retrieved successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async updateProfile(req, res, next) {
+    try {
+      const updated = await profileService.updateProfile(req.user.id, req.body);
+      return successResponse(res, updated, 'Profile updated successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async changePassword(req, res, next) {
+    try {
+      const result = await profileService.updatePassword(
+        req.user.id,
+        req.body.currentPassword,
+        req.body.newPassword
+      );
+      return successResponse(res, result, 'Password updated successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async uploadAvatar(req, res, next) {
+    try {
+      const result = await profileService.uploadAvatar(req.user.id, req.body.avatarData);
+      return successResponse(res, result, 'Profile photo updated successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async deleteAvatar(req, res, next) {
+    try {
+      const result = await profileService.deleteAvatar(req.user.id);
+      return successResponse(res, result, 'Profile photo removed successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getPreferences(req, res, next) {
+    try {
+      const prefs = await profileService.getPreferences(req.user.id);
+      return successResponse(res, prefs, 'User preferences retrieved');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async updatePreferences(req, res, next) {
+    try {
+      const updated = await profileService.updatePreferences(req.user.id, req.body);
+      return successResponse(res, updated, 'Preferences updated successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getDocuments(req, res, next) {
+    try {
+      const docs = await profileService.getUserDocuments(req.user.id);
+      return successResponse(res, docs, 'User documents retrieved');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async uploadDocument(req, res, next) {
+    try {
+      const doc = await profileService.uploadUserDocument(req.user.id, req.body);
+      return successResponse(res, doc, 'Document uploaded successfully', 201);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async deleteDocument(req, res, next) {
+    try {
+      const result = await profileService.deleteUserDocument(req.user.id, req.params.documentId);
+      return successResponse(res, result, 'Document deleted successfully');
     } catch (err) {
       next(err);
     }

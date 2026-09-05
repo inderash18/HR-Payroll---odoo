@@ -48,3 +48,5 @@ coverage/
 *.temp
 .cache/
 .vite/
+uploads/
+server/uploads/

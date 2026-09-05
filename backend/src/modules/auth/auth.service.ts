@@ -135,24 +135,38 @@ export class AuthService {
     dto: LoginDto,
     meta?: { ipAddress?: string; userAgent?: string },
   ): Promise<AuthTokens> {
-    const org = await this.prisma.organization.findUnique({
-      where: { code: dto.organizationCode },
-    });
+    let org: any;
+    let user: any;
 
-    if (!org) {
-      throw new UnauthorizedError('Invalid credentials or organization code');
+    if (dto.organizationCode) {
+      org = await this.prisma.organization.findUnique({
+        where: { code: dto.organizationCode },
+      });
+
+      if (!org) {
+        throw new UnauthorizedError('Invalid credentials or organization code');
+      }
+
+      user = await this.prisma.user.findUnique({
+        where: {
+          organizationId_email: {
+            organizationId: org.id,
+            email: dto.email,
+          },
+        },
+      });
+    } else {
+      user = await this.prisma.user.findFirst({
+        where: { email: dto.email },
+        include: { organization: true },
+      });
+
+      if (user) {
+        org = user.organization;
+      }
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: {
-        organizationId_email: {
-          organizationId: org.id,
-          email: dto.email,
-        },
-      },
-    });
-
-    if (!user || !user.isActive) {
+    if (!user || !user.isActive || !org) {
       throw new UnauthorizedError('Invalid credentials or account deactivated');
     }
 

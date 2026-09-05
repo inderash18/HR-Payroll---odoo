@@ -55,10 +55,11 @@ export function EmployeesPage() {
       if (selectedStatus !== '') params.set('isActive', selectedStatus === 'active');
 
       const res = await api.get(`/employees?${params.toString()}`);
-      const list = res.data?.employees || res.data || [];
-      setEmployees(Array.isArray(list) ? list : []);
-      if (res.data?.pagination) {
-        setPagination(res.data.pagination);
+      const list = Array.isArray(res?.data) ? res.data : (res?.data?.employees || []);
+      setEmployees(list);
+      const paginationData = res?.pagination || res?.data?.pagination;
+      if (paginationData) {
+        setPagination(paginationData);
       } else {
         setPagination({ page: 1, limit: 25, total: list.length, totalPages: Math.ceil(list.length / 25) || 1 });
       }

@@ -1,47 +1,14 @@
 import React from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import {
-  LayoutGrid,
-  Users,
-  Clock,
-  CalendarDays,
-  Landmark,
-  LineChart,
-  FileText,
-  User,
-  Settings,
-  LogOut,
-} from 'lucide-react';
-
 import { getNavigationForRole } from '../config/navigation.config';
-
 import { useLayout } from '../contexts/LayoutContext';
-import { PanelLeftClose } from 'lucide-react';
 
 export function Sidebar() {
-  const { user, logout } = useAuth();
-  const { isSidebarCollapsed, toggleSidebar } = useLayout();
+  const { user } = useAuth();
+  const { isSidebarCollapsed } = useLayout();
   const navigate = useNavigate();
   const location = useLocation();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login', { replace: true });
-  };
-
-  const displayName = user?.firstName
-    ? `${user.firstName} ${user.lastName || ''}`.trim()
-    : user?.name || 'Aarav Sharma';
-
-  const initials = user?.firstName
-    ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ''}`.toUpperCase()
-    : (displayName.split(' ').map((n) => n[0]).join('').slice(0, 2) || 'AS').toUpperCase();
-
-  const roleTitle =
-    user?.employee?.jobPosition?.title ||
-    user?.employee?.jobTitle ||
-    (user?.role ? user.role.replace(/_/g, ' ') : 'ORGANIZATION ADMIN');
 
   const visibleLinks = getNavigationForRole(user?.role);
 
@@ -114,68 +81,7 @@ export function Sidebar() {
           );
         })}
       </nav>
-
-      {/* USER PROFILE & FOOTER SECTION */}
-      <div className="sidebar-footer-group">
-        <div
-          className="sidebar-user-card"
-          id="sidebar-user-profile-summary"
-          onClick={() => navigate('/profile')}
-          title="Open Profile & Account Settings"
-        >
-          <div className="sidebar-user-avatar">
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt="Avatar" className="sidebar-avatar-img" />
-            ) : (
-              <span>{initials}</span>
-            )}
-            <span className="avatar-status-badge"></span>
-          </div>
-          <div className="sidebar-user-info">
-            <span className="sidebar-user-name">{displayName}</span>
-            <span className="sidebar-user-role-badge">{roleTitle}</span>
-          </div>
-        </div>
-
-        <div className="sidebar-bottom-actions">
-          <NavLink
-            to="/profile"
-            end
-            className={() =>
-              `sidebar-bottom-btn ${location.pathname.startsWith('/profile') ? 'active' : ''}`
-            }
-            id="sidebar-link-my-profile"
-            title="My Profile"
-          >
-            <User size={16} />
-            <span>Profile</span>
-          </NavLink>
-
-          <NavLink
-            to="/settings"
-            end
-            className={() =>
-              `sidebar-bottom-btn ${location.pathname === '/settings' || location.pathname === '/profile/settings' ? 'active' : ''}`
-            }
-            id="sidebar-link-settings"
-            title="Settings"
-          >
-            <Settings size={16} />
-            <span>Settings</span>
-          </NavLink>
-
-          <button
-            type="button"
-            className="sidebar-bottom-btn logout-btn"
-            id="sidebar-link-logout"
-            onClick={handleLogout}
-            title="Sign out of PeoplePay360"
-          >
-            <LogOut size={16} />
-            <span>Logout</span>
-          </button>
-        </div>
-      </div>
     </aside>
   );
 }
+

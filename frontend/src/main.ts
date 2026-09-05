@@ -184,10 +184,12 @@ function renderLogin(container: HTMLElement) {
 }
 
 // ----------------------------------------------------
+// ----------------------------------------------------
 // DASHBOARD SHELL & NAVIGATION (MATCHES REFERENCE IMAGE)
 // ----------------------------------------------------
 function renderDashboardShell(container: HTMLElement, user: UserType) {
   const displayName = `${user?.firstName || 'Hira'} ${user?.lastName ? user.lastName.charAt(0) : 'R'}`.trim();
+  const initials = `${user?.firstName ? user.firstName.charAt(0) : 'H'}${user?.lastName ? user.lastName.charAt(0) : 'R'}`;
   container.innerHTML = `
     <div class="app-shell">
       <!-- ULTRA-DARK SLIM SIDEBAR (MATCHES REFERENCE) -->
@@ -266,9 +268,7 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
             </button>
 
             <div class="user-profile-pill" id="user-profile-menu">
-              <div class="user-avatar-circle">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="${user.firstName}" />
-              </div>
+              <div class="user-avatar-initials">${initials}</div>
               <span class="user-profile-name">${displayName}</span>
             </div>
           </div>
@@ -474,14 +474,6 @@ async function loadDashboardView(container: HTMLElement) {
     const now = new Date();
     const formattedDate = now.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 
-    // Avatars collection for realistic SaaS roster
-    const avatars = [
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80',
-    ];
-
     // Top 3 roster items
     const rosterList = (employees.length >= 3 ? employees.slice(0, 3) : [
       { firstName: 'David', lastName: 'Miller', employeeNum: 'EMP-001', dept: 'English' },
@@ -493,11 +485,12 @@ async function loadDashboardView(container: HTMLElement) {
       const hoursDesc = idx === 1 ? '2 hours lecture' : '4 hours lecture';
       const rateDesc = contract?.wage ? `$${Math.round(Number(contract.wage) / 80)}/hr` : (idx === 0 ? '$100/hr' : (idx === 1 ? '$120/hr' : '$150/hr'));
       const isActiveRow = idx === 1; // Center item active highlighted like reference image
+      const initial = emp.firstName ? emp.firstName.charAt(0) : 'P';
 
       return `
         <div class="ref-roster-row ${isActiveRow ? 'active' : ''}" data-emp-id="${emp.id || idx}">
           <div class="ref-roster-user">
-            <img src="${avatars[idx % avatars.length]}" class="ref-avatar-img" alt="${name}" />
+            <div class="ref-roster-avatar-badge">${initial}</div>
             <div>
               <div class="ref-roster-name">${name}</div>
             </div>
@@ -570,9 +563,11 @@ async function loadDashboardView(container: HTMLElement) {
             </div>
 
             <div class="ref-schedule-container">
-              <!-- MINI PROFILE CARD -->
+              <!-- MINI PROFILE CARD (CLEAN PROFESSIONAL NON-IMAGE BADGE) -->
               <div class="ref-schedule-featured">
-                <img src="${avatars[1]}" class="ref-featured-avatar" alt="${featuredName}" />
+                <div class="ref-featured-badge">
+                  <i data-lucide="user-check" style="width: 24px; height: 24px;"></i>
+                </div>
                 <div class="ref-featured-name">${featuredName}</div>
                 <div class="ref-featured-desc">
                   5 years Experience<br>
@@ -599,8 +594,8 @@ async function loadDashboardView(container: HTMLElement) {
                   <div class="ref-date-left">
                     <span class="ref-date-num">13</span>
                     <div class="ref-date-info">
-                      <strong style="color: #ffffff;">Dec</strong>
-                      <span style="color: #94a3b8;">Tuesday</span>
+                      <strong>Dec</strong>
+                      <span>Tuesday</span>
                     </div>
                   </div>
                   <div class="ref-time-badge">02:00pm-04:00pm</div>
@@ -637,7 +632,7 @@ async function loadDashboardView(container: HTMLElement) {
             <div class="ref-radial-meter">
               <div class="ref-radial-circle">
                 <!-- SVG Radial dashed tick ring gauge -->
-                <svg width="150" height="150" viewBox="0 0 150 150">
+                <svg width="140" height="140" viewBox="0 0 150 150">
                   <circle
                     cx="75"
                     cy="75"
@@ -654,7 +649,7 @@ async function loadDashboardView(container: HTMLElement) {
               </div>
             </div>
 
-            <div style="margin-top: 1.25rem;">
+            <div style="margin-top: 1rem;">
               <div style="display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.45rem;">
                 <span>Progress</span>
                 <span style="font-size: 0.72rem; color: var(--text-muted);">${pendingLeavesCount > 0 ? `${pendingLeavesCount} Leaves Pending` : 'Database Synced'}</span>
@@ -687,16 +682,8 @@ async function loadDashboardView(container: HTMLElement) {
       card.addEventListener('click', () => {
         document.querySelectorAll('.ref-date-card').forEach((c) => {
           c.classList.remove('active');
-          const strong = c.querySelector('strong');
-          const span = c.querySelector('span');
-          if (strong) strong.style.color = '';
-          if (span) span.style.color = '';
         });
         card.classList.add('active');
-        const strong = card.querySelector('strong');
-        const span = card.querySelector('span');
-        if (strong) strong.style.color = '#ffffff';
-        if (span) span.style.color = '#94a3b8';
       });
     });
 

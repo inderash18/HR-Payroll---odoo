@@ -7,8 +7,8 @@ import api from '../../api/client';
 export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@peoplepay360.local');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('indhu.admin@peoplepay360.in');
+  const [password, setPassword] = useState('PeoplePay360@123');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState(null);

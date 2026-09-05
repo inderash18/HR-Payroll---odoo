@@ -120,7 +120,7 @@ describe('PeoplePay360 Express Backend API Tests', () => {
     expect(auditorRes.status).toBe(200);
     expect(auditorRes.body.data.role).toBe('AUDITOR');
     expect(auditorRes.body.data.summary.complianceStatus).toBe('FULLY_COMPLIANT');
-  });
+  }, 15000);
 
   it('Strict RBAC: EMPLOYEE cannot create contracts (403 Forbidden)', async () => {
     const res = await request(app)

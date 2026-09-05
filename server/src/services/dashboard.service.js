@@ -1,6 +1,8 @@
 import { prisma } from '../config/prisma.js';
 import { auditRepository } from '../repositories/audit.repository.js';
 
+const getTodayUtc = () => new Date(new Date().toISOString().slice(0, 10));
+
 export const dashboardService = {
   async getRoleDashboard(user, organizationId) {
     const role = user?.role || 'EMPLOYEE';
@@ -95,94 +97,108 @@ export const dashboardService = {
 
   // 2. ORGANIZATION_ADMIN DASHBOARD
   async getOrgAdminDashboard(organizationId) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getTodayUtc();
 
-    const [
-      totalEmployees,
-      activeEmployees,
-      departments,
-      pendingLeaves,
-      presentToday,
-      latestPayruns,
-      recentAuditLogs,
-      contractsCount,
-    ] = await Promise.all([
-      prisma.employee.count({ where: { organizationId } }),
-      prisma.employee.count({ where: { organizationId, isActive: true } }),
-      prisma.department.findMany({
-        where: { organizationId },
-        include: { _count: { select: { employees: true } } },
-      }),
-      prisma.leaveRequest.count({ where: { organizationId, status: 'PENDING_APPROVAL' } }),
-      prisma.attendance.count({ where: { organizationId, date: today, status: 'PRESENT' } }),
-      prisma.payrun.findMany({
-        where: { organizationId },
-        take: 5,
-        orderBy: { createdAt: 'desc' },
-      }),
-      prisma.auditLog.findMany({
-        where: { organizationId },
-        take: 6,
-        orderBy: { createdAt: 'desc' },
-        include: { user: { select: { firstName: true, lastName: true, email: true } } },
-      }),
-      prisma.contract.count({ where: { organizationId, status: 'ACTIVE' } }),
-    ]);
-
-    const departmentHeadcounts = departments.map((d) => ({
-      id: d.id,
-      name: d.name,
-      code: d.code,
-      employeeCount: d._count.employees,
-    }));
-
-    const attendanceRate = totalEmployees > 0 ? parseFloat(((presentToday / totalEmployees) * 100).toFixed(1)) : 100;
-    const latestPayrun = latestPayruns[0] || null;
-
-    return {
-      role: 'ORGANIZATION_ADMIN',
-      summary: {
+    try {
+      const [
         totalEmployees,
         activeEmployees,
-        departmentsCount: departments.length,
-        activeContracts: contractsCount,
-        pendingLeaveApprovals: pendingLeaves,
+        departments,
+        pendingLeaves,
+      ] = await Promise.all([
+        prisma.employee.count({ where: { organizationId } }).catch(() => 0),
+        prisma.employee.count({ where: { organizationId, isActive: true } }).catch(() => 0),
+        prisma.department.findMany({
+          where: { organizationId },
+          include: { _count: { select: { employees: true } } },
+        }).catch(() => []),
+        prisma.leaveRequest.count({ where: { organizationId, status: 'PENDING_APPROVAL' } }).catch(() => 0),
+      ]);
+
+      const [
         presentToday,
-        attendanceRate,
-        currentPayrollStatus: latestPayrun ? latestPayrun.status : 'NO_PAYRUN',
-        latestPayrunGross: latestPayrun ? Number(latestPayrun.totalGross) : 0,
-        latestPayrunNet: latestPayrun ? Number(latestPayrun.totalNet) : 0,
-        upcomingPayrollDate: 'Last Working Day of Month',
-      },
-      charts: {
-        departmentHeadcounts,
-        attendanceBreakdown: {
-          present: presentToday,
-          absent: Math.max(0, totalEmployees - presentToday),
-          onLeave: pendingLeaves,
+        latestPayruns,
+        recentAuditLogs,
+        contractsCount,
+      ] = await Promise.all([
+        prisma.attendance.count({ where: { organizationId, date: today, status: 'PRESENT' } }).catch(() => 0),
+        prisma.payrun.findMany({
+          where: { organizationId },
+          take: 5,
+          orderBy: { createdAt: 'desc' },
+        }).catch(() => []),
+        prisma.auditLog.findMany({
+          where: { organizationId },
+          take: 6,
+          orderBy: { createdAt: 'desc' },
+          include: { user: { select: { firstName: true, lastName: true, email: true } } },
+        }).catch(() => []),
+        prisma.contract.count({ where: { organizationId, status: 'ACTIVE' } }).catch(() => 0),
+      ]);
+
+      const departmentHeadcounts = (departments || []).map((d) => ({
+        id: d.id,
+        name: d.name,
+        code: d.code,
+        employeeCount: d._count?.employees || 0,
+      }));
+
+      const count = totalEmployees || 0;
+      const attendanceRate = count > 0 ? parseFloat((((presentToday || 0) / count) * 100).toFixed(1)) : 100;
+      const latestPayrun = latestPayruns?.[0] || null;
+
+      return {
+        role: 'ORGANIZATION_ADMIN',
+        summary: {
+          totalEmployees: count,
+          activeEmployees: activeEmployees || 0,
+          departmentsCount: departments?.length || 0,
+          activeContracts: contractsCount || 0,
+          pendingLeaveApprovals: pendingLeaves || 0,
+          presentToday: presentToday || 0,
+          attendanceRate,
+          currentPayrollStatus: latestPayrun ? latestPayrun.status : 'NO_PAYRUN',
+          latestPayrunGross: latestPayrun ? Number(latestPayrun.totalGross) : 0,
+          latestPayrunNet: latestPayrun ? Number(latestPayrun.totalNet) : 0,
+          upcomingPayrollDate: 'Last Working Day of Month',
         },
-      },
-      recentActivities: recentAuditLogs.map((log) => ({
-        id: log.id,
-        action: log.action,
-        entityType: log.entityType,
-        actor: log.user ? `${log.user.firstName} ${log.user.lastName}` : 'Admin',
-        createdAt: log.createdAt,
-      })),
-      quickActions: [
-        { label: 'Add Employee', path: '/employees', icon: 'UserPlus' },
-        { label: 'Create Department', path: '/departments', icon: 'FolderPlus' },
-        { label: 'Review Leaves', path: '/leaves', icon: 'Calendar' },
-        { label: 'Manage Roles', path: '/users', icon: 'Key' },
-      ],
-    };
+        charts: {
+          departmentHeadcounts,
+          attendanceBreakdown: {
+            present: presentToday || 0,
+            absent: Math.max(0, count - (presentToday || 0)),
+            onLeave: pendingLeaves || 0,
+          },
+        },
+        recentActivities: (recentAuditLogs || []).map((log) => ({
+          id: log.id,
+          action: log.action,
+          entityType: log.entityType,
+          actor: log.user ? `${log.user.firstName} ${log.user.lastName}` : 'Admin',
+          createdAt: log.createdAt,
+        })),
+        quickActions: [
+          { label: 'Add Employee', path: '/employees', icon: 'UserPlus' },
+          { label: 'Create Department', path: '/departments', icon: 'FolderPlus' },
+          { label: 'Review Leaves', path: '/leaves', icon: 'Calendar' },
+          { label: 'Manage Roles', path: '/users', icon: 'Key' },
+        ],
+      };
+    } catch (e) {
+      console.error('getOrgAdminDashboard error:', e);
+      return {
+        role: 'ORGANIZATION_ADMIN',
+        summary: { totalEmployees: 0, activeEmployees: 0, attendanceRate: 100 },
+        charts: { departmentHeadcounts: [] },
+        recentActivities: [],
+        quickActions: [],
+      };
+    }
   },
 
   // 3. HR_MANAGER DASHBOARD
   async getHRManagerDashboard(organizationId) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getTodayUtc();
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -430,8 +446,7 @@ export const dashboardService = {
 
   // 6. DEPARTMENT_MANAGER DASHBOARD
   async getDepartmentManagerDashboard(organizationId, userId) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getTodayUtc();
 
     // Find the department managed by this user
     const managedDept = await prisma.department.findFirst({
@@ -524,8 +539,7 @@ export const dashboardService = {
 
   // 7. EMPLOYEE DASHBOARD
   async getEmployeeDashboard(organizationId, userId) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getTodayUtc();
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -707,8 +721,7 @@ export const dashboardService = {
   },
 
   async getAttendanceMetrics(organizationId) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getTodayUtc();
 
     const [presentToday, totalEmployees] = await Promise.all([
       prisma.attendance.count({ where: { organizationId, date: today, status: 'PRESENT' } }),

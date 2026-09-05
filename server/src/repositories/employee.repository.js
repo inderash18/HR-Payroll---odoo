@@ -1,10 +1,13 @@
 import { prisma } from '../config/prisma.js';
 
 export const employeeRepository = {
-  findMany: (organizationId, { skip = 0, take = 50, departmentId, search, isActive } = {}) => {
+  findMany: (organizationId, { skip = 0, take = 50, departmentId, workMode, location, employmentType, search, isActive } = {}) => {
     const where = {
       organizationId,
       ...(departmentId ? { departmentId } : {}),
+      ...(workMode ? { workMode } : {}),
+      ...(location ? { location } : {}),
+      ...(employmentType ? { employmentType } : {}),
       ...(isActive !== undefined ? { isActive } : {}),
       ...(search
         ? {

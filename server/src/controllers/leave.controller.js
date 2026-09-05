@@ -206,6 +206,78 @@ export const dashboardController = {
     }
   },
 
+  async getSuperAdmin(req, res, next) {
+    try {
+      const data = await dashboardService.getSuperAdminDashboard();
+      return successResponse(res, data, 'Super Admin Dashboard fetched');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getAdmin(req, res, next) {
+    try {
+      const data = await dashboardService.getOrgAdminDashboard(req.user.organizationId);
+      return successResponse(res, data, 'Organization Admin Dashboard fetched');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getHR(req, res, next) {
+    try {
+      const data = await dashboardService.getHRManagerDashboard(req.user.organizationId);
+      return successResponse(res, data, 'HR Manager Dashboard fetched');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getPayroll(req, res, next) {
+    try {
+      const data = await dashboardService.getPayrollManagerDashboard(req.user.organizationId);
+      return successResponse(res, data, 'Payroll Manager Dashboard fetched');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getFinance(req, res, next) {
+    try {
+      const data = await dashboardService.getFinanceManagerDashboard(req.user.organizationId);
+      return successResponse(res, data, 'Finance Manager Dashboard fetched');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getManager(req, res, next) {
+    try {
+      const data = await dashboardService.getDepartmentManagerDashboard(req.user.organizationId, req.user.id);
+      return successResponse(res, data, 'Department Manager Dashboard fetched');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getEmployee(req, res, next) {
+    try {
+      const data = await dashboardService.getEmployeeDashboard(req.user.organizationId, req.user.id);
+      return successResponse(res, data, 'Employee Dashboard fetched');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getAuditor(req, res, next) {
+    try {
+      const data = await dashboardService.getAuditorDashboard(req.user.organizationId);
+      return successResponse(res, data, 'Auditor Dashboard fetched');
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async getOverview(req, res, next) {
     try {
       const data = await dashboardService.getRoleDashboard(req.user, req.user.organizationId);

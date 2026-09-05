@@ -537,26 +537,29 @@ body.login-page #root {
 .sidebar-brand-container {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
   padding: 0.25rem 0.4rem;
   cursor: pointer;
-  transition: opacity 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .sidebar-brand-container:hover {
-  opacity: 0.92;
+  opacity: 0.94;
+  transform: translateX(1px);
 }
 
 .sidebar-brand-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #1D4ED8 0%, #3B82F6 50%, #2563EB 100%);
   display: grid;
   place-items: center;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  box-shadow: 
+    0 4px 16px rgba(37, 99, 235, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
   flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .sidebar-brand-text {
@@ -566,7 +569,7 @@ body.login-page #root {
 
 .sidebar-brand-title {
   color: #FFFFFF;
-  font-size: 1.05rem;
+  font-size: 1.08rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.15;
@@ -575,25 +578,25 @@ body.login-page #root {
 
 .sidebar-brand-sub {
   color: #64748B;
-  font-size: 0.62rem;
+  font-size: 0.63rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-top: 0.1rem;
+  letter-spacing: 0.09em;
+  margin-top: 0.15rem;
 }
 
 .sidebar-workspace-badge {
-  margin-top: 0.65rem;
+  margin-top: 0.75rem;
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 0.35rem 0.65rem;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.38rem 0.75rem;
   border-radius: 8px;
-  font-size: 0.72rem;
-  color: #94A3B8;
-  font-weight: 500;
+  font-size: 0.73rem;
+  color: #CBD5E1;
+  font-weight: 600;
 }
 
 .workspace-status-dot {
@@ -601,7 +604,7 @@ body.login-page #root {
   height: 6px;
   border-radius: 50%;
   background: #10B981;
-  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
   flex-shrink: 0;
 }
 
@@ -615,7 +618,7 @@ body.login-page #root {
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.22rem;
   width: 100%;
   flex: 1;
   overflow-y: auto;
@@ -629,24 +632,24 @@ body.login-page #root {
 }
 
 .sidebar-section-label {
-  font-size: 0.65rem;
+  font-size: 0.66rem;
   font-weight: 700;
   color: #475569;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 0.75rem 0.65rem 0.3rem 0.65rem;
+  padding: 0.85rem 0.75rem 0.35rem 0.75rem;
   margin-top: 0.2rem;
 }
 
 .sidebar-nav-link {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  padding: 0.55rem 0.75rem;
-  border-radius: 9px;
+  gap: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 10px;
   color: #94A3B8;
   text-decoration: none;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.15s ease-in-out;
   background: transparent;
@@ -662,7 +665,7 @@ body.login-page #root {
   display: grid;
   place-items: center;
   color: #64748B;
-  transition: color 0.15s ease;
+  transition: all 0.15s ease;
   flex-shrink: 0;
 }
 
@@ -674,34 +677,36 @@ body.login-page #root {
 }
 
 .sidebar-nav-link:hover {
-  color: #F1F5F9;
-  background: rgba(255, 255, 255, 0.04);
+  color: #F8FAFC;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateX(2px);
 }
 
 .sidebar-nav-link:hover .nav-icon-wrapper {
-  color: #94A3B8;
+  color: #CBD5E1;
 }
 
-/* REFINED HIGH-END ACTIVE STATE (NO HARSH SOLID WHITE) */
+/* REFINED HIGH-END ACTIVE STATE */
 .sidebar-nav-link.active {
-  background: linear-gradient(90deg, rgba(37, 99, 235, 0.18) 0%, rgba(37, 99, 235, 0.04) 100%);
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.22) 0%, rgba(37, 99, 235, 0.04) 100%);
   color: #FFFFFF;
   font-weight: 600;
-  border: 1px solid rgba(59, 130, 246, 0.22);
-  border-left: 3px solid #3B82F6;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-left: 3.5px solid #38BDF8;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .sidebar-nav-link.active .nav-icon-wrapper {
   color: #38BDF8;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.4));
 }
 
 .active-glow-pill {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #38BDF8;
-  box-shadow: 0 0 6px #38BDF8;
+  box-shadow: 0 0 8px #38BDF8;
   flex-shrink: 0;
 }
 
@@ -718,34 +723,35 @@ body.login-page #root {
 .sidebar-user-card {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.55rem 0.65rem;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 0.7rem;
+  padding: 0.62rem 0.75rem;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .sidebar-user-card:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
   transform: translateY(-1px);
 }
 
 .sidebar-user-avatar {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1E293B, #0F172A);
+  background: linear-gradient(135deg, #1E3A8A, #3B82F6);
   color: #FFFFFF;
-  font-weight: 700;
-  font-size: 0.8rem;
+  font-weight: 800;
+  font-size: 0.82rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   position: relative;
 }
 
@@ -753,11 +759,11 @@ body.login-page #root {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: #10B981;
-  border: 1.5px solid #0B0F19;
+  border: 2px solid #0B0F19;
 }
 
 .sidebar-avatar-img {
@@ -772,12 +778,12 @@ body.login-page #root {
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
-  gap: 0.15rem;
+  gap: 0.2rem;
 }
 
 .sidebar-user-name {
-  color: #F8FAFC;
-  font-size: 0.82rem;
+  color: #FFFFFF;
+  font-size: 0.84rem;
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
@@ -789,9 +795,9 @@ body.login-page #root {
   font-size: 0.62rem;
   font-weight: 700;
   color: #93C5FD;
-  background: rgba(37, 99, 235, 0.14);
-  border: 1px solid rgba(59, 130, 246, 0.18);
-  padding: 1px 5px;
+  background: rgba(37, 99, 235, 0.18);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  padding: 1px 6px;
   border-radius: 4px;
   width: fit-content;
   text-transform: uppercase;

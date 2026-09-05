@@ -33,27 +33,17 @@ export const authStore = {
     notify();
 
     try {
-      // 1. Check current authenticated session via HttpOnly cookies
+      // Check current authenticated session via HttpOnly cookies
       const response = await api.get<{ success: boolean; data: User }>('/auth/me');
       state.user = response.data || (response as any);
       state.isLoading = false;
       notify();
       return state.user;
     } catch {
-      // 2. If access token is expired, attempt refresh
-      try {
-        await api.post('/auth/refresh');
-        const retryRes = await api.get<{ success: boolean; data: User }>('/auth/me');
-        state.user = retryRes.data || (retryRes as any);
-        state.isLoading = false;
-        notify();
-        return state.user;
-      } catch {
-        state.user = null;
-        state.isLoading = false;
-        notify();
-        return null;
-      }
+      state.user = null;
+      state.isLoading = false;
+      notify();
+      return null;
     }
   },
 

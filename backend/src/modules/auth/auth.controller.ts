@@ -129,6 +129,10 @@ export class AuthController {
     @Res({ passthrough: true }) res: FastifyReply,
   ) {
     const rawRefreshToken = (req.cookies as Record<string, string>)?.[REFRESH_COOKIE_NAME];
+    if (!rawRefreshToken) {
+      throw new UnauthorizedError('No active refresh session found');
+    }
+
     const meta = {
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],

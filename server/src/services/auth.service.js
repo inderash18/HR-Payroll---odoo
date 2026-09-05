@@ -172,23 +172,31 @@ export const authService = {
       console.warn('⚠️ Database query during login bypassed or failed, checking dev preset credentials:', dbErr.message);
     }
 
-    // 2. Check if this is one of our preset 8 roles with password 'admin123'
+    // 2. Dynamic organization lookup fallback
+    let defaultOrg = null;
+    try {
+      defaultOrg = await prisma.organization.findFirst({
+        where: { code: 'PP360-IND' },
+      }) || await prisma.organization.findFirst();
+    } catch (e) {}
+
+    // 3. Check if this is one of our preset 8 roles with password 'admin123'
     const preset = PRESET_USERS.find(
       (p) => p.email.toLowerCase() === dto.email?.trim().toLowerCase()
     );
 
     if (preset && (dto.password === 'admin123' || dto.password === env.DEV_FIXED_AUTH_PASSWORD)) {
       if (!user) {
-        // Build fallback user object
+        const orgId = defaultOrg?.id || preset.organizationId;
         user = {
           id: preset.id,
-          organizationId: preset.organizationId,
+          organizationId: orgId,
           email: preset.email,
           firstName: preset.firstName,
           lastName: preset.lastName,
           role: preset.role,
           isActive: true,
-          organization: preset.organization,
+          organization: defaultOrg || preset.organization,
         };
       }
     }

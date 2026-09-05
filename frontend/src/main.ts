@@ -109,66 +109,49 @@ function renderLoading(container: HTMLElement) {
 }
 
 // ----------------------------------------------------
-// LOGIN VIEW
 // ----------------------------------------------------
-// ----------------------------------------------------
-// LOGIN VIEW
+// LOGIN VIEW (PUGHALVANAN-DEV LOGIN CARD UI)
 // ----------------------------------------------------
 function renderLogin(container: HTMLElement) {
   container.innerHTML = `
-    <div class="login-layout">
-      <div class="login-form-side">
-        <div class="login-brand">
-          <div class="login-brand-icon">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </div>
-          <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">PeoplePay360</h2>
-            <p style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">HR & Payroll Platform</p>
-          </div>
-        </div>
-
-        <div style="margin-bottom: 2rem;">
-          <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; margin-bottom: 0.35rem;">Welcome back</h1>
-          <p style="font-size: 0.88rem; color: var(--text-muted);">Please enter your enterprise credentials to sign in.</p>
-        </div>
-
-        <form id="login-form" style="display: flex; flex-direction: column; gap: 1.25rem;">
-          <div class="form-group">
-            <label class="form-label">Work Email</label>
-            <input type="email" id="login-email" class="form-input" placeholder="admin@peoplepay360.local" value="admin@peoplepay360.local" required />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Password</label>
-            <input type="password" id="login-password" class="form-input" placeholder="••••••••" value="Admin@123456" required />
-          </div>
-
-          <div id="login-error-msg" style="color: #ef4444; font-size: 0.85rem; display: none;"></div>
-
-          <button type="submit" class="ref-btn-black" id="btn-login-submit" style="padding: 0.75rem; font-size: 0.95rem; margin-top: 0.5rem;">
-            Sign In to Dashboard
-          </button>
-        </form>
+    <div class="login-card">
+      
+      <!-- Left side: Image background content -->
+      <div class="login-image-content">
       </div>
 
-      <div class="login-hero-side">
-        <div>
-          <span style="font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8c9ba8;">PostgreSQL 18.6 Live</span>
-          <h2 style="font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin-top: 0.75rem; letter-spacing: -0.02em;">
-            Workforce intelligence & precision payroll.
-          </h2>
+      <!-- Right side: White form container -->
+      <div class="login-form-side">
+        <div class="welcome-text" style="margin-top: 1rem;">
+          <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">Welcome Back</h1>
+          <p style="color: #6b7280; font-size: 0.9rem; margin-top: 0.5rem;">Sign in to access your dashboard</p>
         </div>
-        <div>
-          <p style="font-size: 0.88rem; color: #8c9ba8; line-height: 1.6;">
-            Empowering modern teams with multi-tenant HR, attendance tracking, and automated salary computation.
+
+        <div style="margin-top: 1.5rem; padding: 1rem; background-color: #f3f4f6; border-left: 4px solid #3b82f6; border-radius: 4px;">
+          <p style="color: #4b5563; font-size: 0.85rem; line-height: 1.4;">
+            <strong>Note:</strong> Enterprise accounts are provisioned by your system administrator. Please use your official work email to log in.
           </p>
         </div>
+
+        <form id="login-form" style="margin-top: 2rem;">
+          <div class="stacked-inputs">
+            <div class="input-row">
+              <input type="email" id="login-email" placeholder="Work Email Address" value="admin@peoplepay360.local" required />
+            </div>
+            <div class="input-row">
+              <input type="password" id="login-password" placeholder="Password" value="Admin@123456" required />
+            </div>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+            <div id="login-error-msg" style="color: #ef4444; font-size: 0.85rem; display: none;"></div>
+            <a href="#" style="color: #3b82f6; font-size: 0.85rem; text-decoration: none; font-weight: 500; margin-left: auto;">Forgot Password?</a>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btn-login-submit" style="margin-top: 2rem; width: 100%; border-radius: 8px; background-color: #1f2937; padding: 1rem; font-size: 1rem; font-weight: 700; color: #ffffff; cursor: pointer; border: none;">
+            Sign In
+          </button>
+        </form>
       </div>
     </div>
   `;
@@ -195,7 +178,7 @@ function renderLogin(container: HTMLElement) {
         errorBox.style.display = 'block';
       }
       btn.disabled = false;
-      btn.innerText = 'Sign In to Dashboard';
+      btn.innerText = 'Sign In';
     }
   });
 }

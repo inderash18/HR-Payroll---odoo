@@ -86,65 +86,117 @@ button, input, select, textarea {
 }
 
 /* ----------------------------------------------------
-   LOGIN VIEW
+   LOGIN VIEW (PUGHALVANAN-DEV LOGIN CARD UI)
    ---------------------------------------------------- */
-body.login-page #app {
-  max-width: 1050px;
-  max-height: 680px;
+body.login-page {
+  background: #f3f4f6;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
 }
 
-.login-layout {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+body.login-page #app {
   width: 100%;
+  max-width: 1000px;
+  height: auto;
+  min-height: 600px;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.login-card {
+  display: flex;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 600px;
+  background: #ffffff;
+  border: 6px solid #e2e8f0;
+  border-radius: 32px;
+  box-shadow: 0 20px 50px -10px rgba(148, 163, 184, 0.25);
+  overflow: hidden;
+  position: relative;
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 55%;
   height: 100%;
+  background: url('/ChatGPT Image Sep 5, 2026, 02_51_18 PM.png') right center/cover no-repeat;
+  z-index: 0;
+}
+
+.login-image-content {
+  flex: 0.9;
+  padding: 3rem;
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
+
+.box-logo {
+  border: 1px solid rgba(255,255,255,0.7);
+  border-radius: 4px;
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  color: white;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  backdrop-filter: blur(4px);
 }
 
 .login-form-side {
-  padding: 3.5rem 4rem;
+  flex: 1.1;
+  background: white;
+  border-top-left-radius: 60px;
+  padding: 3rem 4rem;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  background: #ffffff;
-}
-
-.login-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
-}
-
-.login-brand-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--primary);
-  color: #ffffff;
-  display: grid;
-  place-items: center;
-}
-
-.login-hero-side {
-  background: #0d0f12;
-  color: #ffffff;
-  padding: 3.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   position: relative;
-  overflow: hidden;
+  z-index: 1;
 }
 
-.login-hero-side::before {
-  content: '';
-  position: absolute;
-  top: -100px;
-  right: -100px;
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+.stacked-inputs {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.stacked-inputs .input-row {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.stacked-inputs .input-row:last-child {
+  border-bottom: none;
+}
+
+.stacked-inputs input {
+  width: 100%;
+  padding: 1.2rem 1.5rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  box-sizing: border-box;
+}
+
+.stacked-inputs input::placeholder {
+  color: #9ca3af;
 }
 
 /* ----------------------------------------------------

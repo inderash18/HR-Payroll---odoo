@@ -12,6 +12,7 @@ router.use('/departments', departmentRoutes);
 router.use('/employees', employeeRoutes);
 router.use('/contracts', contractRoutes);
 router.use('/working-schedules', scheduleRoutes);
+router.use('/schedules', scheduleRoutes);
 router.use('/attendance', attendanceRoutes);
 router.use('/leaves', leaveRoutes);
 router.use('/payroll', payrollRoutes);

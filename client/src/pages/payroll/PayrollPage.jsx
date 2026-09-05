@@ -9,7 +9,13 @@ export function PayrollPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toast, setToast] = useState(null);
   const navigate = useNavigate();
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -26,8 +32,16 @@ export function PayrollPage() {
         api.get('/payroll/structures'),
       ]);
 
-      if (prRes.status === 'fulfilled') setPayruns(prRes.value.data?.payruns || prRes.value.data || []);
-      if (stRes.status === 'fulfilled') setStructures(stRes.value.data?.structures || stRes.value.data || []);
+      if (prRes.status === 'fulfilled') {
+        const d = prRes.value?.data ?? prRes.value;
+        const list = Array.isArray(d) ? d : (d?.payruns || []);
+        setPayruns(list);
+      }
+      if (stRes.status === 'fulfilled') {
+        const d = stRes.value?.data ?? stRes.value;
+        const list = Array.isArray(d) ? d : (d?.structures || []);
+        setStructures(list);
+      }
     } catch (err) {
       console.error('Failed to load payroll:', err);
     } finally {
@@ -43,9 +57,10 @@ export function PayrollPage() {
     e.stopPropagation();
     try {
       await api.post(`/payroll/payruns/${id}/compute`);
+      showToast('Payrun computed successfully');
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Compute failed');
+      showToast(err.response?.data?.message || err.message || 'Compute failed', 'error');
     }
   };
 
@@ -53,9 +68,10 @@ export function PayrollPage() {
     e.stopPropagation();
     try {
       await api.post(`/payroll/payruns/${id}/validate`);
+      showToast('Payrun validated and approved');
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Validate failed');
+      showToast(err.response?.data?.message || err.message || 'Validate failed', 'error');
     }
   };
 
@@ -63,9 +79,10 @@ export function PayrollPage() {
     e.stopPropagation();
     try {
       await api.post(`/payroll/payruns/${id}/pay`, { paymentMethod: 'BANK_TRANSFER' });
+      showToast('Payrun marked as Paid');
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Payment mark failed');
+      showToast(err.response?.data?.message || err.message || 'Payment mark failed', 'error');
     }
   };
 
@@ -86,9 +103,10 @@ export function PayrollPage() {
         endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0],
         structureId: '',
       });
+      showToast('Payrun batch generated successfully');
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to create payrun');
+      showToast(err.response?.data?.message || err.message || 'Failed to create payrun', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -96,6 +114,32 @@ export function PayrollPage() {
 
   return (
     <div>
+      {toast && (
+        <div
+          style={{
+            padding: '0.75rem 1.25rem',
+            marginBottom: '1rem',
+            borderRadius: '8px',
+            fontWeight: 600,
+            fontSize: '0.9rem',
+            background: toast.type === 'error' ? '#fef2f2' : '#ecfdf5',
+            color: toast.type === 'error' ? '#b91c1c' : '#047857',
+            border: `1px solid ${toast.type === 'error' ? '#fca5a5' : '#6ee7b7'}`,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <span>{toast.message}</span>
+          <button
+            onClick={() => setToast(null)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontWeight: 800, color: 'inherit' }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       <div className="card" style={{ marginBottom: '1.5rem' }}>
         <div
           className="card-header"

@@ -43,7 +43,7 @@ export function requirePermission(...requiredPermissions) {
       });
     }
 
-    if (req.user.role === ROLES.SUPER_ADMIN) {
+    if (req.user.role === ROLES.SUPER_ADMIN || req.user.role === ROLES.ORGANIZATION_ADMIN || req.user.role === ROLES.ADMIN) {
       return next();
     }
 
@@ -68,7 +68,7 @@ export function requireAnyPermission(...permissions) {
       });
     }
 
-    if (req.user.role === ROLES.SUPER_ADMIN) {
+    if (req.user.role === ROLES.SUPER_ADMIN || req.user.role === ROLES.ORGANIZATION_ADMIN || req.user.role === ROLES.ADMIN) {
       return next();
     }
 

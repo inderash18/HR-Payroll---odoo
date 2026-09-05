@@ -2,11 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import { Plus, Calendar, Check, X, UserPlus, Clock } from 'lucide-react';
 
+import { useAuth } from '../../contexts/AuthContext';
+
 export function LeavesPage() {
   const [requests, setRequests] = useState([]);
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Auth
+  const { user, hasRole } = useAuth();
+  const canAllocate = hasRole('SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'HR_MANAGER');
 
   // Modals
   const [showReqModal, setShowReqModal] = useState(false);
@@ -76,6 +82,7 @@ export function LeavesPage() {
     try {
       await api.post('/leaves/requests', {
         ...reqForm,
+        employeeId: canAllocate ? reqForm.employeeId : user?.employee?.id,
         numberOfDays: Number(reqForm.numberOfDays),
       });
       setShowReqModal(false);
@@ -125,14 +132,16 @@ export function LeavesPage() {
             Leaves & Time Off Administration
           </h2>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button
-              className="btn-pill-secondary"
-              id="btn-allocate-leave"
-              onClick={() => setShowAllocModal(true)}
-            >
-              <Plus size={16} />
-              <span>Allocate Days</span>
-            </button>
+            {canAllocate && (
+              <button
+                className="btn-pill-secondary"
+                id="btn-allocate-leave"
+                onClick={() => setShowAllocModal(true)}
+              >
+                <Plus size={16} />
+                <span>Allocate Days</span>
+              </button>
+            )}
             <button
               className="btn-pill-primary"
               id="btn-request-leave"
@@ -237,21 +246,23 @@ export function LeavesPage() {
             </div>
             <form onSubmit={handleCreateRequest}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="modal-form-group">
-                  <label>Employee</label>
-                  <select
-                    required
-                    value={reqForm.employeeId}
-                    onChange={(e) => setReqForm({ ...reqForm, employeeId: e.target.value })}
-                  >
-                    <option value="">Select Employee...</option>
-                    {employees.map((e) => (
-                      <option key={e.id} value={e.id}>
-                        {e.firstName} {e.lastName} ({e.employeeNum})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {canAllocate && (
+                  <div className="modal-form-group">
+                    <label>Employee</label>
+                    <select
+                      required
+                      value={reqForm.employeeId}
+                      onChange={(e) => setReqForm({ ...reqForm, employeeId: e.target.value })}
+                    >
+                      <option value="">Select Employee...</option>
+                      {employees.map((e) => (
+                        <option key={e.id} value={e.id}>
+                          {e.firstName} {e.lastName} ({e.employeeNum})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div className="modal-form-group">
                   <label>Leave Type</label>
                   <select

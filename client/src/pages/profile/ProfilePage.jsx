@@ -1425,21 +1425,6 @@ export function SettingsPage() {
           </div>
         </div>
       </div>
-
-      <div className="card" style={{ padding: '2rem' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '1rem' }}>
-          System Information
-        </h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-          <strong>Database:</strong> PostgreSQL 18.6 (localhost:5432, db: peoplepay360)
-        </p>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-          <strong>Security:</strong> Express Helmet + HttpOnly Cookie Auth + SafeMathParser AST Engine
-        </p>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-          <strong>API Prefix:</strong> <code>/api/v1</code> (All REST API endpoints returning standardized JSON)
-        </p>
-      </div>
     </div>
   );
 }

@@ -92,7 +92,7 @@ export const employeeService = {
       const newUser = await tx.user.create({
         data: {
           email: workEmail,
-          password: hashedPassword,
+          passwordHash: hashedPassword,
           firstName: dto.firstName,
           lastName: dto.lastName,
           role: 'EMPLOYEE',

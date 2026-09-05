@@ -7,6 +7,7 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }) {
   const [schedules, setSchedules] = useState([]);
   const [isLoadingDropdowns, setIsLoadingDropdowns] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
   const [generatedCredentials, setGeneratedCredentials] = useState(null);
 
   const [formData, setFormData] = useState({

@@ -92,15 +92,26 @@ export function EmployeeDashboard({ data, onRefresh }) {
             </div>
           </div>
           <div className="admin-stat-val" style={{ fontSize: '1.35rem' }}>
-            {attendance.isCheckedIn ? 'Clocked In' : 'Not Clocked In'}
+            {attendance.checkOutTime ? 'Clocked Out' : attendance.isCheckedIn ? 'Clocked In' : 'Not Clocked In'}
           </div>
           <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
-            {attendance.checkInTime
+            {attendance.checkOutTime 
+              ? `Out at ${new Date(attendance.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+              : attendance.checkInTime
               ? `In at ${new Date(attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
               : 'Ready to start your work day'}
           </div>
           <div style={{ marginTop: '0.85rem' }}>
-            {attendance.isCheckedIn ? (
+            {attendance.checkOutTime ? (
+              <button
+                type="button"
+                disabled={true}
+                className="btn-action-sm"
+                style={{ width: '100%', padding: '0.55rem', background: '#e2e8f0', color: '#475569', border: 'none' }}
+              >
+                <CheckCircle2 size={14} /> Workday Completed
+              </button>
+            ) : attendance.isCheckedIn ? (
               <button
                 type="button"
                 onClick={handleClockOut}

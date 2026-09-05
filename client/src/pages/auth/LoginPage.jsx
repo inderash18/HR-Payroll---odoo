@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import api from '../../api/client';
 import { getRoleDashboardPath } from '../../config/navigation.config';
 
 export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+
   const [email, setEmail] = useState('indhu.admin@peoplepay360.in');
   const [password, setPassword] = useState('PeoplePay360@123');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,9 +26,9 @@ export function LoginPage() {
   const [resetLoading, setResetLoading] = useState(false);
 
   useEffect(() => {
-    document.body.classList.add('login-page');
+    document.body.style.margin = "0";
     return () => {
-      document.body.classList.remove('login-page');
+      document.body.style.margin = "";
     };
   }, []);
 
@@ -42,12 +43,8 @@ export function LoginPage() {
       navigate(targetPath, { replace: true });
     } catch (err) {
       let msg = err.message || 'Invalid email or password.';
-
-      if (err.status === 429) {
-        msg = 'Too many login attempts. Please try again shortly.';
-      } else if (err.code === 'NETWORK_ERROR' || err.status === 0) {
-        msg = 'Unable to connect to PeoplePay360.';
-      }
+      if (err.status === 429) msg = 'Too many login attempts. Please try again shortly.';
+      else if (err.code === 'NETWORK_ERROR' || err.status === 0) msg = 'Unable to connect to PeoplePay360.';
       setError(msg);
     } finally {
       setIsLoading(false);
@@ -63,278 +60,181 @@ export function LoginPage() {
       try {
         const res = await api.post('/auth/forgot-password', { email: resetEmail });
         setResetStep(2);
-        setResetMsg({
-          text: res.data?.message || 'Verification token dispatched to your email.',
-          type: 'success',
-        });
+        setResetMsg({ text: res.data?.message || 'Verification token dispatched to your email.', type: 'success' });
       } catch (err) {
-        setResetMsg({
-          text: err.response?.data?.message || 'Failed to request password reset token.',
-          type: 'error',
-        });
+        setResetMsg({ text: err.response?.data?.message || 'Failed to request password reset token.', type: 'error' });
       } finally {
         setResetLoading(false);
       }
     } else {
       try {
-        const res = await api.post('/auth/reset-password', {
-          token: resetToken,
-          newPassword: resetNewPwd,
-        });
-        setResetMsg({
-          text: res.data?.message || 'Password reset successfully. You may now sign in.',
-          type: 'success',
-        });
+        const res = await api.post('/auth/reset-password', { token: resetToken, newPassword: resetNewPwd });
+        setResetMsg({ text: res.data?.message || 'Password reset successfully. You may now sign in.', type: 'success' });
         setTimeout(() => {
           setShowForgotModal(false);
           setResetStep(1);
           setResetMsg({ text: '', type: '' });
         }, 1500);
       } catch (err) {
-        setResetMsg({
-          text: err.response?.data?.message || 'Failed to confirm new password.',
-          type: 'error',
-        });
+        setResetMsg({ text: err.response?.data?.message || 'Failed to confirm new password.', type: 'error' });
       } finally {
         setResetLoading(false);
       }
     }
   };
 
-  
   return (
-    <div className="login-screen-wrapper">
-      <div className="login-card">
-        {/* Left side: Hero / Building Brand Image */}
-        <div className="login-image-content">
-          <div className="login-brand-badge">
-            <span className="brand-dot"></span>
-            <span>PEOPLEPAY360</span>
+    <div
+      className="min-h-screen w-full relative flex items-center justify-center md:justify-end md:pr-[15%] overflow-hidden bg-cover bg-center font-['Inter',sans-serif]"
+      style={{ backgroundImage: 'url("/ChatGPT Image Sep 6, 2026, 01_09_16 AM.png")' }}
+    >
+      {/* Blue Color Overlay */}
+      <div className="absolute inset-0 bg-[#15438E] opacity-[0.1] z-0 pointer-events-none"></div>
+
+      {/* The glass card */}
+      <div className="w-full max-w-md md:max-w-[480px] bg-white/10 backdrop-blur-[24px] border border-white/30 rounded-3xl shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] overflow-hidden p-8 relative z-10 mx-4 md:mx-0">
+
+        {/* Header Section */}
+        <div className="mb-6">
+          <div className="inline-block bg-white/20 border border-white/40 px-3 py-1 rounded-full mb-4">
+            <span className="text-blue-500 font-semibold text-xs tracking-wider">ENTERPRISE CLOUD</span>
           </div>
-          <div className="login-hero-overlay">
-            <div className="hero-quote">
-              <p className="hero-quote-title">Next-Gen Workforce Operations</p>
-              <p className="hero-quote-sub">Automated Payroll, Real-time Attendance & RBAC Compliance.</p>
-            </div>
-          </div>
+          <h1 className="text-4xl font-bold text-[#1a202c] mb-2 tracking-tight">Sign In</h1>
+          <p className="text-gray-700 text-sm">Access your PeoplePay360 HR & Payroll Workspace</p>
         </div>
 
-        {/* Right side: Modern enterprise form */}
-        <div className="login-form-side">
-          <div className="login-header-group">
-            <div className="login-sys-badge">ENTERPRISE CLOUD</div>
-            <h1 className="login-title">Sign In</h1>
-            <p className="login-subtitle">
-              Access your PeoplePay360 HR & Payroll Workspace
+        {/* Notice Box */}
+        <div className="bg-blue-500/10 border border-blue-400/30 rounded-2xl p-4 flex gap-3 mb-8 items-start">
+          <ShieldCheck className="text-blue-600 mt-0.5 shrink-0" size={20} />
+          <p className="text-[#2d3748] text-sm font-medium leading-relaxed">
+            Secure Organization Portal: Sign in with your registered email or employee ID credentials.
+          </p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          {error && (
+            <div className="text-red-600 bg-red-100/80 p-3 rounded-xl text-sm font-semibold border border-red-200">
+              {error}
+            </div>
+          )}
+
+          {/* Email Input */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-white text-sm font-medium ml-1">Work Email</label>
+            <div className="relative">
+              <input
+                type="text"
+                className="w-full h-12 bg-white/10 border border-white/30 rounded-full px-5 text-white placeholder-white/50 outline-none focus:border-white/60 transition-colors"
+                placeholder="name@peoplepay360.local"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Password Input */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex justify-between items-center ml-1">
+              <label className="text-white text-sm font-medium">Password</label>
+              <button
+                type="button"
+                onClick={() => setShowForgotModal(true)}
+                className="text-white text-sm font-medium hover:underline bg-transparent border-none cursor-pointer"
+              >
+                Forgot password?
+              </button>
+            </div>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="w-full h-12 bg-white/10 border border-white/30 rounded-full px-5 pr-12 text-white placeholder-white/50 outline-none focus:border-white/60 transition-colors tracking-widest"
+                placeholder="••••••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-transparent border-none cursor-pointer"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Remember Me */}
+          <label className="flex items-center cursor-pointer mt-1 mb-2 ml-1">
+            <div className={`w-5 h-5 rounded-[4px] border ${rememberMe ? 'bg-blue-500 border-blue-500' : 'bg-transparent border-white/50'} flex items-center justify-center transition-colors`}>
+              <input type="checkbox" className="hidden" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+              {rememberMe && (
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <span className="text-white text-sm font-medium ml-3">Remember session for 30 days</span>
+          </label>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="h-12 w-full rounded-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold flex items-center justify-center transition-colors border border-blue-400/50 shadow-lg"
+          >
+            {isLoading ? <Loader2 className="animate-spin mr-2" size={20} /> : null}
+            {isLoading ? 'Authenticating...' : 'Sign In to Dashboard'}
+          </button>
+
+          {/* Footer inside card */}
+          <div className="mt-4 text-center">
+            <p className="text-[11px] font-medium text-[#1a202c]">
+              Powered by Odoo Architecture • 256-Bit SSL Encrypted
             </p>
           </div>
-
-          <div className="login-notice-box">
-            <div className="notice-icon">🛡️</div>
-            <div className="notice-content">
-              <strong>Secure Organization Portal:</strong> Sign in with your registered email or employee ID credentials.
-            </div>
-          </div>
-
-          <form id="login-form" onSubmit={handleSubmit} className="login-form-body">
-            <div className="form-field-group">
-              <label className="field-label" htmlFor="login-email">Work Email</label>
-              <div className="input-control">
-                <input
-                  type="text"
-                  id="login-email"
-                  placeholder="name@peoplepay360.local"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="username"
-                />
-              </div>
-            </div>
-
-            <div className="form-field-group">
-              <div className="field-label-row">
-                <label className="field-label" htmlFor="login-password">Password</label>
-                <a
-                  href="#forgot"
-                  id="btn-forgot-password"
-                  className="link-forgot"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowForgotModal(true);
-                  }}
-                >
-                  Forgot password?
-                </a>
-              </div>
-              <div className="input-control input-with-action">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="login-password"
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  className="btn-pwd-toggle"
-                  id="btn-toggle-pwd"
-                  title={showPassword ? "Hide password" : "Show password"}
-                  tabIndex={-1}
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <div className="form-options-row">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  id="login-remember"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                <span>Remember session for 30 days</span>
-              </label>
-            </div>
-
-            {error && (
-              <div id="login-error-msg" className="login-error-banner">
-                <span className="error-dot">●</span>
-                <span>{error}</span>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="btn-login-action"
-              id="btn-login-submit"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 size={18} className="spin-animation" />
-                  <span>Authenticating secure session...</span>
-                </>
-              ) : (
-                <span>Sign in to Dashboard</span>
-              )}
-            </button>
-          </form>
-
-          <div className="login-footer-meta">
-            <span>Powered by ODOO Architecture</span>
-            <span className="meta-sep">•</span>
-            <span>256-Bit SSL Encrypted</span>
-          </div>
-        </div>
+        </form>
       </div>
 
       {/* Forgot Password Modal */}
       {showForgotModal && (
-        <div className="modal-overlay">
-          <div className="modal-card">
-            <div className="modal-header">
-              <h3 className="modal-title">Reset Your Password</h3>
-              <button
-                className="modal-close-btn"
-                onClick={() => {
-                  setShowForgotModal(false);
-                  setResetStep(1);
-                  setResetMsg({ text: '', type: '' });
-                }}
-              >
-                &times;
-              </button>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-[24px] p-8 max-w-md w-full mx-4 shadow-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-[#0f1f3d]">Reset Your Password</h3>
+              <button onClick={() => { setShowForgotModal(false); setResetStep(1); setResetMsg({ text: '', type: '' }); }} className="text-gray-500 hover:text-gray-800 border-none bg-transparent text-2xl cursor-pointer">&times;</button>
             </div>
-            <div style={{ padding: '0.5rem 0' }}>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-                Enter your registered work email. We will generate a secure single-use verification token to reset your password.
-              </p>
-
-              <form onSubmit={handleForgotSubmit}>
-                <div className="modal-form-group">
-                  <label>Work Email</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="aarav.sharma@peoplepay360.local"
-                    value={resetEmail}
-                    onChange={(e) => setResetEmail(e.target.value)}
-                  />
-                </div>
-
-                {resetStep === 2 && (
-                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
-                    <div className="modal-form-group">
-                      <label>Reset Token</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Enter token from email"
-                        value={resetToken}
-                        onChange={(e) => setResetToken(e.target.value)}
-                      />
-                    </div>
-                    <div className="modal-form-group">
-                      <label>New Password</label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="Enter new strong password"
-                        value={resetNewPwd}
-                        onChange={(e) => setResetNewPwd(e.target.value)}
-                      />
-                    </div>
+            <p className="text-sm text-gray-500 mb-6">Enter your registered work email. We will generate a secure single-use verification token to reset your password.</p>
+            <form onSubmit={handleForgotSubmit}>
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-[#0f1f3d] mb-2">Work Email</label>
+                <input type="email" required placeholder="name@peoplepay360.local" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} className="w-full h-[50px] px-4 rounded-[24px] border-[1.34px] border-[#dce5f2] bg-[rgba(89,111,142,0.1)] text-[#0f1f3d] outline-none focus:border-blue-500 transition-colors" />
+              </div>
+              {resetStep === 2 && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="mb-4">
+                    <label className="block text-sm font-semibold text-[#0f1f3d] mb-2">Reset Token</label>
+                    <input type="text" required placeholder="Enter token from email" value={resetToken} onChange={(e) => setResetToken(e.target.value)} className="w-full h-[50px] px-4 rounded-[24px] border-[1.34px] border-[#dce5f2] bg-[rgba(89,111,142,0.1)] text-[#0f1f3d] outline-none focus:border-blue-500 transition-colors" />
                   </div>
-                )}
-
-                {resetMsg.text && (
-                  <div
-                    style={{
-                      fontSize: '0.84rem',
-                      marginTop: '0.75rem',
-                      fontWeight: 600,
-                      color: resetMsg.type === 'success' ? 'var(--green-text)' : 'var(--red-text)',
-                      background: resetMsg.type === 'success' ? 'var(--green-bg)' : 'var(--red-bg)',
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                    }}
-                  >
-                    {resetMsg.text}
+                  <div className="mb-4">
+                    <label className="block text-sm font-semibold text-[#0f1f3d] mb-2">New Password</label>
+                    <input type="password" required placeholder="Enter new strong password" value={resetNewPwd} onChange={(e) => setResetNewPwd(e.target.value)} className="w-full h-[50px] px-4 rounded-[24px] border-[1.34px] border-[#dce5f2] bg-[rgba(89,111,142,0.1)] text-[#0f1f3d] outline-none focus:border-blue-500 transition-colors" />
                   </div>
-                )}
-
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn-pill-secondary"
-                    onClick={() => {
-                      setShowForgotModal(false);
-                      setResetStep(1);
-                      setResetMsg({ text: '', type: '' });
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn-pill-primary"
-                    disabled={resetLoading}
-                  >
-                    {resetLoading
-                      ? 'Processing...'
-                      : resetStep === 1
-                      ? 'Send Reset Token'
-                      : 'Confirm New Password'}
-                  </button>
                 </div>
-              </form>
-            </div>
+              )}
+              {resetMsg.text && (
+                <div className={`mt-3 p-3 rounded-lg text-sm font-semibold ${resetMsg.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  {resetMsg.text}
+                </div>
+              )}
+              <div className="mt-6 flex justify-end gap-3">
+                <button type="button" onClick={() => { setShowForgotModal(false); setResetStep(1); setResetMsg({ text: '', type: '' }); }} className="px-6 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold cursor-pointer bg-white transition-colors">Cancel</button>
+                <button type="submit" disabled={resetLoading} className="px-6 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 font-semibold cursor-pointer border-none flex items-center justify-center shadow-md transition-colors">
+                  {resetLoading ? 'Processing...' : resetStep === 1 ? 'Send Reset Token' : 'Confirm New Password'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

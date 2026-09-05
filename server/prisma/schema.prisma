@@ -596,6 +596,7 @@ model User {
   legalEntityId       String?              @map("legal_entity_id")
   email               String
   passwordHash        String               @map("password_hash")
+  mustChangePassword  Boolean              @default(false) @map("must_change_password")
   firstName           String               @map("first_name")
   lastName            String               @map("last_name")
   role                Role                 @default(EMPLOYEE)

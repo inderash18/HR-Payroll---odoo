@@ -17,6 +17,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { AddEmployeeModal } from '../../components/modals/AddEmployeeModal';
+import { AdminDashboard } from '../admin/AdminDashboard';
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -137,6 +138,11 @@ export function DashboardPage() {
         <p>Loading dashboard...</p>
       </div>
     );
+  }
+
+  // Organization Admin Dashboard
+  if (user?.role === 'ORGANIZATION_ADMIN' || user?.role === 'ADMIN' || !user?.role) {
+    return <AdminDashboard user={user} />;
   }
 
   return (

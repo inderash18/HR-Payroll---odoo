@@ -72,7 +72,7 @@ export function Sidebar() {
             <NavLink
               key={item.to}
               to={item.to}
-              className={`sidebar-nav-link ${isActive ? 'active' : ''}`}
+              className={() => `sidebar-nav-link ${isActive ? 'active' : ''}`}
               id={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
             >
               <Icon size={18} />
@@ -109,7 +109,7 @@ export function Sidebar() {
       <div className="sidebar-bottom">
         <NavLink
           to="/profile"
-          className={`sidebar-nav-link ${location.pathname.startsWith('/profile') ? 'active' : ''}`}
+          className={() => `sidebar-nav-link ${location.pathname === '/profile' ? 'active' : ''}`}
           id="sidebar-link-my-profile"
         >
           <User size={18} />
@@ -118,7 +118,7 @@ export function Sidebar() {
 
         <NavLink
           to="/settings"
-          className={`sidebar-nav-link ${location.pathname === '/settings' ? 'active' : ''}`}
+          className={() => `sidebar-nav-link ${location.pathname === '/settings' ? 'active' : ''}`}
           id="sidebar-link-settings"
         >
           <Settings size={18} />

@@ -7,11 +7,10 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }) {
   const [schedules, setSchedules] = useState([]);
   const [isLoadingDropdowns, setIsLoadingDropdowns] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [generatedCredentials, setGeneratedCredentials] = useState(null);
 
   const [formData, setFormData] = useState({
     employeeNum: `PP360-${Math.floor(1000 + Math.random() * 9000)}`,
-    workEmail: '',
     firstName: '',
     lastName: '',
     departmentId: '',
@@ -83,9 +82,8 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }) {
     setIsSubmitting(true);
     setErrorMessage(null);
     try {
-      await api.post('/employees', {
+      const response = await api.post('/employees', {
         employeeNum: formData.employeeNum,
-        workEmail: formData.workEmail,
         firstName: formData.firstName,
         lastName: formData.lastName,
         departmentId: formData.departmentId || undefined,
@@ -97,14 +95,34 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }) {
         bankAccountMasked: formData.bankAccountMasked || undefined,
       });
 
-      if (onSuccess) onSuccess();
-      if (onClose) onClose();
+      const creds = response?.data?.data?._generatedCredentials || response?.data?._generatedCredentials;
+      if (creds) {
+        setGeneratedCredentials(creds);
+      } else {
+        if (onSuccess) onSuccess();
+        if (onClose) onClose();
+      }
     } catch (err) {
       console.error('Employee creation error:', err);
-      setErrorMessage(err.response?.data?.message || err.message || 'Failed to save employee to PostgreSQL');
+      
+      let errorMsg = 'Failed to save employee to PostgreSQL';
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        errorMsg = err.response.data.errors.map(e => `${e.field}: ${e.message}`).join(', ');
+      } else if (err.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      
+      setErrorMessage(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleFinish = () => {
+    if (onSuccess) onSuccess();
+    if (onClose) onClose();
   };
 
   return (
@@ -124,15 +142,51 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }) {
           </button>
         </div>
 
-        {errorMessage && (
+        {errorMessage && !generatedCredentials && (
           <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1rem' }}>
             {errorMessage}
           </div>
         )}
 
+        {generatedCredentials ? (
+          <div className="success-credentials" style={{ textAlign: 'center', padding: '1rem 0' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+              <User size={24} color="#16a34a" />
+            </div>
+            <h4 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '0.5rem', color: '#0f172a' }}>Employee Onboarded!</h4>
+            <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.5rem' }}>
+              User account created automatically. Please share these credentials securely.
+            </p>
+            
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.25rem', textAlign: 'left', marginBottom: '1.5rem' }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Work Email</span>
+                <div style={{ fontSize: '1rem', fontWeight: 500, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                  <Mail size={16} color="#64748b" />
+                  {generatedCredentials.email}
+                </div>
+              </div>
+              <div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Temporary Password</span>
+                <div style={{ fontSize: '1rem', fontWeight: 500, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                  <Hash size={16} color="#64748b" />
+                  {generatedCredentials.password}
+                </div>
+              </div>
+            </div>
+            
+            <button
+              onClick={handleFinish}
+              className="btn-pill-primary"
+              style={{ padding: '0.6rem 1.4rem', borderRadius: '9999px', border: 'none', background: '#0f172a', color: '#ffffff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', width: '100%' }}
+            >
+              Done
+            </button>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {/* Row 1: Employee ID & Work Email */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          {/* Row 1: Employee ID */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
             <div className="modal-form-group">
               <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '0.35rem' }}>Employee ID</label>
               <input
@@ -141,17 +195,6 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }) {
                 placeholder="PP360-1050"
                 value={formData.employeeNum}
                 onChange={(e) => setFormData({ ...formData, employeeNum: e.target.value })}
-                style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
-              />
-            </div>
-            <div className="modal-form-group">
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '0.35rem' }}>Work Email</label>
-              <input
-                type="email"
-                required
-                placeholder="firstname.lastname@peoplepay360.in"
-                value={formData.workEmail}
-                onChange={(e) => setFormData({ ...formData, workEmail: e.target.value })}
                 style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
               />
             </div>
@@ -328,6 +371,7 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }) {
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

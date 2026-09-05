@@ -11,10 +11,12 @@ import { LegalEntitiesModule } from '@modules/legal-entities/legal-entities.modu
 import { UsersModule } from '@modules/users/users.module';
 import { DepartmentsModule } from '@modules/departments/departments.module';
 import { EmployeesModule } from '@modules/employees/employees.module';
+import { SchedulesModule } from '@modules/schedules/schedules.module';
 import { ContractsModule } from '@modules/contracts/contracts.module';
 import { PayrollModule } from '@modules/payroll/payroll.module';
 import { LeavesModule } from '@modules/leaves/leaves.module';
 import { AttendanceModule } from '@modules/attendance/attendance.module';
+import { DashboardModule } from '@modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -30,11 +32,14 @@ import { AttendanceModule } from '@modules/attendance/attendance.module';
     UsersModule,
     DepartmentsModule,
     EmployeesModule,
+    SchedulesModule,
     ContractsModule,
     PayrollModule,
     LeavesModule,
     AttendanceModule,
+    DashboardModule,
   ],
 })
 export class AppModule {}
+
 

@@ -1,107 +1,123 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { PayrollEngineService } from './payroll-engine.service';
 import { RuleCategoryType } from '@prisma/client';
 
 describe('PayrollEngineService', () => {
-  let service: PayrollEngineService;
+  const service = new PayrollEngineService();
 
-  beforeEach(() => {
-    service = new PayrollEngineService();
-  });
-
-  it('should calculate basic wage without leaves correctly', () => {
+  it('should compute Directive 148 salary structure accurately', () => {
+    // Structure:
+    // 10 BASIC: Contract Base = 40,000
+    // 20 HRA: 40% of BASIC = 16,000
+    // 30 SPECIAL: Fixed = 4,000
+    // 40 PF: 12% of BASIC = 4,800
+    // 50 TAX: Fixed = 3,000
+    // GROSS = 60,000, NET = 52,200
     const rules = [
       {
-        id: '1',
+        id: 'r1',
         code: 'BASIC',
         name: 'Basic Salary',
-        category: RuleCategoryType.EARNING,
+        category: RuleCategoryType.BASIC,
         sequence: 10,
-        amountType: 'FIXED',
-      },
-    ];
-
-    const result = service.calculatePayslip(5000, rules, 30, 30, 0);
-
-    expect(result.grossSalary).toBe(5000);
-    expect(result.netSalary).toBe(5000);
-    expect(result.lines).toHaveLength(1);
-    expect(result.lines[0]).toEqual({
-      category: RuleCategoryType.EARNING,
-      code: 'BASIC',
-      name: 'Basic Salary',
-      amount: 5000,
-      baseAmount: 5000,
-      rate: undefined,
-    });
-  });
-
-  it('should prorate basic salary based on unpaid leave days', () => {
-    const rules = [
-      {
-        id: '1',
-        code: 'BASIC',
-        name: 'Basic Salary',
-        category: RuleCategoryType.EARNING,
-        sequence: 10,
-        amountType: 'FIXED',
-      },
-    ];
-
-    // 6 days unpaid leave out of 30 working days => 24/30 = 80% of 5000 = 4000
-    const result = service.calculatePayslip(5000, rules, 24, 30, 6);
-
-    expect(result.grossSalary).toBe(4000);
-    expect(result.netSalary).toBe(4000);
-  });
-
-  it('should compute complex allowances, deductions, and tax tiers correctly', () => {
-    const rules = [
-      {
-        id: '1',
-        code: 'BASIC',
-        name: 'Basic Salary',
-        category: RuleCategoryType.EARNING,
-        sequence: 10,
-        amountType: 'FIXED',
+        amountType: 'CONTRACT_BASE',
       },
       {
-        id: '2',
+        id: 'r2',
         code: 'HRA',
         name: 'House Rent Allowance',
         category: RuleCategoryType.ALLOWANCE,
         sequence: 20,
         amountType: 'PERCENTAGE',
-        amountPercentage: 40, // 40% of BASIC (40% of 5000 = 2000)
+        amountPercentage: 40,
         percentageBasedOn: 'BASIC',
       },
       {
-        id: '3',
+        id: 'r3',
+        code: 'SPECIAL',
+        name: 'Special Allowance',
+        category: RuleCategoryType.ALLOWANCE,
+        sequence: 30,
+        amountType: 'FIXED',
+        amountFixed: 4000,
+      },
+      {
+        id: 'r4',
         code: 'PF',
         name: 'Provident Fund',
         category: RuleCategoryType.DEDUCTION,
-        sequence: 30,
+        sequence: 40,
         amountType: 'PERCENTAGE',
-        amountPercentage: 12, // 12% of BASIC (12% of 5000 = 600)
+        amountPercentage: 12,
         percentageBasedOn: 'BASIC',
       },
       {
-        id: '4',
+        id: 'r5',
         code: 'TAX',
         name: 'Income Tax',
-        category: RuleCategoryType.TAX,
-        sequence: 40,
-        amountType: 'PERCENTAGE',
-        amountPercentage: 10, // 10% of GROSS (10% of 7000 = 700)
-        percentageBasedOn: 'GROSS',
+        category: RuleCategoryType.DEDUCTION,
+        sequence: 50,
+        amountType: 'FIXED',
+        amountFixed: 3000,
       },
     ];
 
-    const result = service.calculatePayslip(5000, rules, 30, 30, 0);
+    const result = service.calculatePayslip(40000, rules, 30, 30, 0);
 
-    // Gross = 5000 (Basic) + 2000 (HRA) = 7000
-    expect(result.grossSalary).toBe(7000);
-    // Net = 7000 - 600 (PF) - 700 (TAX) = 5700
-    expect(result.netSalary).toBe(5700);
+    expect(result.grossSalary).toBe(60000);
+    expect(result.deductionsTotal).toBe(7800);
+    expect(result.netSalary).toBe(52200);
+
+    const basicLine = result.lines.find((l) => l.code === 'BASIC');
+    const hraLine = result.lines.find((l) => l.code === 'HRA');
+    const pfLine = result.lines.find((l) => l.code === 'PF');
+
+    expect(basicLine?.amount).toBe(40000);
+    expect(hraLine?.amount).toBe(16000);
+    expect(pfLine?.amount).toBe(4800);
+  });
+
+  it('should prorate basic wage on unpaid leaves', () => {
+    const rules = [
+      {
+        id: 'r1',
+        code: 'BASIC',
+        name: 'Basic Salary',
+        category: RuleCategoryType.BASIC,
+        sequence: 10,
+        amountType: 'CONTRACT_BASE',
+      },
+    ];
+
+    // 30 total days, 3 unpaid days -> 90%
+    const result = service.calculatePayslip(30000, rules, 27, 30, 3);
+    expect(result.grossSalary).toBe(27000);
+    expect(result.netSalary).toBe(27000);
+  });
+
+  it('should generate blocking warning when deductions exceed gross', () => {
+    const rules = [
+      {
+        id: 'r1',
+        code: 'BASIC',
+        name: 'Basic Salary',
+        category: RuleCategoryType.BASIC,
+        sequence: 10,
+        amountType: 'FIXED',
+        amountFixed: 1000,
+      },
+      {
+        id: 'r2',
+        code: 'GARNISHMENT',
+        name: 'Garnishment',
+        category: RuleCategoryType.DEDUCTION,
+        sequence: 20,
+        amountType: 'FIXED',
+        amountFixed: 1500,
+      },
+    ];
+
+    const result = service.calculatePayslip(1000, rules);
+    expect(result.warnings.some((w) => w.code === 'NEGATIVE_NET_SALARY')).toBe(true);
   });
 });

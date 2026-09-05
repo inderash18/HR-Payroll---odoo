@@ -251,6 +251,8 @@ export class PayrollService {
             payrunId,
             employeeId: contract.employeeId,
             contractId: contract.id,
+            periodStart: payrun.startDate,
+            periodEnd: payrun.endDate,
             workedDays,
             unpaidLeaveDays: unpaidDays,
             grossSalary: calculation.grossSalary,
@@ -369,7 +371,7 @@ export class PayrollService {
         legalEntity: { select: { id: true, name: true, code: true } },
         payslips: {
           include: {
-            employee: { select: { id: true, firstName: true, lastName: true, employeeNum: true } },
+            employee: { select: { id: true, firstName: true, lastName: true, employeeNum: true, workEmail: true } },
             contract: { select: { id: true, wage: true, wagePeriod: true } },
             lines: { orderBy: { createdAt: 'asc' } },
           },
@@ -412,6 +414,267 @@ export class PayrollService {
         limit: query.limit,
         totalPages: Math.ceil(total / query.limit),
       },
+    };
+  }
+
+  // ----------------------------------------------------
+  // PAYSLIPS & DISPATCH
+  // ----------------------------------------------------
+  async listPayslips(organizationId: string, payrunId?: string, employeeId?: string) {
+    return this.prisma.payslip.findMany({
+      where: {
+        organizationId,
+        ...(payrunId ? { payrunId } : {}),
+        ...(employeeId ? { employeeId } : {}),
+      },
+      include: {
+        employee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            employeeNum: true,
+            workEmail: true,
+            department: { select: { name: true } },
+            jobPosition: { select: { title: true } },
+          },
+        },
+        payrun: { select: { id: true, name: true, status: true, startDate: true, endDate: true } },
+        lines: { orderBy: { sequence: 'asc' } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getPayslipById(organizationId: string, payslipId: string, userId?: string, isEmployeeOnly = false) {
+    const payslip = await this.prisma.payslip.findFirst({
+      where: { id: payslipId, organizationId },
+      include: {
+        employee: {
+          select: {
+            id: true,
+            userId: true,
+            firstName: true,
+            lastName: true,
+            employeeNum: true,
+            workEmail: true,
+            bankName: true,
+            bankAccountMasked: true,
+            department: { select: { name: true } },
+            jobPosition: { select: { title: true } },
+          },
+        },
+        contract: {
+          select: {
+            id: true,
+            wage: true,
+            wagePeriod: true,
+            structure: { select: { name: true, code: true } },
+          },
+        },
+        payrun: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
+        organization: { select: { id: true, name: true } },
+        lines: { orderBy: { sequence: 'asc' } },
+      },
+    });
+
+    if (!payslip) throw new NotFoundError('Payslip not found');
+
+    if (isEmployeeOnly && userId && payslip.employee.userId !== userId) {
+      throw new BadRequestError('You are not authorized to access this payslip');
+    }
+
+    return payslip;
+  }
+
+  async generatePayslipHtml(organizationId: string, payslipId: string, userId?: string, isEmployeeOnly = false) {
+    const p = await this.getPayslipById(organizationId, payslipId, userId, isEmployeeOnly);
+
+    const earnings = p.lines.filter((l) => l.category === 'BASIC' || l.category === 'ALLOWANCE' || l.category === 'GROSS');
+    const deductions = p.lines.filter((l) => l.category === 'DEDUCTION' || l.category === 'CONTRIBUTION');
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Payslip - ${p.employee.firstName} ${p.employee.lastName} (${p.payrun.name})</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 30px; color: #1e293b; background: #ffffff; }
+    .header { border-bottom: 2px solid #0f172a; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+    .title { font-size: 24px; font-weight: 700; color: #0f172a; }
+    .org-name { font-size: 16px; color: #64748b; font-weight: 500; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; }
+    .box h4 { margin-top: 0; color: #334155; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .box p { margin: 4px 0; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th { background: #0f172a; color: #ffffff; text-align: left; padding: 8px 12px; font-size: 12px; }
+    td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+    .amount-col { text-align: right; }
+    .summary-box { background: #0f172a; color: white; border-radius: 6px; padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+    .net-salary { font-size: 22px; font-weight: 700; color: #38bdf8; }
+    .footer { margin-top: 30px; font-size: 11px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="title">PAYSLIP CONFIRMATION</div>
+      <div class="org-name">${p.organization.name}</div>
+    </div>
+    <div style="text-align: right;">
+      <div style="font-weight: 600;">Pay Period</div>
+      <div style="font-size: 13px; color: #64748b;">${new Date(p.payrun.startDate).toLocaleDateString()} - ${new Date(p.payrun.endDate).toLocaleDateString()}</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="box">
+      <h4>Employee Details</h4>
+      <p><strong>Name:</strong> ${p.employee.firstName} ${p.employee.lastName}</p>
+      <p><strong>Employee ID:</strong> ${p.employee.employeeNum}</p>
+      <p><strong>Department:</strong> ${p.employee.department?.name || 'N/A'}</p>
+      <p><strong>Designation:</strong> ${p.employee.jobPosition?.title || 'N/A'}</p>
+      <p><strong>Bank Account:</strong> ${p.employee.bankAccountMasked || 'N/A'}</p>
+    </div>
+    <div class="box">
+      <h4>Attendance & Work Summary</h4>
+      <p><strong>Worked Days:</strong> ${p.workedDays}</p>
+      <p><strong>Unpaid Leave Days:</strong> ${p.unpaidLeaveDays}</p>
+      <p><strong>Payrun Name:</strong> ${p.payrun.name}</p>
+      <p><strong>Status:</strong> ${p.payrun.status}</p>
+      <p><strong>Currency:</strong> ${p.currency}</p>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <div>
+      <h4 style="margin-bottom: 8px;">Earnings & Allowances</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th class="amount-col">Amount (${p.currency})</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${earnings
+            .map(
+              (l) => `<tr>
+            <td>${l.name} (${l.code})</td>
+            <td class="amount-col">${Number(l.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          </tr>`,
+            )
+            .join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <h4 style="margin-bottom: 8px;">Deductions & Contributions</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th class="amount-col">Amount (${p.currency})</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${deductions
+            .map(
+              (l) => `<tr>
+            <td>${l.name} (${l.code})</td>
+            <td class="amount-col">${Number(l.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          </tr>`,
+            )
+            .join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="summary-box">
+    <div>
+      <div style="font-size: 13px; color: #94a3b8;">GROSS SALARY: ${Number(p.grossSalary).toLocaleString(undefined, { minimumFractionDigits: 2 })} | DEDUCTIONS: ${Number(p.deductionAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+      <div style="font-size: 14px; font-weight: 500; margin-top: 4px;">NET TAKE-HOME PAY</div>
+    </div>
+    <div class="net-salary">
+      ${p.currency} ${Number(p.netSalary).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+    </div>
+  </div>
+
+  <div class="footer">
+    This is a computer-generated payslip generated by PeoplePay360. PostgreSQL Database Record ID: ${p.id} &bull; Generated on ${new Date().toISOString()}
+  </div>
+</body>
+</html>`;
+  }
+
+  async sendPayrunPayslips(organizationId: string, payrunId: string, actorId?: string) {
+    const payrun = await this.findPayrunById(organizationId, payrunId);
+    if (payrun.status !== PayrunStatus.VALIDATED && payrun.status !== PayrunStatus.PAID) {
+      throw new BadRequestError('Payslips can only be distributed for VALIDATED or PAID payruns');
+    }
+
+    const payslips = await this.prisma.payslip.findMany({
+      where: { payrunId, organizationId },
+      include: { employee: true },
+    });
+
+    const results = await this.prisma.runInTransaction(async (tx) => {
+      const records = [];
+      for (const payslip of payslips) {
+        const record = await tx.emailDeliveryRecord.create({
+          data: {
+            organizationId,
+            payslipId: payslip.id,
+            recipient: payslip.employee.workEmail,
+            status: 'PENDING',
+          },
+        });
+        records.push(record);
+
+        await this.outboxService.publish(
+          {
+            organizationId,
+            eventType: 'PAYSLIP_EMAIL_QUEUED',
+            payload: {
+              deliveryId: record.id,
+              payslipId: payslip.id,
+              recipient: payslip.employee.workEmail,
+              employeeName: `${payslip.employee.firstName} ${payslip.employee.lastName}`,
+            },
+          },
+          tx,
+        );
+      }
+
+      await this.auditService.log(
+        {
+          organizationId,
+          userId: actorId || null,
+          action: 'PAYSLIPS_EMAIL_DISPATCHED',
+          entityType: 'Payrun',
+          entityId: payrunId,
+          newValues: { recipientCount: records.length },
+        },
+        tx,
+      );
+
+      return records;
+    });
+
+    return {
+      message: `Dispatched ${results.length} payslips to outbound queue successfully`,
+      queuedCount: results.length,
     };
   }
 }

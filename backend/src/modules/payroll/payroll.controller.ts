@@ -114,4 +114,48 @@ export class PayrollController {
   async markPayrunPaid(@Req() req: any, @Param('id') id: string) {
     return this.payrollService.markPayrunPaid(req.user.organizationId, id, req.user.id);
   }
+
+  @Post('payruns/:id/send-payslips')
+  @Roles(Role.ADMIN, Role.HR_PAYROLL_MANAGER)
+  @ApiOperation({ summary: 'Dispatch payslips to employees via outbox event email queue' })
+  async sendPayrunPayslips(@Req() req: any, @Param('id') id: string) {
+    return this.payrollService.sendPayrunPayslips(req.user.organizationId, id, req.user.id);
+  }
+
+  // ----------------------------------------------------
+  // PAYSLIP ACCESS
+  // ----------------------------------------------------
+  @Get('payslips')
+  @Roles(Role.ADMIN, Role.HR_MANAGER, Role.HR_PAYROLL_USER, Role.HR_PAYROLL_MANAGER)
+  @ApiOperation({ summary: 'List all payslips for the organization with optional payrun/employee filters' })
+  async listPayslips(
+    @Req() req: any,
+    @Query('payrunId') payrunId?: string,
+    @Query('employeeId') employeeId?: string,
+  ) {
+    return this.payrollService.listPayslips(req.user.organizationId, payrunId, employeeId);
+  }
+
+  @Get('payslips/:id')
+  @Roles(Role.ADMIN, Role.HR_MANAGER, Role.HR_PAYROLL_USER, Role.HR_PAYROLL_MANAGER, Role.EMPLOYEE)
+  @ApiOperation({ summary: 'Get single payslip breakdown by ID' })
+  async getPayslip(@Req() req: any, @Param('id') id: string) {
+    const isEmployeeOnly = req.user.role === Role.EMPLOYEE;
+    return this.payrollService.getPayslipById(req.user.organizationId, id, req.user.id, isEmployeeOnly);
+  }
+
+  @Get('payslips/:id/html')
+  @Roles(Role.ADMIN, Role.HR_MANAGER, Role.HR_PAYROLL_USER, Role.HR_PAYROLL_MANAGER, Role.EMPLOYEE)
+  @ApiOperation({ summary: 'Get styled HTML representation of payslip document' })
+  async getPayslipHtml(@Req() req: any, @Param('id') id: string) {
+    const isEmployeeOnly = req.user.role === Role.EMPLOYEE;
+    const html = await this.payrollService.generatePayslipHtml(
+      req.user.organizationId,
+      id,
+      req.user.id,
+      isEmployeeOnly,
+    );
+    return { success: true, html };
+  }
 }
+

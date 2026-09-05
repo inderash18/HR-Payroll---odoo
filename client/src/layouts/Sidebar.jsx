@@ -1,19 +1,19 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
-  LayoutDashboard,
+  LayoutGrid,
   Users,
-  Building2,
-  FileText,
-  CalendarCheck,
+  Layers,
+  Briefcase,
+  Calendar,
   Clock,
   CalendarDays,
-  CircleDollarSign,
-  Receipt,
-  ShieldCheck,
-  KeyRound,
-  ShieldAlert,
+  Landmark,
+  LineChart,
+  UserCheck,
+  FileText,
+  Shield,
   Settings,
   LogOut,
 } from 'lucide-react';
@@ -21,77 +21,92 @@ import {
 export function Sidebar() {
   const { user, logout, hasRole } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
   const navItems = [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'] },
+    { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'] },
     { to: '/employees', label: 'Employees', icon: Users, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
-    { to: '/departments', label: 'Departments', icon: Building2, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
-    { to: '/contracts', label: 'Contracts', icon: FileText, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
-    { to: '/schedules', label: 'Working Schedules', icon: CalendarCheck, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
+    { to: '/departments', label: 'Departments', icon: Layers, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
+    { to: '/contracts', label: 'Contracts', icon: Briefcase, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
+    { to: '/schedules', label: 'Schedules', icon: Calendar, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
     { to: '/attendance', label: 'Attendance', icon: Clock, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'] },
     { to: '/leaves', label: 'Leaves & Time Off', icon: CalendarDays, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'] },
-    { to: '/payroll', label: 'Payroll Batches', icon: CircleDollarSign, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
-    { to: '/payslips', label: 'Payslips', icon: Receipt, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'] },
-    { to: '/users', label: 'User Management', icon: ShieldCheck, roles: ['ADMIN', 'HR_MANAGER'] },
-    { to: '/audit-logs', label: 'Audit Logs', icon: ShieldAlert, roles: ['ADMIN'] },
-    { to: '/security', label: 'Account Security', icon: KeyRound, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'] },
-    { to: '/settings', label: 'System Settings', icon: Settings, roles: ['ADMIN'] },
+    { to: '/payroll', label: 'Payroll', icon: Landmark, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'] },
+    { to: '/payslips', label: 'Payslips', icon: LineChart, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'] },
+    { to: '/users', label: 'Users', icon: UserCheck, roles: ['ADMIN', 'HR_MANAGER'] },
+    { to: '/audit', label: 'Audit Logs', icon: FileText, roles: ['ADMIN'] },
+    { to: '/security', label: 'Account Security', icon: Shield, roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'] },
+    { to: '/settings', label: 'Settings', icon: Settings, roles: ['ADMIN'] },
   ];
 
   const visibleNavItems = navItems.filter((item) => hasRole(...item.roles));
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <div className="logo-badge">360</div>
-        <div>
-          <div className="logo-text">PeoplePay360</div>
+    <aside className="sidebar-dark">
+      {/* Brand Circular Logo Button */}
+      <div
+        className="sidebar-logo"
+        id="sidebar-logo-btn"
+        title="PeoplePay360"
+        onClick={() => navigate('/dashboard')}
+      >
+        <div
+          style={{
+            width: '38px',
+            height: '38px',
+            borderRadius: '50%',
+            background: '#ffffff',
+            color: '#0d0f12',
+            fontWeight: 800,
+            fontSize: '0.95rem',
+            display: 'grid',
+            placeItems: 'center',
+            boxShadow: '0 4px 12px rgba(255,255,255,0.15)',
+          }}
+        >
+          360
         </div>
-        <span className="logo-tag">PRO</span>
       </div>
 
+      {/* Main Nav Items */}
       <nav className="sidebar-nav">
-        <div className="nav-section-title">Navigation</div>
         {visibleNavItems.map((item) => {
           const Icon = item.icon;
+          const isActive = location.pathname === item.to || 
+            (item.to === '/employees' && location.pathname.startsWith('/employees/')) ||
+            (item.to === '/payroll' && location.pathname.startsWith('/payroll/')) ||
+            (item.to === '/payslips' && location.pathname.startsWith('/payslips/')) ||
+            (item.to === '/security' && location.pathname === '/sessions') ||
+            (item.to === '/audit' && location.pathname === '/audit-logs');
+
           return (
             <NavLink
               key={item.to}
               to={item.to}
-              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
+              data-tooltip={item.label}
             >
-              <Icon size={18} />
-              <span>{item.label}</span>
+              <Icon size={20} strokeWidth={2.2} />
             </NavLink>
           );
         })}
       </nav>
 
-      <div className="sidebar-footer">
-        <div className="user-profile-pill" onClick={() => navigate('/profile')}>
-          <div className="user-avatar">
-            {user?.firstName?.[0] || 'U'}
-          </div>
-          <div className="user-info">
-            <div className="user-name">{user?.firstName} {user?.lastName}</div>
-            <div className="user-role">{user?.role}</div>
-          </div>
-          <button
-            title="Logout"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleLogout();
-            }}
-            style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
-          >
-            <LogOut size={16} />
-          </button>
-        </div>
+      {/* Sidebar Bottom Sign Out */}
+      <div className="sidebar-bottom">
+        <button
+          className="sidebar-nav-item logout-btn"
+          id="btn-logout"
+          data-tooltip="Sign Out"
+          onClick={handleLogout}
+        >
+          <LogOut size={20} strokeWidth={2.2} />
+        </button>
       </div>
     </aside>
   );

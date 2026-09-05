@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../../api/client';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, User, Search, Building2, Phone, Mail } from 'lucide-react';
+import { api } from '../../api/client';
+import { Plus, UserPlus } from 'lucide-react';
 import { AddEmployeeModal } from '../../components/modals/AddEmployeeModal';
 
 export function EmployeesPage() {
@@ -17,7 +17,8 @@ export function EmployeesPage() {
     setIsLoading(true);
     try {
       const res = await api.get(`/employees?search=${encodeURIComponent(searchQuery)}`);
-      setEmployees(res.data || []);
+      const list = res.data?.employees || res.data || [];
+      setEmployees(list);
     } catch (err) {
       console.error('Failed to load employees:', err);
     } finally {
@@ -31,85 +32,89 @@ export function EmployeesPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-            Employees Directory
-          </h1>
-          <p style={{ fontSize: '13.5px', color: 'var(--text-muted)', marginTop: '4px' }}>
-            Manage staff profiles, departmental allocations, and compensation contracts.
-          </p>
+      <div className="card">
+        <div
+          className="card-header"
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}
+        >
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
+            Employee Directory ({employees.length})
+          </h2>
+          <button
+            className="btn-pill-primary"
+            id="btn-add-emp-header"
+            onClick={() => setShowModal(true)}
+          >
+            <UserPlus size={16} />
+            <span>Add Employee</span>
+          </button>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          <Plus size={16} /> Add Employee
-        </button>
-      </div>
 
-      <div className="table-container">
-        <table className="custom-table">
-          <thead>
-            <tr>
-              <th>Employee</th>
-              <th>Employee ID</th>
-              <th>Department</th>
-              <th>Job Position</th>
-              <th>Active Contract</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '30px' }}>Loading employees...</td>
+                <th style={{ padding: '0.85rem 1.25rem' }}>Emp #</th>
+                <th style={{ padding: '0.85rem 1rem' }}>Name</th>
+                <th style={{ padding: '0.85rem 1rem' }}>Work Email</th>
+                <th style={{ padding: '0.85rem 1rem' }}>Department</th>
+                <th style={{ padding: '0.85rem 1rem' }}>Designation</th>
+                <th style={{ padding: '0.85rem 1rem' }}>Bank Masked</th>
+                <th style={{ padding: '0.85rem 1.25rem' }}>Status</th>
               </tr>
-            ) : employees.length === 0 ? (
-              <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
-                  No employees found.
-                </td>
-              </tr>
-            ) : (
-              employees.map((emp) => (
-                <tr
-                  key={emp.id}
-                  onClick={() => navigate(`/employees/${emp.id}`)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div className="user-avatar" style={{ background: '#0f172a' }}>
-                        {emp.firstName[0]}
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{emp.firstName} {emp.lastName}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{emp.workEmail}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td><strong>{emp.employeeNum}</strong></td>
-                  <td>{emp.department?.name || '—'}</td>
-                  <td>{emp.jobPosition?.title || '—'}</td>
-                  <td>
-                    {emp.contracts?.[0] ? (
-                      <span>₹{Number(emp.contracts[0].wage).toLocaleString()}/mo</span>
-                    ) : (
-                      <span style={{ color: '#94a3b8' }}>None</span>
-                    )}
-                  </td>
-                  <td>
-                    <span className={`badge ${emp.isActive ? 'badge-success' : 'badge-danger'}`}>
-                      {emp.isActive ? 'Active' : 'Inactive'}
-                    </span>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan="7" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    Loading employee records from PostgreSQL...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : employees.length === 0 ? (
+                <tr>
+                  <td colSpan="7" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    No employee records found in PostgreSQL.
+                  </td>
+                </tr>
+              ) : (
+                employees.map((e) => (
+                  <tr
+                    key={e.id}
+                    className="clickable-row"
+                    onClick={() => navigate(`/employees/${e.id}`)}
+                  >
+                    <td style={{ padding: '1rem 1.25rem', fontWeight: 600 }}>
+                      <span style={{ color: 'var(--primary)', textDecoration: 'none' }}>
+                        {e.employeeNum}
+                      </span>
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                      <div style={{ fontWeight: 600 }}>
+                        {e.firstName} {e.lastName}
+                      </div>
+                    </td>
+                    <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>{e.workEmail}</td>
+                    <td style={{ padding: '1rem' }}>{e.department?.name || '—'}</td>
+                    <td style={{ padding: '1rem' }}>{e.jobPosition?.title || e.jobTitle || '—'}</td>
+                    <td style={{ padding: '1rem', fontFamily: 'monospace' }}>
+                      {e.bankAccountMasked || '••••••••'}
+                    </td>
+                    <td style={{ padding: '1rem 1.25rem' }}>
+                      <span className={`badge ${e.isActive ? 'green' : 'red'}`}>
+                        {e.isActive ? 'ACTIVE' : 'INACTIVE'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {showModal && (
         <AddEmployeeModal
+          isOpen={showModal}
           onClose={() => setShowModal(false)}
           onSuccess={() => {
             setShowModal(false);

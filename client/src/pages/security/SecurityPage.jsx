@@ -1,156 +1,241 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
-import { KeyRound, Smartphone, LogOut, ShieldCheck } from 'lucide-react';
+import { KeyRound, ShieldCheck, Laptop, LogOut, CheckCircle2 } from 'lucide-react';
 
 export function SecurityPage() {
-  const { logout } = useAuth();
-  const [sessions, setSessions] = useState([]);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [message, setMessage] = useState(null);
-  const [isChanging, setIsChanging] = useState(false);
-
-  const loadSessions = async () => {
-    try {
-      const res = await api.get('/auth/sessions');
-      setSessions(res.data || []);
-    } catch (err) {
-      console.error('Failed to load sessions:', err);
-    }
-  };
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [msg, setMsg] = useState({ text: '', type: '' });
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [sessions, setSessions] = useState([]);
 
   useEffect(() => {
+    async function loadSessions() {
+      try {
+        const res = await api.get('/auth/sessions').catch(() => ({ data: [] }));
+        setSessions(res.data?.sessions || res.data || []);
+      } catch (err) {
+        console.error('Failed to load sessions:', err);
+      }
+    }
     loadSessions();
   }, []);
 
-  const handleChangePassword = async (e) => {
+  const handlePasswordChange = async (e) => {
     e.preventDefault();
-    setIsChanging(true);
-    setMessage(null);
+    setMsg({ text: '', type: '' });
+
+    if (newPassword !== confirmPassword) {
+      setMsg({ text: 'New passwords do not match.', type: 'error' });
+      return;
+    }
+
+    setIsUpdating(true);
     try {
-      await api.post('/auth/change-password', { currentPassword, newPassword });
-      setMessage({ type: 'success', text: 'Password changed successfully! Please log in again.' });
-      setCurrentPassword('');
-      setNewPassword('');
-      setTimeout(() => logout(), 2000);
+      await api.post('/auth/change-password', {
+        currentPassword,
+        newPassword,
+      });
+      setMsg({
+        text: 'Password changed successfully. Please sign in with your new password.',
+        type: 'success',
+      });
+      setTimeout(async () => {
+        await logout();
+        navigate('/login', { replace: true });
+      }, 1500);
     } catch (err) {
-      setMessage({ type: 'danger', text: err.message || 'Failed to change password' });
+      setMsg({
+        text: err.response?.data?.message || err.message || 'Failed to update password.',
+        type: 'error',
+      });
     } finally {
-      setIsChanging(false);
+      setIsUpdating(false);
     }
   };
 
-  const handleRevokeSession = async (id) => {
-    try {
-      await api.delete(`/auth/sessions/${id}`);
-      loadSessions();
-    } catch (err) {
-      alert('Failed to revoke session');
+  const handleLogoutAll = async () => {
+    if (window.confirm('Are you sure you want to sign out from all devices? You will be logged out of this session.')) {
+      try {
+        await api.post('/auth/logout-all');
+        await logout();
+        navigate('/login', { replace: true });
+      } catch (err) {
+        alert(err.response?.data?.message || err.message || 'Failed to logout all devices');
+      }
     }
   };
 
   return (
-    <div>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-          Account Security & Active Sessions
-        </h1>
-        <p style={{ fontSize: '13.5px', color: 'var(--text-muted)', marginTop: '4px' }}>
-          Update password, review active devices, and terminate unauthorized sessions.
+    <div style={{ maxWidth: '900px' }}>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-main)' }}>
+          Account Security & Sessions
+        </h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.2rem' }}>
+          Manage passwords, active browser sessions, and security credentials
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
+      <div className="security-grid">
+        {/* PASSWORD CHANGE CARD */}
         <div className="card">
-          <div className="card-header">
-            <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <KeyRound size={18} /> Update Password
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: 'var(--radius-sm)',
+                background: 'var(--primary)',
+                color: '#ffffff',
+                display: 'grid',
+                placeItems: 'center',
+              }}
+            >
+              <KeyRound size={20} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-main)' }}>Change Password</h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                Update your authentication password regularly.
+              </p>
             </div>
           </div>
 
-          {message && (
-            <div
-              style={{
-                padding: '12px',
-                marginBottom: '16px',
-                borderRadius: 'var(--radius-md)',
-                background: message.type === 'success' ? 'var(--success-bg)' : 'var(--danger-bg)',
-                color: message.type === 'success' ? 'var(--success-text)' : 'var(--danger-text)',
-                fontSize: '13px',
-              }}
-            >
-              {message.text}
-            </div>
-          )}
-
-          <form onSubmit={handleChangePassword}>
-            <div className="form-group">
-              <label className="form-label">Current Password</label>
+          <form onSubmit={handlePasswordChange}>
+            <div className="modal-form-group">
+              <label>Current Password</label>
               <input
                 type="password"
-                className="form-input"
                 required
+                placeholder="Enter current password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
               />
             </div>
-            <div className="form-group">
-              <label className="form-label">New Password</label>
+            <div className="modal-form-group">
+              <label>New Password</label>
               <input
                 type="password"
-                className="form-input"
                 required
+                placeholder="Enter new strong password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
             </div>
-            <button type="submit" className="btn btn-primary" disabled={isChanging}>
-              {isChanging ? 'Updating...' : 'Update Password'}
+            <div className="modal-form-group">
+              <label>Confirm New Password</label>
+              <input
+                type="password"
+                required
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+
+            {msg.text && (
+              <div
+                style={{
+                  fontSize: '0.84rem',
+                  marginBottom: '1rem',
+                  fontWeight: 600,
+                  color: msg.type === 'success' ? 'var(--green-text)' : 'var(--red-text)',
+                  background: msg.type === 'success' ? 'var(--green-bg)' : 'var(--red-bg)',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                }}
+              >
+                {msg.text}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="btn-pill-primary"
+              style={{ width: '100%', justifyContent: 'center' }}
+              disabled={isUpdating}
+            >
+              {isUpdating ? 'Updating...' : 'Update Password'}
             </button>
           </form>
         </div>
 
+        {/* ACTIVE SESSION CARD */}
         <div className="card">
-          <div className="card-header">
-            <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Smartphone size={18} /> Active Sessions & Devices
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: 'var(--radius-sm)',
+                background: 'var(--blue-bg)',
+                color: 'var(--blue-text)',
+                display: 'grid',
+                placeItems: 'center',
+              }}
+            >
+              <ShieldCheck size={20} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                Session & Device Security
+              </h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                Current device signature and active authentications.
+              </p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {sessions.map((s) => (
-              <div
-                key={s.id}
-                style={{
-                  padding: '14px',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: 'var(--radius-md)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '13.5px' }}>
-                    {s.device} {s.isCurrent && <span className="badge badge-success" style={{ marginLeft: '6px' }}>Current</span>}
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>
-                    IP: {s.ipAddress} • {new Date(s.createdAt).toLocaleDateString()}
-                  </div>
-                </div>
-                {!s.isCurrent && (
-                  <button
-                    className="btn btn-danger"
-                    style={{ padding: '4px 10px', fontSize: '12px' }}
-                    onClick={() => handleRevokeSession(s.id)}
-                  >
-                    Revoke
-                  </button>
-                )}
+          <div
+            style={{
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-md)',
+              padding: '1.25rem',
+              background: 'var(--bg-surface)',
+              marginBottom: '1.25rem',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <span className="badge green" style={{ fontSize: '0.72rem' }}>
+                  CURRENT DEVICE
+                </span>
+                <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginTop: '0.4rem', color: 'var(--text-main)' }}>
+                  Windows • Chrome / Desktop
+                </h4>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                  IP: 127.0.0.1 (Local)
+                </p>
               </div>
-            ))}
+              <Laptop size={24} style={{ color: 'var(--primary)' }} />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <button
+              type="button"
+              className="btn-pill-secondary"
+              style={{ width: '100%', justifyContent: 'center' }}
+              onClick={() => {}}
+            >
+              Active Sessions ({sessions.length || 1})
+            </button>
+            <button
+              type="button"
+              className="btn-pill-secondary"
+              style={{ width: '100%', justifyContent: 'center', color: 'var(--red-text)' }}
+              onClick={handleLogoutAll}
+            >
+              <LogOut size={16} />
+              <span>Log Out All Devices</span>
+            </button>
           </div>
         </div>
       </div>

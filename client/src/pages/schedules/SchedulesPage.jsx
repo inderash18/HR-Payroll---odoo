@@ -1,76 +1,186 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../api/client';
-import { CalendarCheck, Clock } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 export function SchedulesPage() {
   const [schedules, setSchedules] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    timezone: 'Asia/Kolkata',
+    type: 'FIXED',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.get('/schedules');
+      setSchedules(res.data?.schedules || res.data || []);
+    } catch (err) {
+      console.error('Failed to load schedules:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function loadSchedules() {
-      try {
-        const res = await api.get('/working-schedules');
-        setSchedules(res.data || []);
-      } catch (err) {
-        console.error('Failed to load schedules:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadSchedules();
+    loadData();
   }, []);
 
-  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await api.post('/schedules', {
+        ...formData,
+        lines: [
+          { dayOfWeek: 1, startTime: '09:30', endTime: '18:30', breakMinutes: 60 },
+          { dayOfWeek: 2, startTime: '09:30', endTime: '18:30', breakMinutes: 60 },
+          { dayOfWeek: 3, startTime: '09:30', endTime: '18:30', breakMinutes: 60 },
+          { dayOfWeek: 4, startTime: '09:30', endTime: '18:30', breakMinutes: 60 },
+          { dayOfWeek: 5, startTime: '09:30', endTime: '18:30', breakMinutes: 60 },
+        ],
+      });
+      setShowModal(false);
+      setFormData({ name: '', timezone: 'Asia/Kolkata', type: 'FIXED' });
+      loadData();
+    } catch (err) {
+      alert(err.response?.data?.message || err.message || 'Failed to create schedule');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-          Working Schedules & Shift Configurations
-        </h1>
-        <p style={{ fontSize: '13.5px', color: 'var(--text-muted)', marginTop: '4px' }}>
-          Standard corporate working hours, shifts, and weekly rest days.
-        </p>
+      <div className="card">
+        <div
+          className="card-header"
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}
+        >
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
+            Working Schedules ({schedules.length})
+          </h2>
+          <button
+            className="btn-pill-primary"
+            id="btn-add-schedule-header"
+            onClick={() => setShowModal(true)}
+          >
+            <Plus size={16} />
+            <span>Add Schedule</span>
+          </button>
+        </div>
+
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ padding: '0.85rem 1.25rem' }}>Schedule Name</th>
+                <th style={{ padding: '0.85rem 1rem' }}>Type</th>
+                <th style={{ padding: '0.85rem 1rem' }}>Timezone</th>
+                <th style={{ padding: '0.85rem 1rem' }}>Work Days</th>
+                <th style={{ padding: '0.85rem 1.25rem' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan="5" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    Loading working schedules from PostgreSQL...
+                  </td>
+                </tr>
+              ) : schedules.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    No working schedules configured.
+                  </td>
+                </tr>
+              ) : (
+                schedules.map((s) => (
+                  <tr key={s.id}>
+                    <td style={{ padding: '1rem 1.25rem', fontWeight: 600 }}>{s.name}</td>
+                    <td style={{ padding: '1rem' }}>{s.type}</td>
+                    <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>{s.timezone}</td>
+                    <td style={{ padding: '1rem' }}>{s.lines?.length || 5} days / week</td>
+                    <td style={{ padding: '1rem 1.25rem' }}>
+                      <span className={`badge ${s.active !== false ? 'green' : 'orange'}`}>
+                        {s.active !== false ? 'ACTIVE' : 'INACTIVE'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px' }}>
-        {isLoading ? (
-          <div>Loading working schedules...</div>
-        ) : schedules.length === 0 ? (
-          <div>No working schedules configured.</div>
-        ) : (
-          schedules.map((s) => (
-            <div key={s.id} className="card">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div className="stat-icon-box" style={{ background: '#f1f5f9', color: '#0f172a' }}>
-                  <Clock size={20} />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '16px', fontWeight: 700 }}>{s.name}</h3>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>Timezone: {s.timezone}</span>
-                </div>
-              </div>
-
-              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase' }}>
-                  Working Days & Hours
-                </div>
-                {s.lines?.length > 0 ? (
-                  s.lines.map((l) => (
-                    <div key={l.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', padding: '6px 0', borderBottom: '1px dashed #f1f5f9' }}>
-                      <strong style={{ width: '40px' }}>{daysOfWeek[l.dayOfWeek]}</strong>
-                      <span>{l.startTime} — {l.endTime}</span>
-                      <span style={{ color: '#64748b' }}>Break: {l.breakMinutes}m</span>
-                    </div>
-                  ))
-                ) : (
-                  <div style={{ fontSize: '13px', color: '#94a3b8' }}>No shift lines specified</div>
-                )}
-              </div>
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <div className="modal-header">
+              <h3 className="modal-title">Create Working Schedule</h3>
+              <button className="modal-close-btn" onClick={() => setShowModal(false)}>
+                &times;
+              </button>
             </div>
-          ))
-        )}
-      </div>
+            <form onSubmit={handleCreate}>
+              <div className="modal-form-group">
+                <label>Schedule Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Standard Indian Work Week (Mon-Fri 9:30-6:30)"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="modal-form-group">
+                  <label>Timezone</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.timezone}
+                    onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                  />
+                </div>
+                <div className="modal-form-group">
+                  <label>Schedule Type</label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  >
+                    <option value="FIXED">Fixed Hours (40h/week)</option>
+                    <option value="FLEXIBLE">Flexible Working Hours</option>
+                    <option value="SHIFT">Rotating Shift</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn-pill-secondary"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-pill-primary"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Saving...' : 'Save Schedule'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

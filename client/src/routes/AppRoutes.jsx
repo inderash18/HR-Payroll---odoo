@@ -48,8 +48,10 @@ export function AppRoutes() {
         <Route path="/payslips" element={<PayslipsPage />} />
         <Route path="/payslips/:id" element={<PayslipDetailPage />} />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/audit" element={<AuditLogsPage />} />
         <Route path="/audit-logs" element={<AuditLogsPage />} />
         <Route path="/security" element={<SecurityPage />} />
+        <Route path="/sessions" element={<SecurityPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>

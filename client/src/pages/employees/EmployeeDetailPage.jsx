@@ -1,125 +1,180 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../../api/client';
-import { ArrowLeft, User, Mail, Phone, Building2, Calendar, FileText, Landmark } from 'lucide-react';
+import { ArrowLeft, FileSignature, Loader2 } from 'lucide-react';
 
 export function EmployeeDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [employee, setEmployee] = useState(null);
+  const [contracts, setContracts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadEmployee() {
+    async function loadData() {
+      setIsLoading(true);
       try {
-        const res = await api.get(`/employees/${id}`);
-        setEmployee(res.data);
+        const [empRes, contractsRes] = await Promise.all([
+          api.get(`/employees/${id}`).catch(() => null),
+          api.get(`/contracts?employeeId=${id}`).catch(() => ({ data: [] })),
+        ]);
+
+        let emp = empRes?.data?.employee || empRes?.data || null;
+        if (!emp) {
+          const allRes = await api.get('/employees').catch(() => ({ data: [] }));
+          const all = allRes.data?.employees || allRes.data || [];
+          emp = all.find((e) => e.id === id || e.employeeNum === id) || null;
+        }
+
+        setEmployee(emp);
+        setContracts(contractsRes.data?.contracts || contractsRes.data || []);
       } catch (err) {
-        console.error('Failed to load employee details:', err);
+        console.error('Failed to load employee detail:', err);
       } finally {
         setIsLoading(false);
       }
     }
-    loadEmployee();
+    loadData();
   }, [id]);
 
   if (isLoading) {
-    return <div style={{ padding: '20px' }}>Loading employee details...</div>;
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: 'var(--text-muted)' }}>
+        <p>Loading employee record from PostgreSQL...</p>
+      </div>
+    );
   }
 
   if (!employee) {
-    return <div style={{ padding: '20px' }}>Employee profile not found.</div>;
+    return (
+      <div className="card" style={{ padding: '2rem' }}>
+        <div className="detail-header-actions">
+          <button className="btn-back" onClick={() => navigate('/employees')}>
+            <ArrowLeft size={16} /> Back to Employees
+          </button>
+        </div>
+        <div style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--text-muted)' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>Employee Not Found</h3>
+          <p style={{ marginTop: '0.5rem' }}>
+            Could not locate employee record with ID: <code>{id}</code>
+          </p>
+        </div>
+      </div>
+    );
   }
+
+  const primaryContract = contracts.find((c) => c.status === 'ACTIVE') || contracts[0];
+  const roleLabel = (employee.user?.role || employee.jobPosition?.title || employee.jobTitle || 'EMPLOYEE').replace(/_/g, ' ');
 
   return (
     <div>
-      <div className="breadcrumbs">
-        <Link to="/dashboard">Dashboard</Link> / <Link to="/employees">Employees</Link> / <span>{employee.firstName} {employee.lastName}</span>
+      {/* Breadcrumb Navigation */}
+      <div className="breadcrumb-container">
+        <Link to="/dashboard" className="breadcrumb-link">
+          Dashboard
+        </Link>
+        <span className="breadcrumb-separator">/</span>
+        <Link to="/employees" className="breadcrumb-link">
+          Employees
+        </Link>
+        <span className="breadcrumb-separator">/</span>
+        <span className="breadcrumb-current">
+          {employee.firstName} {employee.lastName}
+        </span>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <button className="btn btn-secondary" onClick={() => navigate('/employees')}>
-          <ArrowLeft size={16} /> Back to Directory
+      <div className="detail-header-actions">
+        <button className="btn-back" id="btn-back-employees" onClick={() => navigate(-1)}>
+          <ArrowLeft size={16} /> Back to Employees
+        </button>
+        <button className="btn-back" id="btn-goto-contracts" onClick={() => navigate('/contracts')}>
+          <FileSignature size={16} /> View Contracts
         </button>
       </div>
 
-      <div className="card">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
-          <div className="user-avatar" style={{ width: '64px', height: '64px', fontSize: '24px', background: '#0f172a' }}>
-            {employee.firstName[0]}
+      {/* Main Employee Detail Card */}
+      <div className="card" style={{ padding: '2rem', marginBottom: '1.5rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '1.5rem',
+            alignItems: 'center',
+            borderBottom: '1px solid var(--border-subtle)',
+            paddingBottom: '1.5rem',
+            marginBottom: '1.5rem',
+          }}
+        >
+          <div
+            style={{
+              width: '68px',
+              height: '68px',
+              borderRadius: '50%',
+              background: 'var(--primary)',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.5rem',
+              fontWeight: 700,
+            }}
+          >
+            {employee.firstName?.charAt(0)}
+            {employee.lastName?.charAt(0)}
           </div>
           <div>
-            <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-main)' }}>
-              {employee.firstName} {employee.lastName}
-            </h1>
-            <div style={{ fontSize: '13.5px', color: 'var(--text-muted)', display: 'flex', gap: '16px', marginTop: '4px' }}>
-              <span><strong>ID:</strong> {employee.employeeNum}</span>
-              <span><strong>Dept:</strong> {employee.department?.name || 'General'}</span>
-              <span><strong>Role:</strong> {employee.jobPosition?.title || 'Staff'}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                {employee.firstName} {employee.lastName}
+              </h2>
+              <span className={`badge ${employee.isActive ? 'green' : 'red'}`}>
+                {employee.isActive ? 'ACTIVE' : 'INACTIVE'}
+              </span>
             </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginTop: '0.25rem' }}>
+              Employee Number: <strong>{employee.employeeNum}</strong> &bull; Work Email:{' '}
+              <strong>{employee.workEmail}</strong>
+            </p>
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', background: '#f8fafc', padding: '20px', borderRadius: 'var(--radius-md)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
           <div>
-            <div style={{ fontSize: '12px', color: '#64748b' }}>Work Email</div>
-            <div style={{ fontWeight: 600, fontSize: '14px' }}>{employee.workEmail}</div>
+            <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Department</span>
+            <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '0.2rem' }}>
+              {employee.department?.name || 'Not assigned'}
+            </span>
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: '#64748b' }}>Phone Number</div>
-            <div style={{ fontWeight: 600, fontSize: '14px' }}>{employee.phone || '—'}</div>
+            <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Designation / Role</span>
+            <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '0.2rem' }}>
+              {employee.jobPosition?.title || employee.jobTitle || roleLabel}
+            </span>
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: '#64748b' }}>Bank Details</div>
-            <div style={{ fontWeight: 600, fontSize: '14px' }}>{employee.bankName || 'N/A'} ({employee.bankAccountMasked || '••••'})</div>
+            <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Bank Account (Masked)</span>
+            <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '0.2rem', fontFamily: 'monospace' }}>
+              {employee.bankAccountMasked || '••••••••'}
+            </span>
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: '#64748b' }}>Tax Identification</div>
-            <div style={{ fontWeight: 600, fontSize: '14px' }}>{employee.taxId || '—'}</div>
+            <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Working Schedule</span>
+            <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '0.2rem' }}>
+              {employee.workingSchedule?.name || 'Standard 40h/week (IST)'}
+            </span>
+          </div>
+          <div>
+            <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Contract Status</span>
+            <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 700, marginTop: '0.2rem' }}>
+              {primaryContract ? (
+                <span className="badge green">
+                  ACTIVE (₹{Number(primaryContract.wage || 0).toLocaleString('en-IN')}/mo)
+                </span>
+              ) : (
+                <span className="badge orange">NO ACTIVE CONTRACT</span>
+              )}
+            </span>
           </div>
         </div>
-      </div>
-
-      <div className="card">
-        <div className="card-header">
-          <div className="card-title">Compensation Contracts</div>
-        </div>
-        <table className="custom-table">
-          <thead>
-            <tr>
-              <th>Contract Title</th>
-              <th>Structure</th>
-              <th>Wage</th>
-              <th>Start Date</th>
-              <th>End Date</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {employee.contracts?.length > 0 ? (
-              employee.contracts.map((c) => (
-                <tr key={c.id}>
-                  <td><strong>{c.name}</strong></td>
-                  <td>{c.structure?.name || 'Standard'}</td>
-                  <td>₹{Number(c.wage).toLocaleString()}/{c.wagePeriod?.toLowerCase()}</td>
-                  <td>{new Date(c.startDate).toLocaleDateString()}</td>
-                  <td>{c.endDate ? new Date(c.endDate).toLocaleDateString() : 'Present (Open-ended)'}</td>
-                  <td>
-                    <span className={`badge badge-${c.status === 'ACTIVE' ? 'success' : 'neutral'}`}>
-                      {c.status}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
-                  No active contracts associated.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
       </div>
     </div>
   );

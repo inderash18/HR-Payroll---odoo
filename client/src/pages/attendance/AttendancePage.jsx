@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../api/client';
-import { Clock, CheckCircle2, LogIn, LogOut } from 'lucide-react';
+import { LogIn, LogOut, Clock, CheckCircle2 } from 'lucide-react';
 
 export function AttendancePage() {
   const [logs, setLogs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [message, setMessage] = useState(null);
+  const [toastMessage, setToastMessage] = useState(null);
 
-  const loadAttendance = async () => {
+  const loadData = async () => {
     setIsLoading(true);
     try {
       const res = await api.get('/attendance');
-      setLogs(res.data || []);
+      setLogs(res.data?.attendance || res.data || []);
     } catch (err) {
       console.error('Failed to load attendance:', err);
     } finally {
@@ -21,18 +21,18 @@ export function AttendancePage() {
   };
 
   useEffect(() => {
-    loadAttendance();
+    loadData();
   }, []);
 
   const handleClockIn = async () => {
     setActionLoading(true);
-    setMessage(null);
     try {
-      await api.post('/attendance/clock-in', {});
-      setMessage({ type: 'success', text: 'Clock-in recorded successfully!' });
-      loadAttendance();
+      await api.post('/attendance/clock-in', { timestamp: new Date().toISOString() });
+      setToastMessage('Clock-in recorded in PostgreSQL');
+      setTimeout(() => setToastMessage(null), 3000);
+      loadData();
     } catch (err) {
-      setMessage({ type: 'danger', text: err.message || 'Clock-in failed' });
+      alert(err.response?.data?.message || err.message || 'Clock-in failed');
     } finally {
       setActionLoading(false);
     }
@@ -40,13 +40,13 @@ export function AttendancePage() {
 
   const handleClockOut = async () => {
     setActionLoading(true);
-    setMessage(null);
     try {
-      await api.post('/attendance/clock-out', {});
-      setMessage({ type: 'success', text: 'Clock-out recorded successfully!' });
-      loadAttendance();
+      await api.post('/attendance/clock-out', { timestamp: new Date().toISOString() });
+      setToastMessage('Clock-out recorded and hours computed');
+      setTimeout(() => setToastMessage(null), 3000);
+      loadData();
     } catch (err) {
-      setMessage({ type: 'danger', text: err.message || 'Clock-out failed' });
+      alert(err.response?.data?.message || err.message || 'Clock-out failed');
     } finally {
       setActionLoading(false);
     }
@@ -54,90 +54,99 @@ export function AttendancePage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-            Attendance & Timesheets
-          </h1>
-          <p style={{ fontSize: '13.5px', color: 'var(--text-muted)', marginTop: '4px' }}>
-            Employee punch records, clock in/out tracking, and worked hours.
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button className="btn btn-primary" onClick={handleClockIn} disabled={actionLoading}>
-            <LogIn size={16} /> Clock In Today
-          </button>
-          <button className="btn btn-secondary" onClick={handleClockOut} disabled={actionLoading}>
-            <LogOut size={16} /> Clock Out Today
-          </button>
-        </div>
-      </div>
-
-      {message && (
+      <div className="card">
         <div
-          style={{
-            padding: '12px 16px',
-            marginBottom: '20px',
-            borderRadius: 'var(--radius-md)',
-            background: message.type === 'success' ? 'var(--success-bg)' : 'var(--danger-bg)',
-            color: message.type === 'success' ? 'var(--success-text)' : 'var(--danger-text)',
-            border: `1px solid ${message.type === 'success' ? 'var(--success-border)' : 'var(--danger-border)'}`,
-            fontSize: '13.5px',
-          }}
+          className="card-header"
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}
         >
-          {message.text}
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
+            Attendance Log ({logs.length} Entries)
+          </h2>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button
+              className="btn-pill-primary"
+              id="btn-clock-in"
+              style={{ background: 'var(--green)', borderColor: 'var(--green)' }}
+              onClick={handleClockIn}
+              disabled={actionLoading}
+            >
+              <LogIn size={16} />
+              <span>Clock In</span>
+            </button>
+            <button
+              className="btn-pill-primary"
+              id="btn-clock-out"
+              onClick={handleClockOut}
+              disabled={actionLoading}
+            >
+              <LogOut size={16} />
+              <span>Clock Out</span>
+            </button>
+          </div>
         </div>
-      )}
 
-      <div className="table-container">
-        <table className="custom-table">
-          <thead>
-            <tr>
-              <th>Employee</th>
-              <th>Date</th>
-              <th>Clock In</th>
-              <th>Clock Out</th>
-              <th>Worked Hours</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr><td colSpan="6" style={{ textAlign: 'center', padding: '30px' }}>Loading logs...</td></tr>
-            ) : logs.length === 0 ? (
-              <tr><td colSpan="6" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>No attendance logs found.</td></tr>
-            ) : (
-              logs.map((log) => (
-                <tr key={log.id}>
-                  <td>
-                    <strong>{log.employee?.firstName} {log.employee?.lastName}</strong>
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>{log.employee?.employeeNum}</div>
-                  </td>
-                  <td>{new Date(log.date).toLocaleDateString()}</td>
-                  <td>{new Date(log.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                  <td>
-                    {log.checkOut
-                      ? new Date(log.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                      : <span style={{ color: '#d97706' }}>Active (Clocked In)</span>}
-                  </td>
-                  <td>
-                    {log.workedHours !== null && log.workedHours !== undefined ? (
-                      <strong>{Number(log.workedHours).toFixed(2)} hrs</strong>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
-                  <td>
-                    <span className="badge badge-success">
-                      {log.status}
-                    </span>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ padding: '0.85rem 1.25rem' }}>Employee</th>
+                <th style={{ padding: '0.85rem 1rem' }}>Date</th>
+                <th style={{ padding: '0.85rem 1rem' }}>Check In</th>
+                <th style={{ padding: '0.85rem 1rem' }}>Check Out</th>
+                <th style={{ padding: '0.85rem 1rem' }}>Worked Hours</th>
+                <th style={{ padding: '0.85rem 1.25rem' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan="6" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    Loading attendance records from PostgreSQL...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : logs.length === 0 ? (
+                <tr>
+                  <td colSpan="6" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    No attendance records found.
+                  </td>
+                </tr>
+              ) : (
+                logs.map((a) => (
+                  <tr key={a.id}>
+                    <td style={{ padding: '1rem 1.25rem', fontWeight: 600 }}>
+                      {a.employee ? `${a.employee.firstName} ${a.employee.lastName}` : 'Current User'}
+                    </td>
+                    <td style={{ padding: '1rem' }}>{new Date(a.date).toLocaleDateString()}</td>
+                    <td style={{ padding: '1rem', color: 'var(--green-text)', fontWeight: 600 }}>
+                      {a.checkIn ? new Date(a.checkIn).toLocaleTimeString() : '—'}
+                    </td>
+                    <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
+                      {a.checkOut ? new Date(a.checkOut).toLocaleTimeString() : '—'}
+                    </td>
+                    <td style={{ padding: '1rem', fontWeight: 600 }}>
+                      {a.workedHours ? `${Number(a.workedHours).toFixed(1)} hrs` : 'In Progress'}
+                    </td>
+                    <td style={{ padding: '1rem 1.25rem' }}>
+                      <span className={`badge ${a.status === 'PRESENT' ? 'green' : 'orange'}`}>
+                        {a.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      {toastMessage && (
+        <div id="toast-container">
+          <div className="toast">
+            <CheckCircle2 size={16} color="var(--green)" />
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

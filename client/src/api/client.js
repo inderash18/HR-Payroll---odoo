@@ -33,13 +33,14 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Skip refresh for auth login, logout, and refresh itself
+    // Skip refresh attempt for auth endpoints (/login, /logout, /refresh, /me bootstrap)
     const isAuthPath =
       originalRequest?.url?.includes('/auth/login') ||
       originalRequest?.url?.includes('/auth/logout') ||
-      originalRequest?.url?.includes('/auth/refresh');
+      originalRequest?.url?.includes('/auth/refresh') ||
+      originalRequest?.url?.includes('/auth/me');
 
-    if (error.response?.status === 401 && !originalRequest._retry && !isAuthPath) {
+    if (error.response?.status === 401 && !originalRequest?._retry && !isAuthPath) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -73,7 +74,10 @@ api.interceptors.response.use(
       error.message ||
       'An unexpected network error occurred';
 
-    return Promise.reject(new Error(message));
+    const customErr = new Error(message);
+    customErr.status = error.response?.status;
+    customErr.response = error.response;
+    return Promise.reject(customErr);
   }
 );
 

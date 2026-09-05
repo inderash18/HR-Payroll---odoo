@@ -11,11 +11,11 @@
   --border: #e2e8f0;
   
   --green: #10b981;
-  --green-soft: #d1fae5;
+  --green-bg: #d1fae5;
   --red: #ef4444;
-  --red-soft: #fee2e2;
+  --red-bg: #fee2e2;
   --orange: #f59e0b;
-  --orange-soft: #fef3c7;
+  --orange-bg: #fef3c7;
   --blue: #3b82f6;
   --blue-soft: #dbeafe;
   
@@ -457,6 +457,65 @@ body.login-page #app {
 .user-role {
   font-size: 0.72rem;
   color: var(--text-muted);
+}
+
+<<<<<<< HEAD
+.dropdown-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--text-muted);
+}
+
+/* DASHBOARD LAYOUT */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+}
+
+.central-area {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.compact {
+  padding-bottom: 0.9rem;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.summary-panel {
+  padding-bottom: 0.4rem;
 }
 
 /* ----------------------------------------------------

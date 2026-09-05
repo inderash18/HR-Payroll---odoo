@@ -9,6 +9,12 @@ import { AuthModule } from '@modules/auth/auth.module';
 import { OrganizationsModule } from '@modules/organizations/organizations.module';
 import { LegalEntitiesModule } from '@modules/legal-entities/legal-entities.module';
 import { UsersModule } from '@modules/users/users.module';
+import { DepartmentsModule } from '@modules/departments/departments.module';
+import { EmployeesModule } from '@modules/employees/employees.module';
+import { ContractsModule } from '@modules/contracts/contracts.module';
+import { PayrollModule } from '@modules/payroll/payroll.module';
+import { LeavesModule } from '@modules/leaves/leaves.module';
+import { AttendanceModule } from '@modules/attendance/attendance.module';
 
 @Module({
   imports: [
@@ -22,6 +28,13 @@ import { UsersModule } from '@modules/users/users.module';
     OrganizationsModule,
     LegalEntitiesModule,
     UsersModule,
+    DepartmentsModule,
+    EmployeesModule,
+    ContractsModule,
+    PayrollModule,
+    LeavesModule,
+    AttendanceModule,
   ],
 })
 export class AppModule {}
+

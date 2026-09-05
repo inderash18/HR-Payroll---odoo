@@ -15,8 +15,12 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { Sidebar } from './Sidebar';
 
+import { useLayout } from '../contexts/LayoutContext';
+import { PanelLeftOpen, PanelLeftClose } from 'lucide-react';
+
 export function Topbar() {
   const { user, logout } = useAuth();
+  const { isSidebarCollapsed, toggleSidebar } = useLayout();
   const navigate = useNavigate();
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -88,9 +92,20 @@ export function Topbar() {
 
   return (
     <header className="topbar-clean">
-      <h1 className="topbar-title" id="header-tab-title">
-        {getPageTitle(location.pathname)}
-      </h1>
+      <div className="topbar-left-group">
+        <button
+          type="button"
+          className="btn-toggle-sidebar"
+          id="btn-toggle-sidebar"
+          onClick={toggleSidebar}
+          title={isSidebarCollapsed ? "Show Sidebar (Ctrl + B)" : "Hide Sidebar (Ctrl + B)"}
+        >
+          {isSidebarCollapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}
+        </button>
+        <h1 className="topbar-title" id="header-tab-title">
+          {getPageTitle(location.pathname)}
+        </h1>
+      </div>
 
       <div className="topbar-center">
         <div className="search-pill-box">
@@ -234,8 +249,10 @@ export function Topbar() {
 }
 
 export function AppLayout({ children }) {
+  const { isSidebarCollapsed } = useLayout();
+
   return (
-    <div id="app" className="app-shell">
+    <div id="app" className={`app-shell ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       <Sidebar />
       <main className="main-canvas">
         <Topbar />

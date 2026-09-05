@@ -79,6 +79,7 @@ model Organization {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
+  legalEntities   LegalEntity[]
   users           User[]
   auditLogs       AuditLog[]
   outboxEvents    OutboxEvent[]
@@ -87,25 +88,84 @@ model Organization {
   @@map("organizations")
 }
 
-model User {
+model LegalEntity {
   id              String       @id @default(uuid())
   organizationId  String       @map("organization_id")
-  email           String
-  passwordHash    String       @map("password_hash")
-  firstName       String       @map("first_name")
-  lastName        String       @map("last_name")
-  role            Role         @default(EMPLOYEE)
-  isActive        Boolean      @default(true) @map("is_active")
-  lastLoginAt     DateTime?    @map("last_login_at")
+  name            String
+  code            String
+  registrationNum String?      @map("registration_num")
+  taxId           String?      @map("tax_id")
+  country         String       @default("US")
+  currency        String       @default("USD")
+  address         Json?
   createdAt       DateTime     @default(now()) @map("created_at")
   updatedAt       DateTime     @updatedAt @map("updated_at")
 
   organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  auditLogs       AuditLog[]
+  users           User[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@map("legal_entities")
+}
+
+model User {
+  id                  String               @id @default(uuid())
+  organizationId      String               @map("organization_id")
+  legalEntityId       String?              @map("legal_entity_id")
+  email               String
+  passwordHash        String               @map("password_hash")
+  firstName           String               @map("first_name")
+  lastName            String               @map("last_name")
+  role                Role                 @default(EMPLOYEE)
+  isActive            Boolean              @default(true) @map("is_active")
+  isEmailVerified     Boolean              @default(false) @map("is_email_verified")
+  failedLoginAttempts Int                  @default(0) @map("failed_login_attempts")
+  lockoutUntil        DateTime?            @map("lockout_until")
+  lastLoginAt         DateTime?            @map("last_login_at")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @default(now()) @updatedAt @map("updated_at")
+
+  organization        Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  legalEntity         LegalEntity?         @relation(fields: [legalEntityId], references: [id], onDelete: SetNull)
+  auditLogs           AuditLog[]
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
   @@map("users")
+}
+
+model RefreshToken {
+  id                 String       @id @default(uuid())
+  userId             String       @map("user_id")
+  tokenHash          String       @unique @map("token_hash")
+  expiresAt          DateTime     @map("expires_at")
+  revokedAt          DateTime?    @map("revoked_at")
+  replacedByTokenHash String?     @map("replaced_by_token_hash")
+  ipAddress          String?      @map("ip_address")
+  userAgent          String?      @map("user_agent")
+  createdAt          DateTime     @default(now()) @map("created_at")
+
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  tokenHash  String    @unique @map("token_hash")
+  expiresAt  DateTime  @map("expires_at")
+  usedAt     DateTime? @map("used_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 model AuditLog {

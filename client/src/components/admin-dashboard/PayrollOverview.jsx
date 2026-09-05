@@ -2,23 +2,22 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Landmark, ArrowUpRight, CheckCircle2, DollarSign } from 'lucide-react';
 
-export function PayrollOverview({ payrollData }) {
+export function PayrollOverview({ payrollData, summary = {} }) {
   const navigate = useNavigate();
 
-  if (!payrollData) return null;
+  const data = payrollData || {};
+  const currentMonth = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
 
-  const {
-    cycle = 'September 2026',
-    employeesIncluded = 241,
-    totalEmployees = 248,
-    grossPayroll = 4286500,
-    totalDeductions = 624300,
-    estimatedNetPayout = 3662200,
-    status = 'In Review',
-    processingCompletion = 78,
-  } = payrollData;
+  const cycle = data.cycle || currentMonth;
+  const employeesIncluded = data.employeesIncluded ?? summary.activeContracts ?? summary.activeEmployees ?? 0;
+  const totalEmployees = data.totalEmployees ?? summary.totalEmployees ?? employeesIncluded;
+  const grossPayroll = data.grossPayroll ?? summary.latestPayrunGross ?? 0;
+  const estimatedNetPayout = data.estimatedNetPayout ?? summary.latestPayrunNet ?? 0;
+  const totalDeductions = data.totalDeductions ?? Math.max(0, grossPayroll - estimatedNetPayout);
+  const status = data.status || summary.currentPayrollStatus || 'READY_TO_RUN';
+  const processingCompletion = data.processingCompletion ?? (totalEmployees > 0 ? Math.round((employeesIncluded / totalEmployees) * 100) : 100);
 
-  const formatINR = (val) => `₹${Number(val).toLocaleString('en-IN')}`;
+  const formatINR = (val) => `₹${Number(val || 0).toLocaleString('en-IN')}`;
 
   return (
     <div className="admin-card-white" id="admin-payroll-overview-card">

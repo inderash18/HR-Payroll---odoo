@@ -4,6 +4,23 @@ import { Users, Clock, CalendarDays, Landmark, TrendingUp, AlertTriangle } from 
 export function AdminStatsGrid({ summary, onCardClick }) {
   if (!summary) return null;
 
+  const totalEmployeesVal = typeof summary.totalEmployees === 'object' ? summary.totalEmployees.value : (summary.totalEmployees ?? 0);
+  const totalEmployeesText = typeof summary.totalEmployees === 'object' ? summary.totalEmployees.changeText : `${summary.activeEmployees ?? totalEmployeesVal} active on roster`;
+  const totalEmployeesTrend = typeof summary.totalEmployees === 'object' ? summary.totalEmployees.trend : 'Live Database';
+
+  const presentTodayVal = typeof summary.presentToday === 'object' ? summary.presentToday.value : (summary.presentToday ?? 0);
+  const attendanceRate = summary.attendanceRate ?? 100;
+  const presentTodayText = typeof summary.presentToday === 'object' ? summary.presentToday.changeText : `${attendanceRate}% today's rate`;
+  const presentTodayTrend = typeof summary.presentToday === 'object' ? summary.presentToday.trend : 'Verified';
+
+  const pendingLeavesVal = typeof summary.pendingLeaves === 'object' ? summary.pendingLeaves.value : (summary.pendingLeaveApprovals ?? summary.pendingLeaves ?? 0);
+  const pendingLeavesText = typeof summary.pendingLeaves === 'object' ? summary.pendingLeaves.changeText : 'Pending HR review';
+  const pendingLeavesTrend = typeof summary.pendingLeaves === 'object' ? summary.pendingLeaves.trend : (pendingLeavesVal > 0 ? 'Requires Action' : 'All Clear');
+
+  const payrollStatusVal = typeof summary.payrollStatus === 'object' ? summary.payrollStatus.status : (summary.currentPayrollStatus || 'READY_TO_RUN');
+  const payrollCycle = typeof summary.payrollStatus === 'object' ? summary.payrollStatus.cycle : 'Current Cycle';
+  const payrollText = typeof summary.payrollStatus === 'object' ? summary.payrollStatus.changeText : (summary.latestPayrunNet ? `₹${Number(summary.latestPayrunNet).toLocaleString('en-IN')} net` : 'No active run');
+
   return (
     <div className="admin-stats-grid" id="admin-kpi-stats-grid">
       {/* 1. Total Employees */}
@@ -18,12 +35,12 @@ export function AdminStatsGrid({ summary, onCardClick }) {
             <Users size={18} />
           </div>
         </div>
-        <div className="admin-stat-val">{summary.totalEmployees.value}</div>
+        <div className="admin-stat-val">{totalEmployeesVal}</div>
         <div className="admin-stat-bottom">
-          <span style={{ color: '#64748b' }}>{summary.totalEmployees.changeText}</span>
+          <span style={{ color: '#64748b' }}>{totalEmployeesText}</span>
           <span className="trend-badge-pill trend-positive">
             <TrendingUp size={12} />
-            {summary.totalEmployees.trend}
+            {totalEmployeesTrend}
           </span>
         </div>
       </div>
@@ -41,13 +58,13 @@ export function AdminStatsGrid({ summary, onCardClick }) {
           </div>
         </div>
         <div className="admin-stat-val" style={{ color: '#047857' }}>
-          {summary.presentToday.value}
+          {presentTodayVal}
         </div>
         <div className="admin-stat-bottom">
-          <span style={{ color: '#64748b' }}>{summary.presentToday.changeText}</span>
+          <span style={{ color: '#64748b' }}>{presentTodayText}</span>
           <span className="trend-badge-pill trend-positive">
             <TrendingUp size={12} />
-            {summary.presentToday.trend}
+            {presentTodayTrend}
           </span>
         </div>
       </div>
@@ -65,13 +82,13 @@ export function AdminStatsGrid({ summary, onCardClick }) {
           </div>
         </div>
         <div className="admin-stat-val" style={{ color: '#b45309' }}>
-          {summary.pendingLeaves.value}
+          {pendingLeavesVal}
         </div>
         <div className="admin-stat-bottom">
-          <span style={{ color: '#b45309' }}>{summary.pendingLeaves.changeText}</span>
-          <span className="trend-badge-pill trend-warning">
+          <span style={{ color: '#b45309' }}>{pendingLeavesText}</span>
+          <span className={`trend-badge-pill ${pendingLeavesVal > 0 ? 'trend-warning' : 'trend-positive'}`}>
             <AlertTriangle size={12} />
-            {summary.pendingLeaves.trend}
+            {pendingLeavesTrend}
           </span>
         </div>
       </div>
@@ -83,18 +100,18 @@ export function AdminStatsGrid({ summary, onCardClick }) {
         onClick={() => onCardClick && onCardClick('payroll')}
       >
         <div className="admin-stat-top">
-          <span className="admin-stat-label">{summary.payrollStatus.cycle}</span>
+          <span className="admin-stat-label">{payrollCycle}</span>
           <div className="admin-stat-icon-box" style={{ background: '#f1f5f9', color: '#334155' }}>
             <Landmark size={18} />
           </div>
         </div>
-        <div className="admin-stat-val" style={{ fontSize: '1.45rem', color: '#0f172a' }}>
-          {summary.payrollStatus.status}
+        <div className="admin-stat-val" style={{ fontSize: '1.25rem', color: '#0f172a' }}>
+          {payrollStatusVal}
         </div>
         <div className="admin-stat-bottom">
-          <span style={{ color: '#64748b' }}>{summary.payrollStatus.changeText}</span>
+          <span style={{ color: '#64748b' }}>{payrollText}</span>
           <span className="trend-badge-pill trend-neutral">
-            {summary.payrollStatus.trend}
+            PostgreSQL DB
           </span>
         </div>
       </div>

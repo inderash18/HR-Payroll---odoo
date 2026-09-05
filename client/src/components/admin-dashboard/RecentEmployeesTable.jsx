@@ -6,17 +6,41 @@ export function RecentEmployeesTable({ employees = [] }) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
+  const formattedEmployees = useMemo(() => {
+    return (employees || []).map((emp) => {
+      const name = emp.name || `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || 'Employee';
+      const employeeId = emp.employeeId || emp.employeeNum || 'EMP-360';
+      const department = emp.department?.name || emp.department || 'General';
+      const jobTitle = emp.jobPosition?.title || emp.jobTitle || 'Team Member';
+      const joiningDate = emp.joiningDate ? new Date(emp.joiningDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent';
+      const status = emp.status || (emp.isActive !== false ? 'Active' : 'Inactive');
+      const avatarInitials = emp.avatarInitials || (name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'EM');
+
+      return {
+        id: emp.id,
+        name,
+        employeeId,
+        department,
+        jobTitle,
+        joiningDate,
+        status,
+        avatarInitials,
+        avatarBg: emp.avatarBg || '#0f172a',
+      };
+    });
+  }, [employees]);
+
   const filteredEmployees = useMemo(() => {
-    if (!searchTerm.trim()) return employees;
+    if (!searchTerm.trim()) return formattedEmployees;
     const q = searchTerm.toLowerCase();
-    return employees.filter(
+    return formattedEmployees.filter(
       (e) =>
         e.name.toLowerCase().includes(q) ||
         e.employeeId.toLowerCase().includes(q) ||
         e.department.toLowerCase().includes(q) ||
         e.jobTitle.toLowerCase().includes(q)
     );
-  }, [employees, searchTerm]);
+  }, [formattedEmployees, searchTerm]);
 
   return (
     <div className="admin-card-white" id="admin-recent-employees-table-card">
@@ -160,7 +184,7 @@ export function RecentEmployeesTable({ employees = [] }) {
             ) : (
               <tr>
                 <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
-                  No employees matching "{searchTerm}"
+                  {searchTerm ? `No employees matching "${searchTerm}"` : 'No employees in database. Click "Add Employee" to onboard your team.'}
                 </td>
               </tr>
             )}

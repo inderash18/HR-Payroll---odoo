@@ -108,7 +108,6 @@ export const ROLE_NAVIGATION = {
 
   EMPLOYEE: [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
-    { to: '/profile', label: 'My Profile', icon: Users },
     { to: '/attendance', label: 'Attendance', icon: Clock },
     { to: '/leaves', label: 'Apply Leave', icon: CalendarDays },
     { to: '/payslips', label: 'My Payslips', icon: LineChart },

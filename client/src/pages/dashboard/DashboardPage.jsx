@@ -10,6 +10,7 @@ import {
   Users,
   Landmark,
   Briefcase,
+  Building,
   User,
   Settings,
   KeyRound,
@@ -29,8 +30,6 @@ export function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [activeDateIndex, setActiveDateIndex] = useState(1);
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const profileDropdownRef = useRef(null);
 
   const loadData = async () => {
     try {
@@ -56,17 +55,6 @@ export function DashboardPage() {
     loadData();
   }, []);
 
-  // Handle outside click for dashboard profile dropdown
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target)) {
-        setProfileDropdownOpen(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
-
   const now = new Date();
   const formattedDate = now.toLocaleDateString('en-IN', {
     weekday: 'short',
@@ -75,56 +63,38 @@ export function DashboardPage() {
     year: 'numeric',
   });
 
-  const defaultRoster = [
-    { id: 'emp-sneha', name: 'Sneha Iyer', role: 'Shift Supervisor', dept: 'Operations & Service Delivery', salary: '₹68,000 / mo', initial: 'SI' },
-    { id: 'emp-rahul', name: 'Rahul Verma', role: 'Team Member', dept: 'Finance & Indian Payroll', salary: '₹72,000 / mo', initial: 'RV' },
-    { id: 'emp-priya', name: 'Priya Patel', role: 'Team Member', dept: 'Human Resources & Talent', salary: '₹65,000 / mo', initial: 'PP' },
-    { id: 'emp-aarav', name: 'Aarav Sharma', role: 'Team Member', dept: 'Engineering & Technology', salary: '₹85,000 / mo', initial: 'AS' },
-  ];
+  const displayEmployees = employees.slice(0, 5).map((e) => ({
+    id: e.id,
+    name: `${e.firstName} ${e.lastName}`,
+    role: e.jobPosition?.title || e.jobTitle || 'Team Member',
+    dept: e.department?.name || 'General',
+    salary: e.contracts?.[0]?.wage
+      ? `₹${Number(e.contracts[0].wage).toLocaleString('en-IN')} / mo`
+      : 'Contract Active',
+    initial: `${e.firstName?.[0] || 'E'}${e.lastName?.[0] || ''}`.toUpperCase(),
+  }));
 
-  const displayEmployees = employees.length > 0
-    ? employees.slice(0, 4).map((e) => ({
-        id: e.id,
-        name: `${e.firstName} ${e.lastName}`,
-        role: e.jobPosition?.title || e.jobTitle || 'Team Member',
-        dept: e.department?.name || 'Operations & Service Delivery',
-        salary: e.contracts?.[0]?.wage
-          ? `₹${Number(e.contracts[0].wage).toLocaleString('en-IN')} / mo`
-          : '₹68,000 / mo',
-        initial: `${e.firstName[0]}${e.lastName ? e.lastName[0] : ''}`.toUpperCase(),
-      }))
-    : defaultRoster;
-
-  const defaultDepts = [
-    { name: 'Engineering & Technology', count: '1 Members', icon: Code },
-    { name: 'Finance & Indian Payroll', count: '1 Members', icon: Users },
-    { name: 'Human Resources & Talent', count: '1 Members', icon: Landmark },
-    { name: 'Operations & Service Delivery', count: '1 Members', icon: Briefcase },
-  ];
-
-  const deptList = departments.length >= 4
-    ? departments.slice(0, 4).map((d, i) => ({
-        id: d.id,
-        name: d.name,
-        count: `${d._count?.employees || d.employeeCount || 1} Members`,
-        icon: defaultDepts[i % defaultDepts.length].icon,
-      }))
-    : defaultDepts;
+  const deptList = departments.map((d) => ({
+    id: d.id,
+    name: d.name,
+    count: `${d._count?.employees ?? d.employeeCount ?? 0} Members`,
+    icon: Building,
+  }));
 
   // Header and Supervisor values
-  const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : (displayEmployees[0]?.name || 'Sneha Iyer');
-  const userRoleLabel = user?.role ? user.role.replace(/_/g, ' ') : 'Shift Supervisor';
+  const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'User';
+  const userRoleLabel = user?.role ? user.role.replace(/_/g, ' ') : 'Employee';
   const userInitials = user?.firstName
     ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ''}`.toUpperCase()
-    : 'SI';
+    : 'U';
 
-  const featuredSupervisor = employees.find((e) => `${e.firstName} ${e.lastName}`.toLowerCase().includes('sneha')) || employees[0];
-  const featuredSupervisorId = featuredSupervisor?.id || displayEmployees[0]?.id || 'emp-sneha';
-  const featuredName = featuredSupervisor ? `${featuredSupervisor.firstName} ${featuredSupervisor.lastName}` : 'Sneha Iyer';
-  const featuredDept = featuredSupervisor?.department?.name || 'Operations & Service Delivery';
+  const featuredSupervisor = employees[0] || null;
+  const featuredSupervisorId = featuredSupervisor?.id || '';
+  const featuredName = featuredSupervisor ? `${featuredSupervisor.firstName} ${featuredSupervisor.lastName}` : userName;
+  const featuredDept = featuredSupervisor?.department?.name || 'Operations';
 
   const pendingLeavesCount = leaves.filter((l) => l.status === 'PENDING' || l.status === 'PENDING_APPROVAL').length;
-  const attendanceRate = data?.summary?.attendanceRate || 98.4;
+  const attendanceRate = data?.summary?.attendanceRate ?? 100;
 
   const handleLogoutAction = async () => {
     setProfileDropdownOpen(false);
@@ -315,156 +285,8 @@ export function DashboardPage() {
           </div>
         </div>
 
-        {/* RIGHT ASIDE PANEL: PROFILE CONTROL, DEPARTMENTS & HEALTH */}
+        {/* RIGHT ASIDE PANEL: DEPARTMENTS & ATTENDANCE METER */}
         <aside className="ref-aside-panel">
-          {/* VISIBLE TOP-RIGHT PROFILE CONTROL */}
-          <div
-            className="dashboard-profile-box"
-            ref={profileDropdownRef}
-            style={{ position: 'relative', marginBottom: '1.25rem' }}
-          >
-            <div
-              className="dashboard-profile-card-trigger"
-              id="dashboard-user-profile-btn"
-              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-              style={{
-                background: '#ffffff',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-pill)',
-                padding: '0.45rem 1rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '0.75rem',
-                cursor: 'pointer',
-                boxShadow: 'var(--shadow-subtle)',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <div
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    background: 'var(--primary)',
-                    color: '#ffffff',
-                    display: 'grid',
-                    placeItems: 'center',
-                    fontWeight: 700,
-                    fontSize: '0.82rem',
-                    flexShrink: 0,
-                  }}
-                >
-                  {user?.avatarUrl ? (
-                    <img
-                      src={user.avatarUrl}
-                      alt="Avatar"
-                      style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
-                    />
-                  ) : (
-                    userInitials
-                  )}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-main)', lineHeight: 1.2 }}>
-                    {userName}
-                  </span>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                    {userRoleLabel}
-                  </span>
-                </div>
-              </div>
-              <ChevronDown
-                size={15}
-                style={{
-                  color: 'var(--text-muted)',
-                  transform: profileDropdownOpen ? 'rotate(180deg)' : 'none',
-                  transition: 'transform 0.2s ease',
-                }}
-              />
-            </div>
-
-            {/* DASHBOARD PROFILE DROPDOWN MENU */}
-            {profileDropdownOpen && (
-              <div
-                className="dashboard-profile-dropdown-menu"
-                id="dashboard-profile-dropdown"
-                style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 8px)',
-                  right: 0,
-                  left: 0,
-                  background: '#ffffff',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-md)',
-                  boxShadow: 'var(--shadow-modal)',
-                  zIndex: 999,
-                  padding: '0.5rem 0',
-                  minWidth: '220px',
-                }}
-              >
-                <div style={{ padding: '0.6rem 1rem', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-main)' }}>{userName}</div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{userRoleLabel}</div>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.35rem 0' }}>
-                  <div
-                    className="dropdown-nav-item"
-                    id="dashboard-menu-my-profile"
-                    onClick={() => {
-                      setProfileDropdownOpen(false);
-                      navigate('/profile');
-                    }}
-                    style={{ padding: '0.55rem 1rem', display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', cursor: 'pointer' }}
-                  >
-                    <User size={15} />
-                    <span>My Profile</span>
-                  </div>
-
-                  <div
-                    className="dropdown-nav-item"
-                    id="dashboard-menu-account-settings"
-                    onClick={() => {
-                      setProfileDropdownOpen(false);
-                      navigate('/profile/settings');
-                    }}
-                    style={{ padding: '0.55rem 1rem', display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', cursor: 'pointer' }}
-                  >
-                    <Settings size={15} />
-                    <span>Account Settings</span>
-                  </div>
-
-                  <div
-                    className="dropdown-nav-item"
-                    id="dashboard-menu-change-password"
-                    onClick={() => {
-                      setProfileDropdownOpen(false);
-                      navigate('/profile/security');
-                    }}
-                    style={{ padding: '0.55rem 1rem', display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', cursor: 'pointer' }}
-                  >
-                    <KeyRound size={15} />
-                    <span>Change Password</span>
-                  </div>
-
-                  <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.35rem 0' }} />
-
-                  <div
-                    className="dropdown-nav-item logout-danger"
-                    id="dashboard-menu-logout"
-                    onClick={handleLogoutAction}
-                    style={{ padding: '0.55rem 1rem', display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--red-text)', cursor: 'pointer' }}
-                  >
-                    <LogOut size={15} />
-                    <span>Logout</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
           <div className="ref-aside-card">
             <h3 className="ref-aside-title">Departments</h3>
             <div className="ref-course-list">

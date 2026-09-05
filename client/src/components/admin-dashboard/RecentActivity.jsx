@@ -42,17 +42,29 @@ export function RecentActivity({ activities = [] }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {activities.map((act) => (
-          <div key={act.id} className="activity-item-row">
-            <div className="activity-icon-bubble">
-              {getIcon(act.category)}
-            </div>
-            <div>
-              <div className="activity-desc">{act.description}</div>
-              <div className="activity-time">{act.timestamp}</div>
-            </div>
+        {activities.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            No recent audit activity logged in the database yet.
           </div>
-        ))}
+        ) : (
+          activities.map((act) => {
+            const desc = act.description || `${act.actor || 'User'} performed ${act.action || 'activity'} on ${act.entityType || 'record'}`;
+            const time = act.timestamp || (act.createdAt ? new Date(act.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently');
+            const cat = act.category || (act.entityType?.toLowerCase()) || 'schedule';
+
+            return (
+              <div key={act.id} className="activity-item-row">
+                <div className="activity-icon-bubble">
+                  {getIcon(cat)}
+                </div>
+                <div>
+                  <div className="activity-desc">{desc}</div>
+                  <div className="activity-time">{time}</div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

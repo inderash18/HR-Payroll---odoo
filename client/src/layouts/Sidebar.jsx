@@ -24,6 +24,20 @@ export function Sidebar() {
     navigate('/login', { replace: true });
   };
 
+  const displayName = user?.firstName
+    ? `${user.firstName} ${user.lastName || ''}`.trim()
+    : user?.name || 'Sneha Iyer';
+
+  const initials = user?.firstName
+    ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ''}`.toUpperCase()
+    : (displayName.split(' ').map((n) => n[0]).join('').slice(0, 2) || 'SI').toUpperCase();
+
+  const roleTitle =
+    user?.employee?.jobTitle ||
+    user?.employee?.job_title ||
+    user?.employee?.position ||
+    (user?.role ? user.role.replace(/_/g, ' ') : 'Shift Supervisor');
+
   const navLinks = [
     {
       to: '/dashboard',
@@ -110,6 +124,29 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      {/* DIVIDER */}
+      <div className="sidebar-divider" />
+
+      {/* USER PROFILE SUMMARY CARD */}
+      <div
+        className="sidebar-user-card"
+        id="sidebar-user-profile-summary"
+        onClick={() => navigate('/profile')}
+        title="View Profile"
+      >
+        <div className="sidebar-user-avatar">
+          {user?.avatarUrl ? (
+            <img src={user.avatarUrl} alt="Avatar" className="sidebar-avatar-img" />
+          ) : (
+            <span>{initials}</span>
+          )}
+        </div>
+        <div className="sidebar-user-info">
+          <span className="sidebar-user-name">{displayName}</span>
+          <span className="sidebar-user-role">{roleTitle}</span>
+        </div>
+      </div>
 
       {/* BOTTOM ACTION LINKS */}
       <div className="sidebar-bottom">

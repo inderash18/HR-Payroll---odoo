@@ -1,6 +1,17 @@
 import { PrismaClient } from '@prisma/client';
+import { env } from './env.js';
+
+const databaseUrl =
+  env.DATABASE_URL ||
+  process.env.DATABASE_URL ||
+  'postgresql://postgres:postgres@localhost:5432/peoplepay360?schema=public';
 
 export const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: databaseUrl,
+    },
+  },
   log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
 });
 

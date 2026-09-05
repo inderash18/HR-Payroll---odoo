@@ -110,7 +110,7 @@ export function LoginPage() {
         <div className="login-form-side">
           <div className="welcome-text" style={{ marginTop: '1rem' }}>
             <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-              Welcome to PeoplePay360
+              Welcome to ODOO
             </h1>
             <p style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '0.5rem' }}>
               Enterprise HR, Payroll & Compliance Platform

@@ -1,7 +1,42 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 import { z } from 'zod';
 import dotenv from 'dotenv';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Attempt loading .env from multiple potential locations
+const possibleEnvPaths = [
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), 'server/.env'),
+  path.resolve(__dirname, '../../.env'),
+  path.resolve(__dirname, '../../../.env'),
+];
+
+for (const envPath of possibleEnvPaths) {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  }
+}
+
+// Ensure default fallback values in process.env so Prisma & other tools never crash on missing env
+process.env.DATABASE_URL =
+  process.env.DATABASE_URL ||
+  'postgresql://postgres:postgres@localhost:5432/peoplepay360?schema=public';
+
+process.env.COOKIE_SECRET =
+  process.env.COOKIE_SECRET ||
+  'cookie_secret_key_change_in_production_min_32_chars';
+
+process.env.JWT_ACCESS_SECRET =
+  process.env.JWT_ACCESS_SECRET ||
+  'super_secret_access_key_change_in_production_min_32_chars';
+
+process.env.JWT_REFRESH_SECRET =
+  process.env.JWT_REFRESH_SECRET ||
+  'super_secret_refresh_key_change_in_production_min_32_chars';
 
 export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -28,14 +63,13 @@ export const envSchema = z.object({
 
   STORAGE_LOCAL_PATH: z.string().default('./uploads'),
 
-  // Development-only fixed credentials fallback
   DEV_FIXED_AUTH_ENABLED: z
     .preprocess((val) => val === 'true' || val === true, z.boolean())
     .default(false),
   DEV_FIXED_AUTH_EMAIL: z.string().optional().default('admin@peoplepay360.local'),
   DEV_FIXED_AUTH_PASSWORD: z.string().optional().default('admin123'),
   DEV_FIXED_AUTH_ROLE: z
-    .enum(['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'EMPLOYEE'])
+    .enum(['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'HR_MANAGER', 'PAYROLL_MANAGER', 'FINANCE_MANAGER', 'DEPARTMENT_MANAGER', 'EMPLOYEE', 'AUDITOR'])
     .default('ADMIN'),
   DEV_FIXED_AUTH_NAME: z.string().optional().default('Development Admin'),
   DEV_FIXED_AUTH_USERS_JSON: z.string().optional().default(''),

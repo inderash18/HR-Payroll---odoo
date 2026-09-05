@@ -7,8 +7,8 @@ export function authorize(...allowedRoles) {
       return errorResponse(res, 'User authentication required for role verification', 401, null, 'UNAUTHENTICATED');
     }
 
-    // ADMIN has universal access
-    if (req.user.role === ROLES.ADMIN) {
+    // Admins have universal access
+    if ([ROLES.SUPER_ADMIN, ROLES.ORGANIZATION_ADMIN, ROLES.ADMIN].includes(req.user.role)) {
       return next();
     }
 

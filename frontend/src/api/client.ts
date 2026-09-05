@@ -12,7 +12,35 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+let isRefreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
+async function attemptTokenRefresh(): Promise<boolean> {
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
+  }
+
+  isRefreshing = true;
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      return res.ok;
+    } catch {
+      return false;
+    } finally {
+      isRefreshing = false;
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+async function request<T = any>(endpoint: string, options: RequestInit = {}, isRetry = false): Promise<T> {
   const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
   const headers: Record<string, string> = {
@@ -23,8 +51,17 @@ async function request<T = any>(endpoint: string, options: RequestInit = {}): Pr
   const response = await fetch(url, {
     ...options,
     headers,
-    credentials: 'include', // Essential for HttpOnly JWT refresh/access cookies
+    credentials: 'include', // Automatically passes and sets HttpOnly cookies
   });
+
+  // Handle 401 and attempt automatic transparent refresh
+  const isAuthEndpoint = endpoint.includes('/auth/login') || endpoint.includes('/auth/refresh') || endpoint.includes('/auth/logout');
+  if (response.status === 401 && !isRetry && !isAuthEndpoint) {
+    const refreshed = await attemptTokenRefresh();
+    if (refreshed) {
+      return request<T>(endpoint, options, true);
+    }
+  }
 
   let responseData: any;
   const contentType = response.headers.get('content-type');

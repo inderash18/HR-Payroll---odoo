@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
   Req,
@@ -28,6 +29,7 @@ import { Public, CurrentUser } from '@common/auth/decorators/auth.decorator';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { AuthenticatedUser } from '@common/auth/interfaces/token-payload.interface';
 
+const ACCESS_COOKIE_NAME = 'pp360_access_token';
 const REFRESH_COOKIE_NAME = 'pp360_refresh_token';
 
 @ApiTags('Authentication')
@@ -35,22 +37,41 @@ const REFRESH_COOKIE_NAME = 'pp360_refresh_token';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  private setRefreshTokenCookie(res: FastifyReply, token: string) {
-    res.setCookie(REFRESH_COOKIE_NAME, token, {
+  private setAuthCookies(res: FastifyReply, tokens: { accessToken: string; refreshToken: string }) {
+    const isProd = process.env.NODE_ENV === 'production';
+
+    res.setCookie(ACCESS_COOKIE_NAME, tokens.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isProd,
       sameSite: 'lax',
-      path: '/api/v1/auth',
+      path: '/',
+      maxAge: 15 * 60, // 15 minutes in seconds
+    });
+
+    res.setCookie(REFRESH_COOKIE_NAME, tokens.refreshToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax',
+      path: '/',
       maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
     });
   }
 
-  private clearRefreshTokenCookie(res: FastifyReply) {
+  private clearAuthCookies(res: FastifyReply) {
+    const isProd = process.env.NODE_ENV === 'production';
+
+    res.clearCookie(ACCESS_COOKIE_NAME, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax',
+      path: '/',
+    });
+
     res.clearCookie(REFRESH_COOKIE_NAME, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isProd,
       sameSite: 'lax',
-      path: '/api/v1/auth',
+      path: '/',
     });
   }
 
@@ -63,8 +84,9 @@ export class AuthController {
     @Res({ passthrough: true }) res: FastifyReply,
   ) {
     const result = await this.authService.registerOrganization(dto);
-    this.setRefreshTokenCookie(res, result.refreshToken);
+    this.setAuthCookies(res, result);
     return {
+      success: true,
       accessToken: result.accessToken,
       expiresIn: result.expiresIn,
       user: result.user,
@@ -74,8 +96,8 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Login with organization code, email, and password' })
-  @ApiResponse({ status: 200, description: 'Login successful, returns access token & sets HTTP-only refresh cookie' })
+  @ApiOperation({ summary: 'Login with email and password' })
+  @ApiResponse({ status: 200, description: 'Login successful, sets HTTP-only auth cookies' })
   async login(
     @Body(new ZodValidationPipe(loginSchema)) dto: LoginDto,
     @Req() req: FastifyRequest,
@@ -87,9 +109,10 @@ export class AuthController {
     };
 
     const result = await this.authService.login(dto, meta);
-    this.setRefreshTokenCookie(res, result.refreshToken);
+    this.setAuthCookies(res, result);
 
     return {
+      success: true,
       accessToken: result.accessToken,
       expiresIn: result.expiresIn,
       user: result.user,
@@ -99,7 +122,7 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Rotate refresh token using HTTP-only cookie' })
+  @ApiOperation({ summary: 'Rotate tokens using HTTP-only refresh cookie' })
   @ApiResponse({ status: 200, description: 'Tokens rotated successfully' })
   async refresh(
     @Req() req: FastifyRequest,
@@ -112,19 +135,31 @@ export class AuthController {
     };
 
     const result = await this.authService.refreshTokens(rawRefreshToken, meta);
-    this.setRefreshTokenCookie(res, result.refreshToken);
+    this.setAuthCookies(res, result);
 
     return {
+      success: true,
       accessToken: result.accessToken,
       expiresIn: result.expiresIn,
       user: result.user,
     };
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get current authenticated user profile via session cookie or token' })
+  async getMe(@CurrentUser() user: AuthenticatedUser) {
+    return {
+      success: true,
+      data: user,
+    };
+  }
+
   @Public()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Logout and revoke active refresh token' })
+  @ApiOperation({ summary: 'Logout and revoke active session cookies' })
   async logout(
     @Req() req: FastifyRequest,
     @Res({ passthrough: true }) res: FastifyReply,
@@ -133,8 +168,8 @@ export class AuthController {
     if (rawRefreshToken) {
       await this.authService.logout(rawRefreshToken);
     }
-    this.clearRefreshTokenCookie(res);
-    return { message: 'Logged out successfully' };
+    this.clearAuthCookies(res);
+    return { success: true, message: 'Logged out successfully' };
   }
 
   @Public()
@@ -168,7 +203,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: FastifyReply,
   ) {
     const result = await this.authService.changePassword(user.id, dto);
-    this.clearRefreshTokenCookie(res);
+    this.clearAuthCookies(res);
     return result;
   }
 }

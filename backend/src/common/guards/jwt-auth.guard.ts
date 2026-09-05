@@ -27,23 +27,38 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<FastifyRequest>();
-    const authHeader = request.headers.authorization;
+    let token: string | undefined;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedError('Missing or malformed authorization header');
+    // 1. Check Authorization Bearer header
+    const authHeader = request.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
     }
 
-    const token = authHeader.split(' ')[1];
-    const payload = this.tokenService.verifyAccessToken(token);
+    // 2. Check HttpOnly access token cookie
+    if (!token && request.cookies) {
+      const cookies = request.cookies as Record<string, string>;
+      token = cookies['pp360_access_token'] || cookies['accessToken'] || cookies['access_token'];
+    }
 
-    (request as any).user = {
-      id: payload.sub,
-      email: payload.email,
-      organizationId: payload.organizationId,
-      legalEntityId: payload.legalEntityId,
-      role: payload.role,
-    };
+    if (!token) {
+      throw new UnauthorizedError('Authentication required: Missing access token or session cookie');
+    }
 
-    return true;
+    try {
+      const payload = this.tokenService.verifyAccessToken(token);
+
+      (request as any).user = {
+        id: payload.sub,
+        email: payload.email,
+        organizationId: payload.organizationId,
+        legalEntityId: payload.legalEntityId,
+        role: payload.role,
+      };
+
+      return true;
+    } catch {
+      throw new UnauthorizedError('Invalid or expired access token');
+    }
   }
 }

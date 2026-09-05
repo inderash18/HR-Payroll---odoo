@@ -33,16 +33,27 @@ export const authStore = {
     notify();
 
     try {
-      const response = await api.get<{ success: boolean; data: User }>('/users/me');
+      // 1. Check current authenticated session via HttpOnly cookies
+      const response = await api.get<{ success: boolean; data: User }>('/auth/me');
       state.user = response.data || (response as any);
       state.isLoading = false;
       notify();
       return state.user;
     } catch {
-      state.user = null;
-      state.isLoading = false;
-      notify();
-      return null;
+      // 2. If access token is expired, attempt refresh
+      try {
+        await api.post('/auth/refresh');
+        const retryRes = await api.get<{ success: boolean; data: User }>('/auth/me');
+        state.user = retryRes.data || (retryRes as any);
+        state.isLoading = false;
+        notify();
+        return state.user;
+      } catch {
+        state.user = null;
+        state.isLoading = false;
+        notify();
+        return null;
+      }
     }
   },
 
@@ -55,9 +66,9 @@ export const authStore = {
       const response = await api.post('/auth/login', { email, password });
       const user = response.data?.user || response.user || response.data;
 
-      // Fetch fresh user profile details
+      // Fetch fresh profile from /auth/me
       try {
-        const profile = await api.get<{ success: boolean; data: User }>('/users/me');
+        const profile = await api.get<{ success: boolean; data: User }>('/auth/me');
         state.user = profile.data || (profile as any);
       } catch {
         state.user = user;

@@ -59,7 +59,9 @@ describe('Auth & RBAC Flow (e2e)', () => {
 
     const cookieHeader = response.headers['set-cookie'];
     expect(cookieHeader).toBeDefined();
-    refreshCookie = Array.isArray(cookieHeader) ? cookieHeader[0] : (cookieHeader as string);
+    const cookies = Array.isArray(cookieHeader) ? cookieHeader : [cookieHeader as string];
+    const foundRefresh = cookies.find((c) => c.includes('pp360_refresh_token'));
+    refreshCookie = foundRefresh || cookies[0];
     expect(refreshCookie).toContain('pp360_refresh_token');
   });
 

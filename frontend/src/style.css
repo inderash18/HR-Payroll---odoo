@@ -1349,3 +1349,75 @@ body.login-page #app {
 .btn-pwd-eye:hover {
   color: var(--text-main);
 }
+
+/* ----------------------------------------------------
+   BREADCRUMBS & DETAIL HEADER STYLES
+   ---------------------------------------------------- */
+.breadcrumb-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+
+.breadcrumb-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+  cursor: pointer;
+}
+
+.breadcrumb-link:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.breadcrumb-separator {
+  color: var(--text-light);
+  font-size: 0.75rem;
+}
+
+.breadcrumb-current {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.detail-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-back:hover {
+  background: var(--bg-surface);
+  color: var(--text-main);
+  border-color: #cbd5e1;
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.clickable-row:hover {
+  background-color: #f8fafc;
+}

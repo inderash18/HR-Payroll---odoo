@@ -136,10 +136,10 @@ function renderLogin(container: HTMLElement) {
         <form id="login-form" style="margin-top: 2rem;">
           <div class="stacked-inputs">
             <div class="input-row">
-              <input type="email" id="login-email" placeholder="Work Email Address" value="admin@peoplepay360.local" required />
+              <input type="text" id="login-email" placeholder="Work Email or Username (e.g. admin)" value="admin" required />
             </div>
             <div class="input-row">
-              <input type="password" id="login-password" placeholder="Password" value="Admin@123456" required />
+              <input type="password" id="login-password" placeholder="Password" value="123" required />
             </div>
           </div>
           

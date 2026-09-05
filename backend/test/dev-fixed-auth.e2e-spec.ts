@@ -84,6 +84,48 @@ describe('Development-Only Fixed Authentication Fallback (e2e)', () => {
     devRefreshCookie = refreshCookie || cookies[0];
   });
 
+  it('A2. POST /auth/login with simple "admin" and password "123" should succeed', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      payload: {
+        email: 'admin',
+        password: '123',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.payload);
+    expect(body.success).toBe(true);
+    expect(body.user.role).toBe('ADMIN');
+  });
+
+  it('A3. POST /auth/login with simple "hr", "payroll", "emp" and password "123" should all succeed', async () => {
+    const hrRes = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      payload: { email: 'hr', password: '123' },
+    });
+    expect(hrRes.statusCode).toBe(200);
+    expect(JSON.parse(hrRes.payload).user.role).toBe('HR_MANAGER');
+
+    const payrollRes = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      payload: { email: 'payroll', password: '123' },
+    });
+    expect(payrollRes.statusCode).toBe(200);
+    expect(JSON.parse(payrollRes.payload).user.role).toBe('HR_PAYROLL_MANAGER');
+
+    const empRes = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      payload: { email: 'emp', password: '123' },
+    });
+    expect(empRes.statusCode).toBe(200);
+    expect(JSON.parse(empRes.payload).user.role).toBe('EMPLOYEE');
+  });
+
   // B. Fixed login enabled + wrong password -> 401 Unauthorized
   it('B. POST /auth/login with fixed email but wrong password should return 401 Unauthorized', async () => {
     const response = await app.inject({

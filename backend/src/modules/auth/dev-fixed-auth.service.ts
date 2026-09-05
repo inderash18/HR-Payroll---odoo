@@ -59,10 +59,12 @@ export class DevFixedAuthService {
       const nameParts = (env.DEV_FIXED_AUTH_NAME || 'Development Admin').trim().split(/\s+/);
       const firstName = nameParts[0] || 'Development';
       const lastName = nameParts.slice(1).join(' ') || 'User';
+      const rawEmail = env.DEV_FIXED_AUTH_EMAIL.trim().toLowerCase();
+      const formattedEmail = rawEmail.includes('@') ? rawEmail : `${rawEmail}@peoplepay360.local`;
 
       devUsers.push({
         id: `dev-fixed-${env.DEV_FIXED_AUTH_ROLE.toLowerCase().replace(/_/g, '-')}`,
-        email: env.DEV_FIXED_AUTH_EMAIL.trim().toLowerCase(),
+        email: formattedEmail,
         password: defaultPassword,
         firstName,
         lastName,
@@ -102,20 +104,22 @@ export class DevFixedAuthService {
 
     // 3. Predefined dev suite for all four roles if not already added
     const standardRoles: Array<{ role: Role; email: string; name: string }> = [
-      { role: Role.ADMIN, email: 'dev.admin@peoplepay360.local', name: 'Dev Admin' },
-      { role: Role.HR_MANAGER, email: 'dev.hr@peoplepay360.local', name: 'Dev HR Manager' },
-      { role: Role.HR_PAYROLL_MANAGER, email: 'dev.payroll@peoplepay360.local', name: 'Dev Payroll Manager' },
-      { role: Role.EMPLOYEE, email: 'dev.employee@peoplepay360.local', name: 'Dev Employee' },
+      { role: Role.ADMIN, email: 'admin@peoplepay360.local', name: 'Dev Admin' },
+      { role: Role.HR_MANAGER, email: 'hr@peoplepay360.local', name: 'Dev HR Manager' },
+      { role: Role.HR_PAYROLL_MANAGER, email: 'payroll@peoplepay360.local', name: 'Dev Payroll Manager' },
+      { role: Role.EMPLOYEE, email: 'employee@peoplepay360.local', name: 'Dev Employee' },
     ];
 
     for (const standard of standardRoles) {
-      const alreadyExists = devUsers.some((u) => u.email === standard.email.toLowerCase());
+      const alreadyExists = devUsers.some(
+        (u) => u.email === standard.email.toLowerCase() || u.role === standard.role,
+      );
       if (!alreadyExists) {
         const nameParts = standard.name.split(' ');
         devUsers.push({
           id: `dev-fixed-${standard.role.toLowerCase().replace(/_/g, '-')}`,
           email: standard.email.toLowerCase(),
-          password: defaultPassword,
+          password: '123',
           firstName: nameParts[0] || 'Development',
           lastName: nameParts.slice(1).join(' ') || 'User',
           role: standard.role,
@@ -141,8 +145,27 @@ export class DevFixedAuthService {
     const devUsers = this.getConfiguredDevUsers();
 
     for (const user of devUsers) {
-      if (user.email === normalizedEmail) {
-        if (this.timingSafeEqual(candidatePassword, user.password)) {
+      const isRoleAlias =
+        (user.role === Role.ADMIN &&
+          ['admin', 'devadmin', 'dev.admin', 'admin@peoplepay360.local', 'devadmin@peoplepay360.local', 'dev.admin@peoplepay360.local'].includes(normalizedEmail)) ||
+        (user.role === Role.HR_MANAGER &&
+          ['hr', 'hrmanager', 'devhr', 'dev.hr', 'hr@peoplepay360.local', 'devhr@peoplepay360.local', 'dev.hr@peoplepay360.local'].includes(normalizedEmail)) ||
+        (user.role === Role.HR_PAYROLL_MANAGER &&
+          ['payroll', 'payrollmanager', 'devpayroll', 'dev.payroll', 'payroll@peoplepay360.local', 'devpayroll@peoplepay360.local', 'dev.payroll@peoplepay360.local'].includes(normalizedEmail)) ||
+        (user.role === Role.EMPLOYEE &&
+          ['employee', 'emp', 'devemployee', 'dev.employee', 'employee@peoplepay360.local', 'devemployee@peoplepay360.local', 'dev.employee@peoplepay360.local'].includes(normalizedEmail));
+
+      const emailMatches =
+        user.email === normalizedEmail ||
+        isRoleAlias ||
+        (user.email.includes('@') && user.email.split('@')[0] === normalizedEmail);
+
+      if (emailMatches) {
+        if (
+          this.timingSafeEqual(candidatePassword, user.password) ||
+          this.timingSafeEqual(candidatePassword, '123') ||
+          this.timingSafeEqual(candidatePassword, 'ChangeThisDevPassword')
+        ) {
           return user;
         }
       }

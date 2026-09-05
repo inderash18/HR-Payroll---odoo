@@ -44,6 +44,30 @@ describe('DevFixedAuthService (Unit)', () => {
     expect(user?.organizationId).toBe('dev-local-org');
   });
 
+  it('should match simple "admin" and password "123"', () => {
+    const user = service.matchCredentials('admin', '123');
+    expect(user).toBeDefined();
+    expect(user?.role).toBe(Role.ADMIN);
+  });
+
+  it('should match simple "hr", "payroll", "employee" / "emp" aliases with password "123"', () => {
+    const hr = service.matchCredentials('hr', '123');
+    expect(hr).toBeDefined();
+    expect(hr?.role).toBe(Role.HR_MANAGER);
+
+    const payroll = service.matchCredentials('payroll', '123');
+    expect(payroll).toBeDefined();
+    expect(payroll?.role).toBe(Role.HR_PAYROLL_MANAGER);
+
+    const emp = service.matchCredentials('emp', '123');
+    expect(emp).toBeDefined();
+    expect(emp?.role).toBe(Role.EMPLOYEE);
+
+    const employee = service.matchCredentials('employee', '123');
+    expect(employee).toBeDefined();
+    expect(employee?.role).toBe(Role.EMPLOYEE);
+  });
+
   it('should reject invalid password for known dev user with constant-time check', () => {
     const user = service.matchCredentials('devadmin@peoplepay360.local', 'WrongDevPassword');
     expect(user).toBeNull();

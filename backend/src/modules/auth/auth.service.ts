@@ -186,14 +186,6 @@ export class AuthService {
           },
         };
       }
-
-      // If user entered a configured dev email with invalid password, reject immediately with generic error
-      const isKnownDevEmail = this.devFixedAuthService
-        .getConfiguredDevUsers()
-        .some((u) => u.email === dto.email.trim().toLowerCase());
-      if (isKnownDevEmail) {
-        throw new UnauthorizedError('Invalid credentials');
-      }
     }
 
     let org: any;

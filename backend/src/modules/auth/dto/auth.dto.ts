@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 export const loginSchema = z.object({
   organizationCode: z.string().min(2).max(20).optional(),
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z.string().min(1, 'Email or username is required'),
+  password: z.string().min(1, 'Password is required'),
 });
 export type LoginDto = z.infer<typeof loginSchema>;
 

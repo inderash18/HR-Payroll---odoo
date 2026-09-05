@@ -8,6 +8,7 @@ import { env } from '@common/config/env.config';
 import { GlobalExceptionFilter } from '@common/errors/exception.filter';
 import { RequestIdInterceptor } from '@common/interceptors/request-id.interceptor';
 import { LoggingInterceptor } from '@common/interceptors/logging.interceptor';
+import { TransformResponseInterceptor } from '@common/interceptors/transform-response.interceptor';
 import { ZodValidationPipe } from '@common/validation/zod-validation.pipe';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import fastifyCookie from '@fastify/cookie';
@@ -47,14 +48,30 @@ async function bootstrap() {
     secret: env.COOKIE_SECRET,
   });
 
-  // Global prefixes and pipes
+  // Global prefixes, pipes, filters and interceptors
   app.setGlobalPrefix(env.API_PREFIX);
   app.useGlobalPipes(new ZodValidationPipe());
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalInterceptors(
     new RequestIdInterceptor(),
     new LoggingInterceptor(),
+    new TransformResponseInterceptor(),
   );
+
+  // Global JSON 404 Route Not Found Handler (No plain text or HTML 404s)
+  const fastifyInstance = app.getHttpAdapter().getInstance();
+  fastifyInstance.setNotFoundHandler((request: any, reply: any) => {
+    reply
+      .status(404)
+      .header('Content-Type', 'application/json; charset=utf-8')
+      .send({
+        success: false,
+        error: {
+          code: 'API_ROUTE_NOT_FOUND',
+          message: `API route ${request.method} ${request.url} was not found.`,
+        },
+      });
+  });
 
   // Swagger Documentation Setup
   const config = new DocumentBuilder()

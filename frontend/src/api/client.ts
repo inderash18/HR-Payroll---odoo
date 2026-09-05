@@ -5,7 +5,8 @@ export class ApiError extends Error {
     public code: string,
     message: string,
     public status: number,
-    public details?: any,
+    public fields?: Record<string, string>,
+    public details?: unknown,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -49,11 +50,20 @@ async function request<T = any>(endpoint: string, options: RequestInit = {}, isR
     ...(options.headers as Record<string, string>),
   };
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-    credentials: 'include', // Automatically passes and sets HttpOnly cookies
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include', // Automatically passes and sets HttpOnly cookies
+    });
+  } catch {
+    throw new ApiError(
+      'NETWORK_ERROR',
+      'Unable to connect to the PeoplePay360 server. Please check your internet or server connection.',
+      0,
+    );
+  }
 
   // Handle 401 and attempt automatic transparent refresh (only for business endpoints)
   const isAuthEndpoint =
@@ -82,7 +92,10 @@ async function request<T = any>(endpoint: string, options: RequestInit = {}, isR
       responseData?.message ||
       `HTTP Error ${response.status}: ${response.statusText}`;
 
-    throw new ApiError(errorCode, errorMessage, response.status, responseData?.error?.details);
+    const fields = responseData?.error?.fields || responseData?.fields;
+    const details = responseData?.error?.details || responseData?.details;
+
+    throw new ApiError(errorCode, errorMessage, response.status, fields, details);
   }
 
   return responseData;

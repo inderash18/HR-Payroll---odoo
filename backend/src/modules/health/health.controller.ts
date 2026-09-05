@@ -19,9 +19,12 @@ export class HealthController {
   @ApiOperation({ summary: 'Readiness probe to check database and dependencies' })
   @ApiResponse({ status: 200, description: 'Service is ready to accept traffic' })
   @ApiResponse({ status: 503, description: 'Service is degraded or dependency down' })
-  async getReadiness(@Res() res: FastifyReply) {
+  async getReadiness(@Res({ passthrough: true }) res: FastifyReply) {
     const result = await this.healthService.checkReadiness();
-    const status = result.status === 'ok' ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE;
-    return res.status(status).send(result);
+    if (result.status !== 'ok') {
+      res.status(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    return result;
   }
 }
+

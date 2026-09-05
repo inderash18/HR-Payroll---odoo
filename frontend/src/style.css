@@ -2,21 +2,21 @@
 
 :root {
   --primary: #4f46e5;
-  --primary-soft: #eef2ff;
-  --bg-app: #f3f4f6;
+  --primary-hover: #4338ca;
+  --bg-app: #f9fafb;
   --bg-card: #ffffff;
-  --text-main: #111827;
+  --text-main: #000000;
   --text-muted: #6b7280;
   --border: #e5e7eb;
+  
   --green: #10b981;
-  --green-soft: #d1fae5;
+  --green-bg: #d1fae5;
   --red: #ef4444;
-  --red-soft: #fee2e2;
+  --red-bg: #fee2e2;
   --orange: #f59e0b;
-  --orange-soft: #fef3c7;
+  --orange-bg: #fef3c7;
   --blue: #3b82f6;
-  --blue-soft: #dbeafe;
-  --shadow: 0 10px 30px rgba(17, 24, 39, 0.04);
+  --blue-bg: #dbeafe;
 }
 
 * {
@@ -282,8 +282,15 @@ input {
   color: var(--text-muted);
 }
 
-.content-shell {
-  padding: 1.5rem 2rem 2rem;
+/* DASHBOARD LAYOUT */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+}
+
+.central-area {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -335,7 +342,9 @@ input {
 }
 
 .kpi-card {
-  background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+  background: var(--bg-card);
+  padding: 1.25rem;
+  border-radius: 1rem;
   border: 1px solid var(--border);
   border-radius: 0.9rem;
   padding: 1rem;
@@ -349,15 +358,17 @@ input {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.9rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
 }
 
 .kpi-icon {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: 0.7rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
 }
 
 .kpi-icon i {
@@ -371,12 +382,10 @@ input {
 .kpi-icon.red { background: var(--red-soft); color: var(--red); }
 
 .trend {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.2rem 0.45rem;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
 }
 
 .trend.positive { background: var(--green-soft); color: var(--green); }

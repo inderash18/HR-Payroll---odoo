@@ -28,39 +28,59 @@ export function Sidebar() {
 
   const displayName = user?.firstName
     ? `${user.firstName} ${user.lastName || ''}`.trim()
-    : user?.name || 'Sneha Iyer';
+    : user?.name || 'Aarav Sharma';
 
   const initials = user?.firstName
     ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ''}`.toUpperCase()
-    : (displayName.split(' ').map((n) => n[0]).join('').slice(0, 2) || 'SI').toUpperCase();
+    : (displayName.split(' ').map((n) => n[0]).join('').slice(0, 2) || 'AS').toUpperCase();
 
   const roleTitle =
+    user?.employee?.jobPosition?.title ||
     user?.employee?.jobTitle ||
-    user?.employee?.job_title ||
-    user?.employee?.position ||
-    (user?.role ? user.role.replace(/_/g, ' ') : 'Shift Supervisor');
+    (user?.role ? user.role.replace(/_/g, ' ') : 'ORGANIZATION ADMIN');
 
   const visibleLinks = getNavigationForRole(user?.role);
 
+  // Group links by section for clean information hierarchy
+  let currentSection = null;
+
   return (
     <aside className="sidebar-dark" id="main-application-sidebar">
-      {/* BRAND HEADER */}
-      <div
-        className="sidebar-brand-container"
-        id="sidebar-brand-header"
-        onClick={() => navigate('/dashboard')}
-      >
-        <div className="sidebar-brand-logo">360</div>
-        <div className="sidebar-brand-text">
-          <span className="sidebar-brand-title">PeoplePay360</span>
-          <span className="sidebar-brand-sub">HR &amp; Payroll</span>
+      {/* BRAND HEADER & WORKSPACE */}
+      <div className="sidebar-header-wrapper">
+        <div
+          className="sidebar-brand-container"
+          id="sidebar-brand-header"
+          onClick={() => navigate('/dashboard')}
+        >
+          <div className="sidebar-brand-logo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="#38BDF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="#818CF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <div className="sidebar-brand-text">
+            <span className="sidebar-brand-title">PeoplePay360</span>
+            <span className="sidebar-brand-sub">ENTERPRISE HR &amp; PAYROLL</span>
+          </div>
+        </div>
+
+        <div className="sidebar-workspace-badge">
+          <span className="workspace-status-dot"></span>
+          <span className="workspace-name">{user?.organization?.name || 'PeoplePay360 India'}</span>
         </div>
       </div>
 
-      {/* MAIN NAVIGATION LIST */}
+      {/* MAIN NAVIGATION LIST WITH CATEGORIZED SECTIONS */}
       <nav className="sidebar-nav">
-        {visibleLinks.map((item) => {
+        {visibleLinks.map((item, idx) => {
           const Icon = item.icon;
+          const showSectionHeader = item.section && item.section !== currentSection;
+          if (showSectionHeader) {
+            currentSection = item.section;
+          }
+
           const isActive =
             location.pathname === item.to ||
             (item.to === '/documents' && (location.pathname === '/documents' || location.pathname === '/profile/documents')) ||
@@ -70,78 +90,87 @@ export function Sidebar() {
             (item.to === '/audit' && location.pathname.startsWith('/audit/'));
 
           return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/dashboard' || item.to === '/documents' || item.to === '/profile'}
-              className={() => `sidebar-nav-link ${isActive ? 'active' : ''}`}
-              id={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
-            >
-              <Icon size={18} />
-              <span>{item.label}</span>
-            </NavLink>
+            <React.Fragment key={item.to + idx}>
+              {showSectionHeader && (
+                <div className="sidebar-section-label">{item.section}</div>
+              )}
+              <NavLink
+                to={item.to}
+                end={item.to === '/dashboard' || item.to === '/documents' || item.to === '/profile'}
+                className={() => `sidebar-nav-link ${isActive ? 'active' : ''}`}
+                id={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+              >
+                <div className="nav-icon-wrapper">
+                  <Icon size={17} />
+                </div>
+                <span className="nav-label">{item.label}</span>
+                {isActive && <div className="active-glow-pill"></div>}
+              </NavLink>
+            </React.Fragment>
           );
         })}
       </nav>
 
-      {/* DIVIDER */}
-      <div className="sidebar-divider" />
-
-      {/* USER PROFILE SUMMARY CARD */}
-      <div
-        className="sidebar-user-card"
-        id="sidebar-user-profile-summary"
-        onClick={() => navigate('/profile')}
-        title="View Profile"
-      >
-        <div className="sidebar-user-avatar">
-          {user?.avatarUrl ? (
-            <img src={user.avatarUrl} alt="Avatar" className="sidebar-avatar-img" />
-          ) : (
-            <span>{initials}</span>
-          )}
+      {/* USER PROFILE & FOOTER SECTION */}
+      <div className="sidebar-footer-group">
+        <div
+          className="sidebar-user-card"
+          id="sidebar-user-profile-summary"
+          onClick={() => navigate('/profile')}
+          title="Open Profile & Account Settings"
+        >
+          <div className="sidebar-user-avatar">
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt="Avatar" className="sidebar-avatar-img" />
+            ) : (
+              <span>{initials}</span>
+            )}
+            <span className="avatar-status-badge"></span>
+          </div>
+          <div className="sidebar-user-info">
+            <span className="sidebar-user-name">{displayName}</span>
+            <span className="sidebar-user-role-badge">{roleTitle}</span>
+          </div>
         </div>
-        <div className="sidebar-user-info">
-          <span className="sidebar-user-name">{displayName}</span>
-          <span className="sidebar-user-role">{roleTitle}</span>
+
+        <div className="sidebar-bottom-actions">
+          <NavLink
+            to="/profile"
+            end
+            className={() =>
+              `sidebar-bottom-btn ${location.pathname.startsWith('/profile') ? 'active' : ''}`
+            }
+            id="sidebar-link-my-profile"
+            title="My Profile"
+          >
+            <User size={16} />
+            <span>Profile</span>
+          </NavLink>
+
+          <NavLink
+            to="/settings"
+            end
+            className={() =>
+              `sidebar-bottom-btn ${location.pathname === '/settings' || location.pathname === '/profile/settings' ? 'active' : ''}`
+            }
+            id="sidebar-link-settings"
+            title="Settings"
+          >
+            <Settings size={16} />
+            <span>Settings</span>
+          </NavLink>
+
+          <button
+            type="button"
+            className="sidebar-bottom-btn logout-btn"
+            id="sidebar-link-logout"
+            onClick={handleLogout}
+            title="Sign out of PeoplePay360"
+          >
+            <LogOut size={16} />
+            <span>Logout</span>
+          </button>
         </div>
-      </div>
-
-      {/* BOTTOM ACTION LINKS */}
-      <div className="sidebar-bottom">
-        <NavLink
-          to="/profile"
-          end
-          className={() =>
-            `sidebar-nav-link ${location.pathname === '/profile' || location.pathname === '/profile/overview' || location.pathname === '/profile/edit' || location.pathname === '/profile/security' ? 'active' : ''}`
-          }
-          id="sidebar-link-my-profile"
-        >
-          <User size={18} />
-          <span>My Profile</span>
-        </NavLink>
-
-        <NavLink
-          to="/settings"
-          end
-          className={() =>
-            `sidebar-nav-link ${location.pathname === '/settings' || location.pathname === '/profile/settings' ? 'active' : ''}`
-          }
-          id="sidebar-link-settings"
-        >
-          <Settings size={18} />
-          <span>Settings</span>
-        </NavLink>
-
-        <button
-          type="button"
-          className="sidebar-nav-link logout"
-          id="sidebar-link-logout"
-          onClick={handleLogout}
-        >
-          <LogOut size={18} />
-          <span>Logout</span>
-        </button>
       </div>
     </aside>
   );

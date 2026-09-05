@@ -24,9 +24,23 @@ export function errorHandler(err, req, res, next) {
     return errorResponse(res, err.message, 400, null, 'CONTRACT_OVERLAP');
   }
 
-  const statusCode = err.statusCode || err.status || 500;
+  // Prisma connection failure
+  if (err.code === 'P1000' || err.code === 'P1001' || err.code === 'P1002' || err.code === 'P1003') {
+    return errorResponse(res, 'Database service is currently unreachable. Please check PostgreSQL connection.', 503, null, 'DATABASE_UNAVAILABLE');
+  }
+
+  const isAuthError = err.message && (
+    err.message.includes('Invalid email or password') ||
+    err.message.includes('Incorrect current password') ||
+    err.message.includes('Missing refresh token') ||
+    err.message.includes('Invalid refresh token') ||
+    err.message.includes('Refresh token has expired') ||
+    err.message.includes('Compromised session')
+  );
+
+  const statusCode = err.statusCode || err.status || (isAuthError ? 401 : 500);
   const message = err.message || 'Internal Server Error';
-  const errorCode = err.errorCode || (statusCode === 404 ? 'NOT_FOUND' : statusCode === 401 ? 'UNAUTHENTICATED' : statusCode === 403 ? 'FORBIDDEN' : 'INTERNAL_SERVER_ERROR');
+  const errorCode = err.errorCode || (statusCode === 404 ? 'NOT_FOUND' : statusCode === 401 ? 'UNAUTHENTICATED' : statusCode === 403 ? 'FORBIDDEN' : statusCode === 503 ? 'SERVICE_UNAVAILABLE' : 'INTERNAL_SERVER_ERROR');
 
   return errorResponse(res, message, statusCode, err.errors || null, errorCode);
 }

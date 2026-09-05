@@ -15,9 +15,23 @@ const possibleEnvPaths = [
   path.resolve(__dirname, '../../../.env'),
 ];
 
+let envLoaded = false;
 for (const envPath of possibleEnvPaths) {
   if (fs.existsSync(envPath)) {
     dotenv.config({ path: envPath });
+    envLoaded = true;
+  }
+}
+
+if (!envLoaded) {
+  // If no .env file exists on machine (e.g. freshly cloned by teammate), create default server/.env
+  try {
+    const targetEnv = path.resolve(__dirname, '../../.env');
+    const defaultEnvContent = `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/peoplepay360?schema=public"\nPORT=3000\nAPI_PREFIX=/api/v1\nAPP_NAME=PeoplePay360\nJWT_ACCESS_SECRET="super_secret_access_key_change_in_production_min_32_chars"\nJWT_REFRESH_SECRET="super_secret_refresh_key_change_in_production_min_32_chars"\nCOOKIE_SECRET="cookie_secret_key_change_in_production_min_32_chars"\n`;
+    fs.writeFileSync(targetEnv, defaultEnvContent, 'utf-8');
+    dotenv.config({ path: targetEnv });
+  } catch (e) {
+    // Ignore error if filesystem read-only
   }
 }
 

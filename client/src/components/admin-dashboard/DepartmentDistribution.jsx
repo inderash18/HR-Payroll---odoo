@@ -48,43 +48,57 @@ export function DepartmentDistribution({ departments = [] }) {
             </tr>
           </thead>
           <tbody>
-            {departments.map((dept) => (
-              <tr
-                key={dept.id || dept.name}
-                style={{ cursor: 'pointer' }}
-                onClick={() => navigate(`/employees?department=${encodeURIComponent(dept.name)}`)}
-              >
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                    <div
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '0.5rem',
-                        background: '#f1f5f9',
-                        display: 'grid',
-                        placeItems: 'center',
-                        color: '#0f172a',
-                      }}
-                    >
-                      <Building size={14} />
-                    </div>
-                    <strong style={{ color: '#0f172a' }}>{dept.name}</strong>
-                  </div>
-                </td>
-                <td style={{ textAlign: 'center', fontWeight: 700 }}>{dept.employees}</td>
-                <td style={{ textAlign: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-                    <span style={{ fontWeight: 700 }}>{dept.attendance}%</span>
-                  </div>
-                </td>
-                <td style={{ textAlign: 'right' }}>
-                  <span className={getStatusChipClass(dept.status)}>
-                    ● {dept.status}
-                  </span>
+            {departments.length === 0 ? (
+              <tr>
+                <td colSpan={4} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                  No departments found in the database.
                 </td>
               </tr>
-            ))}
+            ) : (
+              departments.map((dept) => {
+                const empCount = dept.employees ?? dept.employeeCount ?? dept._count?.employees ?? 0;
+                const attRate = dept.attendance ?? 100;
+                const status = dept.status || (attRate >= 90 ? 'Healthy' : 'Needs Attention');
+
+                return (
+                  <tr
+                    key={dept.id || dept.name}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => navigate(dept.id ? `/employees?departmentId=${dept.id}` : '/departments')}
+                  >
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                        <div
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '0.5rem',
+                            background: '#f1f5f9',
+                            display: 'grid',
+                            placeItems: 'center',
+                            color: '#0f172a',
+                          }}
+                        >
+                          <Building size={14} />
+                        </div>
+                        <strong style={{ color: '#0f172a' }}>{dept.name}</strong>
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'center', fontWeight: 700 }}>{empCount}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                        <span style={{ fontWeight: 700 }}>{attRate}%</span>
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <span className={getStatusChipClass(status)}>
+                        ● {status}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>

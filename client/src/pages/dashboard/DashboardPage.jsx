@@ -10,6 +10,7 @@ import {
   Users,
   Landmark,
   Briefcase,
+  Building,
   User,
   Settings,
   KeyRound,
@@ -75,56 +76,38 @@ export function DashboardPage() {
     year: 'numeric',
   });
 
-  const defaultRoster = [
-    { id: 'emp-sneha', name: 'Sneha Iyer', role: 'Shift Supervisor', dept: 'Operations & Service Delivery', salary: '₹68,000 / mo', initial: 'SI' },
-    { id: 'emp-rahul', name: 'Rahul Verma', role: 'Team Member', dept: 'Finance & Indian Payroll', salary: '₹72,000 / mo', initial: 'RV' },
-    { id: 'emp-priya', name: 'Priya Patel', role: 'Team Member', dept: 'Human Resources & Talent', salary: '₹65,000 / mo', initial: 'PP' },
-    { id: 'emp-aarav', name: 'Aarav Sharma', role: 'Team Member', dept: 'Engineering & Technology', salary: '₹85,000 / mo', initial: 'AS' },
-  ];
+  const displayEmployees = employees.slice(0, 5).map((e) => ({
+    id: e.id,
+    name: `${e.firstName} ${e.lastName}`,
+    role: e.jobPosition?.title || e.jobTitle || 'Team Member',
+    dept: e.department?.name || 'General',
+    salary: e.contracts?.[0]?.wage
+      ? `₹${Number(e.contracts[0].wage).toLocaleString('en-IN')} / mo`
+      : 'Contract Active',
+    initial: `${e.firstName?.[0] || 'E'}${e.lastName?.[0] || ''}`.toUpperCase(),
+  }));
 
-  const displayEmployees = employees.length > 0
-    ? employees.slice(0, 4).map((e) => ({
-        id: e.id,
-        name: `${e.firstName} ${e.lastName}`,
-        role: e.jobPosition?.title || e.jobTitle || 'Team Member',
-        dept: e.department?.name || 'Operations & Service Delivery',
-        salary: e.contracts?.[0]?.wage
-          ? `₹${Number(e.contracts[0].wage).toLocaleString('en-IN')} / mo`
-          : '₹68,000 / mo',
-        initial: `${e.firstName[0]}${e.lastName ? e.lastName[0] : ''}`.toUpperCase(),
-      }))
-    : defaultRoster;
-
-  const defaultDepts = [
-    { name: 'Engineering & Technology', count: '1 Members', icon: Code },
-    { name: 'Finance & Indian Payroll', count: '1 Members', icon: Users },
-    { name: 'Human Resources & Talent', count: '1 Members', icon: Landmark },
-    { name: 'Operations & Service Delivery', count: '1 Members', icon: Briefcase },
-  ];
-
-  const deptList = departments.length >= 4
-    ? departments.slice(0, 4).map((d, i) => ({
-        id: d.id,
-        name: d.name,
-        count: `${d._count?.employees || d.employeeCount || 1} Members`,
-        icon: defaultDepts[i % defaultDepts.length].icon,
-      }))
-    : defaultDepts;
+  const deptList = departments.map((d) => ({
+    id: d.id,
+    name: d.name,
+    count: `${d._count?.employees ?? d.employeeCount ?? 0} Members`,
+    icon: Building,
+  }));
 
   // Header and Supervisor values
-  const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : (displayEmployees[0]?.name || 'Sneha Iyer');
-  const userRoleLabel = user?.role ? user.role.replace(/_/g, ' ') : 'Shift Supervisor';
+  const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'User';
+  const userRoleLabel = user?.role ? user.role.replace(/_/g, ' ') : 'Employee';
   const userInitials = user?.firstName
     ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ''}`.toUpperCase()
-    : 'SI';
+    : 'U';
 
-  const featuredSupervisor = employees.find((e) => `${e.firstName} ${e.lastName}`.toLowerCase().includes('sneha')) || employees[0];
-  const featuredSupervisorId = featuredSupervisor?.id || displayEmployees[0]?.id || 'emp-sneha';
-  const featuredName = featuredSupervisor ? `${featuredSupervisor.firstName} ${featuredSupervisor.lastName}` : 'Sneha Iyer';
-  const featuredDept = featuredSupervisor?.department?.name || 'Operations & Service Delivery';
+  const featuredSupervisor = employees[0] || null;
+  const featuredSupervisorId = featuredSupervisor?.id || '';
+  const featuredName = featuredSupervisor ? `${featuredSupervisor.firstName} ${featuredSupervisor.lastName}` : userName;
+  const featuredDept = featuredSupervisor?.department?.name || 'Operations';
 
   const pendingLeavesCount = leaves.filter((l) => l.status === 'PENDING' || l.status === 'PENDING_APPROVAL').length;
-  const attendanceRate = data?.summary?.attendanceRate || 98.4;
+  const attendanceRate = data?.summary?.attendanceRate ?? 100;
 
   const handleLogoutAction = async () => {
     setProfileDropdownOpen(false);

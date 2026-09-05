@@ -31,26 +31,32 @@ export function AttentionNeeded({ alerts = [] }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        {alerts.map((item) => (
-          <div
-            key={item.id}
-            className="alert-card-row"
-            style={{ cursor: 'pointer' }}
-            onClick={() => navigate(item.link || '/dashboard')}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-              <span className={getPriorityClass(item.priority)}>{item.priority}</span>
-              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#1e293b' }}>
-                {item.text}
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#64748b', fontSize: '0.74rem', fontWeight: 700 }}>
-              <span>{item.actionText}</span>
-              <ChevronRight size={13} />
-            </div>
+        {alerts.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '1.5rem', background: '#f8fafc', borderRadius: '0.85rem', color: '#047857', fontSize: '0.82rem', fontWeight: 600 }}>
+            ✓ No urgent compliance warnings or operational exceptions.
           </div>
-        ))}
+        ) : (
+          alerts.map((item) => (
+            <div
+              key={item.id}
+              className="alert-card-row"
+              style={{ cursor: 'pointer' }}
+              onClick={() => navigate(item.link || '/dashboard')}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <span className={getPriorityClass(item.priority)}>{item.priority}</span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#1e293b' }}>
+                  {item.text}
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#64748b', fontSize: '0.74rem', fontWeight: 700 }}>
+                <span>{item.actionText}</span>
+                <ChevronRight size={13} />
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

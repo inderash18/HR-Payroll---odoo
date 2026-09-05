@@ -69,7 +69,7 @@ export function WorkforceChart({ trendData }) {
         <div className="chart-metric-item">
           <div className="chart-metric-val" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <Users size={16} style={{ color: '#0f172a' }} />
-            {metrics.totalWorkforce || 248}
+            {metrics.totalWorkforce || (dataset.length > 0 ? dataset[dataset.length - 1].count : 0)}
           </div>
           <span className="chart-metric-lbl">Total Workforce</span>
         </div>
@@ -77,7 +77,7 @@ export function WorkforceChart({ trendData }) {
         <div className="chart-metric-item">
           <div className="chart-metric-val" style={{ color: '#047857', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <UserPlus size={16} />
-            +{metrics.newHiresMonth || 12}
+            +{metrics.newHiresMonth || 0}
           </div>
           <span className="chart-metric-lbl">New Hires this Month</span>
         </div>
@@ -85,7 +85,7 @@ export function WorkforceChart({ trendData }) {
         <div className="chart-metric-item">
           <div className="chart-metric-val" style={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <UserMinus size={16} />
-            {metrics.departuresMonth || 3}
+            {metrics.departuresMonth || 0}
           </div>
           <span className="chart-metric-lbl">Departures this Month</span>
         </div>

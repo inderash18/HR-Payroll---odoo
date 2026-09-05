@@ -52,34 +52,22 @@ export function Sidebar() {
     <aside className={`sidebar-dark ${isSidebarCollapsed ? 'collapsed' : ''}`} id="main-application-sidebar">
       {/* BRAND HEADER & WORKSPACE */}
       <div className="sidebar-header-wrapper">
-        <div className="sidebar-brand-row">
-          <div
-            className="sidebar-brand-container"
-            id="sidebar-brand-header"
-            onClick={() => navigate('/dashboard')}
-          >
-            <div className="sidebar-brand-logo">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M2 17L12 22L22 17" stroke="#38BDF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M2 12L12 17L22 12" stroke="#818CF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <div className="sidebar-brand-text">
-              <span className="sidebar-brand-title">PeoplePay360</span>
-              <span className="sidebar-brand-sub">ENTERPRISE HR &amp; PAYROLL</span>
-            </div>
+        <div
+          className="sidebar-brand-container"
+          id="sidebar-brand-header"
+          onClick={() => navigate('/dashboard')}
+        >
+          <div className="sidebar-brand-logo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="#38BDF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="#818CF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
-
-          <button
-            type="button"
-            className="btn-sidebar-collapse"
-            id="btn-collapse-sidebar"
-            title="Hide Sidebar (Ctrl + B)"
-            onClick={toggleSidebar}
-          >
-            <PanelLeftClose size={16} />
-          </button>
+          <div className="sidebar-brand-text">
+            <span className="sidebar-brand-title">PeoplePay360</span>
+            <span className="sidebar-brand-sub">ENTERPRISE HR &amp; PAYROLL</span>
+          </div>
         </div>
 
         <div className="sidebar-workspace-badge">

@@ -604,35 +604,6 @@ body.login-page #root {
   white-space: nowrap;
 }
 
-.sidebar-workspace-badge {
-  margin-top: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 0.38rem 0.75rem;
-  border-radius: 8px;
-  font-size: 0.73rem;
-  color: #CBD5E1;
-  font-weight: 600;
-}
-
-.workspace-status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #10B981;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
-  flex-shrink: 0;
-}
-
-.workspace-name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* NAVIGATION & SECTION HEADERS */
 .sidebar-nav {
   display: flex;

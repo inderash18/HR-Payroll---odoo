@@ -17,7 +17,7 @@ export function Sidebar() {
 
   return (
     <aside className={`sidebar-dark ${isSidebarCollapsed ? 'collapsed' : ''}`} id="main-application-sidebar">
-      {/* BRAND HEADER & WORKSPACE */}
+      {/* BRAND HEADER */}
       <div className="sidebar-header-wrapper">
         <div
           className="sidebar-brand-container"
@@ -35,11 +35,6 @@ export function Sidebar() {
             <span className="sidebar-brand-title">PeoplePay360</span>
             <span className="sidebar-brand-sub">ENTERPRISE HR &amp; PAYROLL</span>
           </div>
-        </div>
-
-        <div className="sidebar-workspace-badge">
-          <span className="workspace-status-dot"></span>
-          <span className="workspace-name">{user?.organization?.name || 'PeoplePay360 India'}</span>
         </div>
       </div>
 

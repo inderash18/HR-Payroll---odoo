@@ -197,10 +197,19 @@ export const payrollController = {
 };
 
 export const dashboardController = {
+  async getRoleDashboard(req, res, next) {
+    try {
+      const data = await dashboardService.getRoleDashboard(req.user, req.user.organizationId);
+      return successResponse(res, data, 'Dashboard data fetched successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async getOverview(req, res, next) {
     try {
-      const data = await dashboardService.getOverview(req.user.organizationId);
-      return successResponse(res, data, 'Dashboard overview');
+      const data = await dashboardService.getRoleDashboard(req.user, req.user.organizationId);
+      return successResponse(res, data, 'Dashboard data fetched successfully');
     } catch (err) {
       next(err);
     }

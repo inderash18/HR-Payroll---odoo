@@ -35,7 +35,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(requestIdMiddleware);
 app.use(apiRateLimiter);
 
-// Mount API routes
+// Mount API routes (both /api/v1 and /api)
+app.use('/api/v1', apiRouter);
 app.use(env.API_PREFIX, apiRouter);
 
 // Root & 404 handler

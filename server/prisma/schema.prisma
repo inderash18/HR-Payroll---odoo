@@ -8,11 +8,17 @@ generator client {
 }
 
 enum Role {
-  EMPLOYEE
-  HR_MANAGER
-  HR_PAYROLL_USER
-  HR_PAYROLL_MANAGER
+  SUPER_ADMIN
+  ORGANIZATION_ADMIN
   ADMIN
+  HR_MANAGER
+  PAYROLL_MANAGER
+  HR_PAYROLL_MANAGER
+  HR_PAYROLL_USER
+  FINANCE_MANAGER
+  DEPARTMENT_MANAGER
+  EMPLOYEE
+  AUDITOR
 }
 
 enum OutboxStatus {
@@ -692,3 +698,30 @@ model IdempotencyKey {
   @@index([organizationId, expiresAt])
   @@map("idempotency_keys")
 }
+
+model Permission {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  category    String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  role         Role
+  permissionId String     @map("permission_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([role, permissionId])
+  @@index([role])
+  @@map("role_permissions")
+}
+

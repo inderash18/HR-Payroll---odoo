@@ -61,13 +61,14 @@ payrollRoutes.get('/payslips/:id/html', payrollController.getPayslipHtml);
 
 export const dashboardRoutes = Router();
 dashboardRoutes.use(authenticate);
+dashboardRoutes.get('/', dashboardController.getRoleDashboard);
 dashboardRoutes.get('/overview', dashboardController.getOverview);
 dashboardRoutes.get('/attendance', dashboardController.getAttendance);
 dashboardRoutes.get('/time-off', dashboardController.getTimeOff);
 
 export const auditRoutes = Router();
 auditRoutes.use(authenticate);
-auditRoutes.get('/', authorize(ROLES.ADMIN), auditController.list);
+auditRoutes.get('/', authorize(ROLES.ADMIN, ROLES.SUPER_ADMIN, ROLES.ORGANIZATION_ADMIN, ROLES.AUDITOR, ROLES.HR_MANAGER), auditController.list);
 
 export const healthRoutes = Router();
 healthRoutes.get('/liveness', healthController.liveness);

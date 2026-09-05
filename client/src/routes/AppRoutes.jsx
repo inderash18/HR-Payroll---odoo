@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppLayout } from '../layouts/Topbar';
-import { ProtectedRoute } from './ProtectedRoute';
+import { ProtectedRoute, RoleRoute } from './ProtectedRoute';
 
 import { LoginPage } from '../pages/auth/LoginPage';
 import { DashboardPage } from '../pages/dashboard/DashboardPage';
@@ -36,20 +36,92 @@ export function AppRoutes() {
       >
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/employees" element={<EmployeesPage />} />
+        
+        {/* Role-specific dashboard route aliases */}
+        <Route path="/super-admin/dashboard" element={<DashboardPage />} />
+        <Route path="/admin/dashboard" element={<DashboardPage />} />
+        <Route path="/hr/dashboard" element={<DashboardPage />} />
+        <Route path="/payroll/dashboard" element={<DashboardPage />} />
+        <Route path="/finance/dashboard" element={<DashboardPage />} />
+        <Route path="/manager/dashboard" element={<DashboardPage />} />
+        <Route path="/employee/dashboard" element={<DashboardPage />} />
+        <Route path="/auditor/dashboard" element={<DashboardPage />} />
+
+        {/* Workforce & Lifecycle */}
+        <Route
+          path="/employees"
+          element={
+            <RoleRoute allowedRoles={['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'HR_MANAGER', 'PAYROLL_MANAGER', 'HR_PAYROLL_MANAGER', 'DEPARTMENT_MANAGER']}>
+              <EmployeesPage />
+            </RoleRoute>
+          }
+        />
         <Route path="/employees/:id" element={<EmployeeDetailPage />} />
-        <Route path="/departments" element={<DepartmentsPage />} />
-        <Route path="/contracts" element={<ContractsPage />} />
+        
+        <Route
+          path="/departments"
+          element={
+            <RoleRoute allowedRoles={['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'HR_MANAGER', 'FINANCE_MANAGER']}>
+              <DepartmentsPage />
+            </RoleRoute>
+          }
+        />
+        
+        <Route
+          path="/contracts"
+          element={
+            <RoleRoute allowedRoles={['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'HR_MANAGER', 'PAYROLL_MANAGER', 'HR_PAYROLL_MANAGER']}>
+              <ContractsPage />
+            </RoleRoute>
+          }
+        />
+        
         <Route path="/schedules" element={<SchedulesPage />} />
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/leaves" element={<LeavesPage />} />
-        <Route path="/payroll" element={<PayrollPage />} />
+        
+        {/* Payroll & Financial Management */}
+        <Route
+          path="/payroll"
+          element={
+            <RoleRoute allowedRoles={['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'PAYROLL_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'FINANCE_MANAGER', 'AUDITOR']}>
+              <PayrollPage />
+            </RoleRoute>
+          }
+        />
         <Route path="/payroll/payruns/:id" element={<PayrunDetailPage />} />
         <Route path="/payslips" element={<PayslipsPage />} />
         <Route path="/payslips/:id" element={<PayslipDetailPage />} />
-        <Route path="/users" element={<UsersPage />} />
-        <Route path="/audit" element={<AuditLogsPage />} />
-        <Route path="/audit-logs" element={<AuditLogsPage />} />
+        
+        {/* User & Access Management */}
+        <Route
+          path="/users"
+          element={
+            <RoleRoute allowedRoles={['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN']}>
+              <UsersPage />
+            </RoleRoute>
+          }
+        />
+        
+        {/* Compliance & Audit */}
+        <Route
+          path="/audit"
+          element={
+            <RoleRoute allowedRoles={['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'AUDITOR', 'HR_MANAGER', 'FINANCE_MANAGER', 'PAYROLL_MANAGER']}>
+              <AuditLogsPage />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/audit-logs"
+          element={
+            <RoleRoute allowedRoles={['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'AUDITOR', 'HR_MANAGER', 'FINANCE_MANAGER', 'PAYROLL_MANAGER']}>
+              <AuditLogsPage />
+            </RoleRoute>
+          }
+        />
+        
+        {/* Profile & Settings */}
         <Route path="/security" element={<ProfilePage tab="security" />} />
         <Route path="/sessions" element={<ProfilePage tab="security" />} />
         <Route path="/profile" element={<ProfilePage tab="overview" />} />

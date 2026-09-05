@@ -103,26 +103,40 @@ async function main() {
     create: { organizationId: organization.id, departmentId: deptFinance.id, title: 'Payroll Lead', code: 'PAY_MGR' },
   });
 
-  // 6. Users (Admin, HR Manager, Payroll Manager, Employee)
+  // 6. Users for all 8 Roles (Super Admin, Org Admin, HR Manager, Payroll Manager, Finance Manager, Dept Manager, Employee, Auditor)
   const passwordHash = await bcrypt.hash('admin123', 10);
+
+  const superAdminUser = await prisma.user.upsert({
+    where: { organizationId_email: { organizationId: organization.id, email: 'superadmin@peoplepay360.local' } },
+    update: { passwordHash, role: 'SUPER_ADMIN' },
+    create: {
+      organizationId: organization.id,
+      email: 'superadmin@peoplepay360.local',
+      passwordHash,
+      firstName: 'Dev',
+      lastName: 'Platform',
+      role: 'SUPER_ADMIN',
+      isEmailVerified: true,
+    },
+  });
 
   const adminUser = await prisma.user.upsert({
     where: { organizationId_email: { organizationId: organization.id, email: 'admin@peoplepay360.local' } },
-    update: { passwordHash },
+    update: { passwordHash, role: 'ORGANIZATION_ADMIN' },
     create: {
       organizationId: organization.id,
       email: 'admin@peoplepay360.local',
       passwordHash,
       firstName: 'Aarav',
       lastName: 'Sharma',
-      role: 'ADMIN',
+      role: 'ORGANIZATION_ADMIN',
       isEmailVerified: true,
     },
   });
 
   const hrUser = await prisma.user.upsert({
     where: { organizationId_email: { organizationId: organization.id, email: 'hr@peoplepay360.local' } },
-    update: { passwordHash },
+    update: { passwordHash, role: 'HR_MANAGER' },
     create: {
       organizationId: organization.id,
       email: 'hr@peoplepay360.local',
@@ -136,21 +150,49 @@ async function main() {
 
   const payrollUser = await prisma.user.upsert({
     where: { organizationId_email: { organizationId: organization.id, email: 'payroll@peoplepay360.local' } },
-    update: { passwordHash },
+    update: { passwordHash, role: 'PAYROLL_MANAGER' },
     create: {
       organizationId: organization.id,
       email: 'payroll@peoplepay360.local',
       passwordHash,
       firstName: 'Rajesh',
       lastName: 'Kumar',
-      role: 'HR_PAYROLL_MANAGER',
+      role: 'PAYROLL_MANAGER',
+      isEmailVerified: true,
+    },
+  });
+
+  const financeUser = await prisma.user.upsert({
+    where: { organizationId_email: { organizationId: organization.id, email: 'finance@peoplepay360.local' } },
+    update: { passwordHash, role: 'FINANCE_MANAGER' },
+    create: {
+      organizationId: organization.id,
+      email: 'finance@peoplepay360.local',
+      passwordHash,
+      firstName: 'Ananya',
+      lastName: 'Deshmukh',
+      role: 'FINANCE_MANAGER',
+      isEmailVerified: true,
+    },
+  });
+
+  const deptManagerUser = await prisma.user.upsert({
+    where: { organizationId_email: { organizationId: organization.id, email: 'manager@peoplepay360.local' } },
+    update: { passwordHash, role: 'DEPARTMENT_MANAGER' },
+    create: {
+      organizationId: organization.id,
+      email: 'manager@peoplepay360.local',
+      passwordHash,
+      firstName: 'Rohan',
+      lastName: 'Verma',
+      role: 'DEPARTMENT_MANAGER',
       isEmailVerified: true,
     },
   });
 
   const empUser = await prisma.user.upsert({
     where: { organizationId_email: { organizationId: organization.id, email: 'employee@peoplepay360.local' } },
-    update: { passwordHash },
+    update: { passwordHash, role: 'EMPLOYEE' },
     create: {
       organizationId: organization.id,
       email: 'employee@peoplepay360.local',
@@ -162,7 +204,36 @@ async function main() {
     },
   });
 
-  console.log('✅ Users seeded: admin@peoplepay360.local, hr@peoplepay360.local, payroll@peoplepay360.local, employee@peoplepay360.local (Password: admin123)');
+  const auditorUser = await prisma.user.upsert({
+    where: { organizationId_email: { organizationId: organization.id, email: 'auditor@peoplepay360.local' } },
+    update: { passwordHash, role: 'AUDITOR' },
+    create: {
+      organizationId: organization.id,
+      email: 'auditor@peoplepay360.local',
+      passwordHash,
+      firstName: 'Sneha',
+      lastName: 'Iyer',
+      role: 'AUDITOR',
+      isEmailVerified: true,
+    },
+  });
+
+  // Assign deptManagerUser to deptEngineering
+  await prisma.department.update({
+    where: { id: deptEngineering.id },
+    data: { managerId: deptManagerUser.id },
+  });
+
+  console.log('✅ All 8 SaaS Roles Seeded:');
+  console.log('   1. superadmin@peoplepay360.local (SUPER_ADMIN)');
+  console.log('   2. admin@peoplepay360.local (ORGANIZATION_ADMIN)');
+  console.log('   3. hr@peoplepay360.local (HR_MANAGER)');
+  console.log('   4. payroll@peoplepay360.local (PAYROLL_MANAGER)');
+  console.log('   5. finance@peoplepay360.local (FINANCE_MANAGER)');
+  console.log('   6. manager@peoplepay360.local (DEPARTMENT_MANAGER)');
+  console.log('   7. employee@peoplepay360.local (EMPLOYEE)');
+  console.log('   8. auditor@peoplepay360.local (AUDITOR)');
+  console.log('   (Password: admin123 for all accounts)');
 
   // 7. Salary Structure & Rules
   const structure = await prisma.salaryStructure.upsert({

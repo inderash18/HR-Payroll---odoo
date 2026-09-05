@@ -14,8 +14,10 @@ import {
   LogOut,
 } from 'lucide-react';
 
+import { getNavigationForRole } from '../config/navigation.config';
+
 export function Sidebar() {
-  const { user, logout, hasRole } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -38,52 +40,7 @@ export function Sidebar() {
     user?.employee?.position ||
     (user?.role ? user.role.replace(/_/g, ' ') : 'Shift Supervisor');
 
-  const navLinks = [
-    {
-      to: '/dashboard',
-      label: 'Dashboard',
-      icon: LayoutGrid,
-      roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
-    },
-    {
-      to: '/employees',
-      label: 'Employees',
-      icon: Users,
-      roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'],
-    },
-    {
-      to: '/attendance',
-      label: 'Attendance',
-      icon: Clock,
-      roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
-    },
-    {
-      to: '/leaves',
-      label: 'Time Off',
-      icon: CalendarDays,
-      roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
-    },
-    {
-      to: '/payroll',
-      label: 'Payroll',
-      icon: Landmark,
-      roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'],
-    },
-    {
-      to: '/payslips',
-      label: 'Payslips',
-      icon: LineChart,
-      roles: ['ADMIN', 'HR_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER', 'EMPLOYEE'],
-    },
-    {
-      to: '/audit',
-      label: 'Reports',
-      icon: FileText,
-      roles: ['ADMIN', 'HR_MANAGER'],
-    },
-  ];
-
-  const visibleLinks = navLinks.filter((item) => hasRole(...item.roles));
+  const visibleLinks = getNavigationForRole(user?.role);
 
   return (
     <aside className="sidebar-dark" id="main-application-sidebar">

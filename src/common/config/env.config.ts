@@ -9,7 +9,11 @@ export const envSchema = z.object({
   API_PREFIX: z.string().default('api/v1'),
   APP_NAME: z.string().default('PeoplePay360'),
 
-  DATABASE_URL: z.string().url().or(z.string().min(1)),
+  DATABASE_URL: z
+    .string()
+    .url()
+    .or(z.string().min(1))
+    .default('postgresql://postgres:postgres@localhost:5432/peoplepay360?schema=public'),
   REDIS_URL: z.string().default('redis://localhost:6379'),
 
   JWT_ACCESS_SECRET: z.string().min(16).default('super_secret_access_key_change_in_production_min_32_chars'),

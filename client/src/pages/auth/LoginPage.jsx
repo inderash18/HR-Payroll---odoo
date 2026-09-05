@@ -98,57 +98,77 @@ export function LoginPage() {
     }
   };
 
+  
   return (
-    <div id="app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="login-screen-wrapper">
       <div className="login-card">
-        {/* Left side: Image background content */}
+        {/* Left side: Hero / Building Brand Image */}
         <div className="login-image-content">
-          <div className="box-logo">PEOPLEPAY360</div>
+          <div className="login-brand-badge">
+            <span className="brand-dot"></span>
+            <span>PEOPLEPAY360</span>
+          </div>
+          <div className="login-hero-overlay">
+            <div className="hero-quote">
+              <p className="hero-quote-title">Next-Gen Workforce Operations</p>
+              <p className="hero-quote-sub">Automated Payroll, Real-time Attendance & RBAC Compliance.</p>
+            </div>
+          </div>
         </div>
 
-        {/* Right side: White form container */}
+        {/* Right side: Modern enterprise form */}
         <div className="login-form-side">
-          <div className="welcome-text" style={{ marginTop: '1rem' }}>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-              Welcome to ODOO
-            </h1>
-            <p style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '0.5rem' }}>
-              Enterprise HR, Payroll & Compliance Platform
+          <div className="login-header-group">
+            <div className="login-sys-badge">ENTERPRISE CLOUD</div>
+            <h1 className="login-title">Sign In</h1>
+            <p className="login-subtitle">
+              Access your PeoplePay360 HR & Payroll Workspace
             </p>
           </div>
 
-          <div
-            style={{
-              marginTop: '1.25rem',
-              padding: '0.85rem 1rem',
-              backgroundColor: '#f8fafc',
-              borderLeft: '4px solid var(--primary)',
-              borderRadius: '6px',
-            }}
-          >
-            <p style={{ color: '#4b5563', fontSize: '0.82rem', lineHeight: 1.45 }}>
-              <strong>Secure Access:</strong> Use your registered work email or assigned employee ID.
-            </p>
+          <div className="login-notice-box">
+            <div className="notice-icon">🛡️</div>
+            <div className="notice-content">
+              <strong>Secure Organization Portal:</strong> Sign in with your registered email or employee ID credentials.
+            </div>
           </div>
 
-          <form id="login-form" onSubmit={handleSubmit} style={{ marginTop: '1.75rem' }}>
-            <div className="stacked-inputs">
-              <div className="input-row">
+          <form id="login-form" onSubmit={handleSubmit} className="login-form-body">
+            <div className="form-field-group">
+              <label className="field-label" htmlFor="login-email">Work Email</label>
+              <div className="input-control">
                 <input
                   type="text"
                   id="login-email"
-                  placeholder="Work Email or Username (e.g. admin@peoplepay360.local)"
+                  placeholder="name@peoplepay360.local"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="username"
                 />
               </div>
-              <div className="input-row input-with-toggle">
+            </div>
+
+            <div className="form-field-group">
+              <div className="field-label-row">
+                <label className="field-label" htmlFor="login-password">Password</label>
+                <a
+                  href="#forgot"
+                  id="btn-forgot-password"
+                  className="link-forgot"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowForgotModal(true);
+                  }}
+                >
+                  Forgot password?
+                </a>
+              </div>
+              <div className="input-control input-with-action">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="login-password"
-                  placeholder="Password"
+                  placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -156,9 +176,9 @@ export function LoginPage() {
                 />
                 <button
                   type="button"
-                  className="btn-pwd-eye"
+                  className="btn-pwd-toggle"
                   id="btn-toggle-pwd"
-                  title="Show / Hide Password"
+                  title={showPassword ? "Hide password" : "Show password"}
                   tabIndex={-1}
                   onClick={() => setShowPassword(!showPassword)}
                 >
@@ -167,88 +187,47 @@ export function LoginPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
-              <label
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.45rem',
-                  fontSize: '0.82rem',
-                  color: 'var(--text-muted)',
-                  cursor: 'pointer',
-                }}
-              >
+            <div className="form-options-row">
+              <label className="checkbox-label">
                 <input
                   type="checkbox"
                   id="login-remember"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  style={{ cursor: 'pointer' }}
                 />
-                <span>Remember session</span>
+                <span>Remember session for 30 days</span>
               </label>
-              <a
-                href="#forgot"
-                id="btn-forgot-password"
-                style={{ color: 'var(--blue)', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 600 }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowForgotModal(true);
-                }}
-              >
-                Forgot Password?
-              </a>
             </div>
 
             {error && (
-              <div
-                id="login-error-msg"
-                style={{
-                  marginTop: '1rem',
-                  padding: '0.65rem 0.85rem',
-                  borderRadius: '6px',
-                  background: 'var(--red-bg)',
-                  color: 'var(--red-text)',
-                  fontSize: '0.84rem',
-                  fontWeight: 600,
-                }}
-              >
-                {error}
+              <div id="login-error-msg" className="login-error-banner">
+                <span className="error-dot">●</span>
+                <span>{error}</span>
               </div>
             )}
 
             <button
               type="submit"
-              className="btn-primary"
+              className="btn-login-action"
               id="btn-login-submit"
               disabled={isLoading}
-              style={{
-                marginTop: '1.5rem',
-                width: '100%',
-                borderRadius: '10px',
-                backgroundColor: '#0f1217',
-                padding: '0.95rem',
-                fontSize: '0.95rem',
-                fontWeight: 700,
-                color: '#ffffff',
-                cursor: 'pointer',
-                border: 'none',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '0.5rem',
-              }}
             >
               {isLoading ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
-                  <span>Authenticating...</span>
+                  <Loader2 size={18} className="spin-animation" />
+                  <span>Authenticating secure session...</span>
                 </>
               ) : (
-                <span>Sign In</span>
+                <span>Sign in to Dashboard</span>
               )}
             </button>
           </form>
+
+          <div className="login-footer-meta">
+            <span>Powered by ODOO Architecture</span>
+            <span className="meta-sep">•</span>
+            <span>256-Bit SSL Encrypted</span>
+          </div>
         </div>
       </div>
 

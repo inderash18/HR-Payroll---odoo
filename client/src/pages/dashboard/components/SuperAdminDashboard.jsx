@@ -137,11 +137,11 @@ export function SuperAdminDashboard({ data }) {
                 ))
               ) : (
                 <tr>
-                  <td className="py-3.5 font-bold text-gray-900">PeoplePay360 India Private Limited</td>
-                  <td className="py-3.5 font-mono text-xs text-gray-500">IND-PP360</td>
+                  <td className="py-3.5 font-bold text-gray-900">PeoplePay360 Technologies Pvt. Ltd.</td>
+                  <td className="py-3.5 font-mono text-xs text-gray-500">PP360</td>
                   <td className="py-3.5 font-semibold text-gray-700">INR (Asia/Kolkata)</td>
-                  <td className="py-3.5 text-center font-bold text-gray-800">8</td>
-                  <td className="py-3.5 text-center font-bold text-gray-800">4</td>
+                  <td className="py-3.5 text-center font-bold text-gray-800">164</td>
+                  <td className="py-3.5 text-center font-bold text-gray-800">164</td>
                   <td className="py-3.5 text-center">
                     <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">
                       Active

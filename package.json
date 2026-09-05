@@ -1,0 +1,22 @@
+{
+  "name": "peoplepay360-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm --prefix backend run start:dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "build": "npm run build:backend",
+    "test:backend": "npm --prefix backend run test",
+    "test": "npm run test:backend",
+    "typecheck": "npm --prefix backend run typecheck",
+    "prisma:studio": "npx --prefix backend prisma studio",
+    "prisma:migrate": "npm --prefix backend run prisma:migrate",
+    "prisma:seed": "npm --prefix backend run prisma:seed"
+  }
+}

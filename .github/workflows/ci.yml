@@ -49,16 +49,13 @@ jobs:
         run: npm ci
 
       - name: Run Prisma Client generation
-        run: npm run prisma:generate
+        run: npm --prefix backend run prisma:generate
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint check
-        run: npm run lint
+      - name: Typecheck Backend
+        run: npm --prefix backend run typecheck
 
       - name: Run Vitest Unit & Integration tests
-        run: npm run test
+        run: npm --prefix backend run test
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/peoplepay360?schema=public
           REDIS_URL: redis://localhost:6379

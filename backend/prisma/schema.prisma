@@ -70,31 +70,37 @@ enum RuleCategoryType {
   EMPLOYER_CONTRIBUTION
 }
 
-model Organization {
-  id              String           @id @default(uuid())
-  name            String
-  code            String           @unique
-  currency        String           @default("USD")
-  timezone        String           @default("UTC")
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+enum AmountType {
+  FIXED
+  PERCENTAGE
+  CODE_FORMULA
+}
 
-  legalEntities    LegalEntity[]
-  users            User[]
-  auditLogs        AuditLog[]
-  outboxEvents     OutboxEvent[]
-  idempotencyKeys  IdempotencyKey[]
-  departments      Department[]
-  jobPositions     JobPosition[]
-  employees        Employee[]
+model Organization {
+  id              String            @id @default(uuid())
+  name            String
+  code            String            @unique
+  currency        String            @default("USD")
+  timezone        String            @default("UTC")
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  legalEntities   LegalEntity[]
+  departments     Department[]
+  jobPositions    JobPosition[]
+  employees       Employee[]
+  contracts       Contract[]
+  leaveTypes      LeaveType[]
+  leaveRequests   LeaveRequest[]
+  attendances     Attendance[]
   salaryStructures SalaryStructure[]
-  salaryRules      SalaryRule[]
-  contracts        Contract[]
-  payruns          Payrun[]
-  payslips         Payslip[]
-  leaveTypes       LeaveType[]
-  leaveRequests    LeaveRequest[]
-  attendances      Attendance[]
+  salaryRules     SalaryRule[]
+  payruns         Payrun[]
+  payslips        Payslip[]
+  users           User[]
+  auditLogs       AuditLog[]
+  outboxEvents    OutboxEvent[]
+  idempotencyKeys IdempotencyKey[]
 
   @@map("organizations")
 }
@@ -122,6 +128,268 @@ model LegalEntity {
   @@map("legal_entities")
 }
 
+model Department {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  name           String
+  code           String
+  parentId       String?      @map("parent_id")
+  managerId      String?      @map("manager_id")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  parent         Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children       Department[] @relation("DepartmentHierarchy")
+  manager        User?        @relation("DepartmentManager", fields: [managerId], references: [id], onDelete: SetNull)
+  employees      Employee[]
+  jobPositions   JobPosition[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@map("departments")
+}
+
+model JobPosition {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  departmentId   String?      @map("department_id")
+  title          String
+  code           String
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  department     Department?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  employees      Employee[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@map("job_positions")
+}
+
+model Employee {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  legalEntityId  String?      @map("legal_entity_id")
+  userId         String?      @unique @map("user_id")
+  departmentId   String?      @map("department_id")
+  jobPositionId  String?      @map("job_position_id")
+  employeeNum    String       @map("employee_num")
+  firstName      String       @map("first_name")
+  lastName       String       @map("last_name")
+  workEmail      String       @map("work_email")
+  phone          String?
+  joiningDate    DateTime     @default(now()) @map("joining_date")
+  isActive       Boolean      @default(true) @map("is_active")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  legalEntity    LegalEntity? @relation(fields: [legalEntityId], references: [id], onDelete: SetNull)
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  department     Department?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  jobPosition    JobPosition? @relation(fields: [jobPositionId], references: [id], onDelete: SetNull)
+  contracts      Contract[]
+  leaveRequests  LeaveRequest[]
+  attendances    Attendance[]
+  payslips       Payslip[]
+
+  @@unique([organizationId, employeeNum])
+  @@unique([organizationId, workEmail])
+  @@index([organizationId])
+  @@map("employees")
+}
+
+model Contract {
+  id             String         @id @default(uuid())
+  organizationId String         @map("organization_id")
+  employeeId     String         @map("employee_id")
+  structureId    String         @map("structure_id")
+  name           String
+  wage           Decimal        @db.Decimal(12, 2)
+  wagePeriod     String         @default("MONTHLY") @map("wage_period")
+  startDate      DateTime       @map("start_date")
+  endDate        DateTime?      @map("end_date")
+  status         ContractStatus @default(DRAFT)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee       Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  structure      SalaryStructure @relation(fields: [structureId], references: [id], onDelete: Restrict)
+  payslips       Payslip[]
+
+  @@index([organizationId, employeeId, status])
+  @@map("contracts")
+}
+
+model LeaveType {
+  id             String         @id @default(uuid())
+  organizationId String         @map("organization_id")
+  name           String
+  code           String
+  isPaid         Boolean        @default(true) @map("is_paid")
+  daysAllowed    Int            @default(20) @map("days_allowed")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leaveRequests  LeaveRequest[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@map("leave_types")
+}
+
+model LeaveRequest {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  employeeId     String       @map("employee_id")
+  leaveTypeId    String       @map("leave_type_id")
+  startDate      DateTime     @map("start_date")
+  endDate        DateTime     @map("end_date")
+  numberOfDays   Decimal      @db.Decimal(5, 2) @map("number_of_days")
+  reason         String?
+  status         LeaveStatus  @default(PENDING_APPROVAL)
+  approvedById   String?      @map("approved_by_id")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee       Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType      LeaveType    @relation(fields: [leaveTypeId], references: [id], onDelete: Restrict)
+  approvedBy     User?        @relation("LeaveApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, employeeId, status])
+  @@map("leave_requests")
+}
+
+model Attendance {
+  id             String           @id @default(uuid())
+  organizationId String           @map("organization_id")
+  employeeId     String           @map("employee_id")
+  date           DateTime         @db.Date
+  checkIn        DateTime         @map("check_in")
+  checkOut       DateTime?        @map("check_out")
+  workedHours    Decimal?         @db.Decimal(5, 2) @map("worked_hours")
+  status         AttendanceStatus @default(PRESENT)
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee       Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, employeeId, date])
+  @@index([organizationId, date])
+  @@map("attendances")
+}
+
+model SalaryStructure {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  name           String
+  code           String
+  description    String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  rules          SalaryRule[]
+  contracts      Contract[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@map("salary_structures")
+}
+
+model SalaryRule {
+  id                String           @id @default(uuid())
+  organizationId    String           @map("organization_id")
+  structureId       String           @map("structure_id")
+  name              String
+  code              String
+  category          RuleCategoryType
+  sequence          Int              @default(10)
+  amountType        AmountType       @default(FIXED) @map("amount_type")
+  amountFixed       Decimal?         @db.Decimal(12, 2) @map("amount_fixed")
+  amountPercentage  Decimal?         @db.Decimal(5, 2) @map("amount_percentage")
+  percentageBasedOn String?          @map("percentage_based_on")
+  codeFormula       String?          @map("code_formula")
+  isActive          Boolean          @default(true) @map("is_active")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  organization      Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  structure         SalaryStructure  @relation(fields: [structureId], references: [id], onDelete: Cascade)
+
+  @@unique([structureId, code])
+  @@index([organizationId, structureId])
+  @@map("salary_rules")
+}
+
+model Payrun {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  legalEntityId  String?      @map("legal_entity_id")
+  name           String
+  startDate      DateTime     @map("start_date")
+  endDate        DateTime     @map("end_date")
+  status         PayrunStatus @default(DRAFT)
+  totalGross     Decimal      @default(0) @db.Decimal(14, 2) @map("total_gross")
+  totalNet       Decimal      @default(0) @db.Decimal(14, 2) @map("total_net")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  legalEntity    LegalEntity? @relation(fields: [legalEntityId], references: [id], onDelete: SetNull)
+  payslips       Payslip[]
+
+  @@index([organizationId, status])
+  @@map("payruns")
+}
+
+model Payslip {
+  id              String       @id @default(uuid())
+  organizationId  String       @map("organization_id")
+  payrunId        String       @map("payrun_id")
+  employeeId      String       @map("employee_id")
+  contractId      String       @map("contract_id")
+  workedDays      Decimal      @default(0) @db.Decimal(5, 2) @map("worked_days")
+  unpaidLeaveDays Decimal      @default(0) @db.Decimal(5, 2) @map("unpaid_leave_days")
+  grossSalary     Decimal      @db.Decimal(12, 2) @map("gross_salary")
+  netSalary       Decimal      @db.Decimal(12, 2) @map("net_salary")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  payrun          Payrun       @relation(fields: [payrunId], references: [id], onDelete: Cascade)
+  employee        Employee     @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  contract        Contract     @relation(fields: [contractId], references: [id], onDelete: Restrict)
+  lines           PayslipLine[]
+
+  @@index([organizationId, payrunId])
+  @@index([organizationId, employeeId])
+  @@map("payslips")
+}
+
+model PayslipLine {
+  id         String           @id @default(uuid())
+  payslipId  String           @map("payslip_id")
+  category   RuleCategoryType
+  code       String
+  name       String
+  amount     Decimal          @db.Decimal(12, 2)
+  baseAmount Decimal?         @db.Decimal(12, 2) @map("base_amount")
+  rate       Decimal?         @db.Decimal(5, 2)
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  payslip    Payslip          @relation(fields: [payslipId], references: [id], onDelete: Cascade)
+
+  @@index([payslipId])
+  @@map("payslip_lines")
+}
+
 model User {
   id                  String               @id @default(uuid())
   organizationId      String               @map("organization_id")
@@ -141,12 +409,12 @@ model User {
 
   organization        Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   legalEntity         LegalEntity?         @relation(fields: [legalEntityId], references: [id], onDelete: SetNull)
-  auditLogs           AuditLog[]
-  refreshTokens       RefreshToken[]
-  passwordResetTokens PasswordResetToken[]
   employee            Employee?
   managedDepartments  Department[]         @relation("DepartmentManager")
   approvedLeaves      LeaveRequest[]       @relation("LeaveApprover")
+  auditLogs           AuditLog[]
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -240,268 +508,3 @@ model IdempotencyKey {
   @@index([organizationId, expiresAt])
   @@map("idempotency_keys")
 }
-
-model Department {
-  id             String       @id @default(uuid())
-  organizationId String       @map("organization_id")
-  name           String
-  code           String
-  parentId       String?      @map("parent_id")
-  managerId      String?      @map("manager_id")
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  parent         Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  children       Department[] @relation("DepartmentHierarchy")
-  manager        User?        @relation("DepartmentManager", fields: [managerId], references: [id], onDelete: SetNull)
-  jobPositions   JobPosition[]
-  employees      Employee[]
-
-  @@unique([organizationId, code])
-  @@index([organizationId])
-  @@map("departments")
-}
-
-model JobPosition {
-  id             String       @id @default(uuid())
-  organizationId String       @map("organization_id")
-  departmentId   String?      @map("department_id")
-  title          String
-  code           String
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  department     Department?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  employees      Employee[]
-
-  @@unique([organizationId, code])
-  @@index([organizationId])
-  @@map("job_positions")
-}
-
-model Employee {
-  id             String        @id @default(uuid())
-  organizationId String        @map("organization_id")
-  legalEntityId  String?       @map("legal_entity_id")
-  userId         String?       @unique @map("user_id")
-  departmentId   String?       @map("department_id")
-  jobPositionId  String?       @map("job_position_id")
-  employeeNum    String        @map("employee_num")
-  firstName      String        @map("first_name")
-  lastName       String        @map("last_name")
-  workEmail      String        @map("work_email")
-  phone          String?
-  joiningDate    DateTime      @default(now()) @map("joining_date")
-  isActive       Boolean       @default(true) @map("is_active")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
-
-  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  legalEntity    LegalEntity?  @relation(fields: [legalEntityId], references: [id], onDelete: SetNull)
-  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  department     Department?   @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  jobPosition    JobPosition?  @relation(fields: [jobPositionId], references: [id], onDelete: SetNull)
-  contracts      Contract[]
-  payslips       Payslip[]
-  leaveRequests  LeaveRequest[]
-  attendances    Attendance[]
-
-  @@unique([organizationId, employeeNum])
-  @@index([organizationId])
-  @@map("employees")
-}
-
-model SalaryStructure {
-  id             String       @id @default(uuid())
-  organizationId String       @map("organization_id")
-  name           String
-  code           String
-  description    String?
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  rules          SalaryRule[]
-  contracts      Contract[]
-
-  @@unique([organizationId, code])
-  @@index([organizationId])
-  @@map("salary_structures")
-}
-
-model SalaryRule {
-  id               String           @id @default(uuid())
-  organizationId   String           @map("organization_id")
-  structureId     String           @map("structure_id")
-  name             String
-  code             String
-  category         RuleCategoryType
-  sequence         Int              @default(10)
-  amountType       String           @default("FIXED") @map("amount_type")
-  amountFixed      Decimal?         @map("amount_fixed") @db.Decimal(12, 2)
-  amountPercentage Decimal?         @map("amount_percentage") @db.Decimal(5, 2)
-  percentageBasedOn String?         @map("percentage_based_on")
-  codeFormula      String?          @map("code_formula")
-  isActive         Boolean          @default(true) @map("is_active")
-  createdAt        DateTime         @default(now()) @map("created_at")
-  updatedAt        DateTime         @updatedAt @map("updated_at")
-
-  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  structure       SalaryStructure  @relation(fields: [structureId], references: [id], onDelete: Cascade)
-
-  @@unique([structureId, code])
-  @@index([organizationId])
-  @@map("salary_rules")
-}
-
-model Contract {
-  id             String          @id @default(uuid())
-  organizationId String          @map("organization_id")
-  employeeId     String          @map("employee_id")
-  structureId   String          @map("structure_id")
-  name           String
-  wage           Decimal         @db.Decimal(12, 2)
-  wagePeriod     String          @default("MONTHLY") @map("wage_period")
-  startDate      DateTime        @map("start_date")
-  endDate        DateTime?       @map("end_date")
-  status         ContractStatus  @default(DRAFT)
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
-
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  employee       Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  structure     SalaryStructure @relation(fields: [structureId], references: [id], onDelete: Restrict)
-  payslips       Payslip[]
-
-  @@index([organizationId])
-  @@index([employeeId])
-  @@map("contracts")
-}
-
-model Payrun {
-  id             String        @id @default(uuid())
-  organizationId String        @map("organization_id")
-  legalEntityId  String?       @map("legal_entity_id")
-  name           String
-  startDate      DateTime      @map("start_date")
-  endDate        DateTime      @map("end_date")
-  status         PayrunStatus  @default(DRAFT)
-  totalGross     Decimal       @default(0.00) @map("total_gross") @db.Decimal(14, 2)
-  totalNet       Decimal       @default(0.00) @map("total_net") @db.Decimal(14, 2)
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
-
-  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  legalEntity    LegalEntity?  @relation(fields: [legalEntityId], references: [id], onDelete: SetNull)
-  payslips       Payslip[]
-
-  @@index([organizationId])
-  @@map("payruns")
-}
-
-model Payslip {
-  id              String        @id @default(uuid())
-  organizationId  String        @map("organization_id")
-  payrunId        String        @map("payrun_id")
-  employeeId      String        @map("employee_id")
-  contractId      String        @map("contract_id")
-  workedDays      Decimal       @default(0) @map("worked_days") @db.Decimal(5, 2)
-  unpaidLeaveDays Decimal       @default(0) @map("unpaid_leave_days") @db.Decimal(5, 2)
-  grossSalary     Decimal       @default(0.00) @map("gross_salary") @db.Decimal(12, 2)
-  netSalary       Decimal       @default(0.00) @map("net_salary") @db.Decimal(12, 2)
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
-
-  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  payrun          Payrun        @relation(fields: [payrunId], references: [id], onDelete: Cascade)
-  employee        Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  contract        Contract      @relation(fields: [contractId], references: [id], onDelete: Restrict)
-  lines           PayslipLine[]
-
-  @@index([organizationId])
-  @@index([payrunId])
-  @@index([employeeId])
-  @@map("payslips")
-}
-
-model PayslipLine {
-  id         String           @id @default(uuid())
-  payslipId  String           @map("payslip_id")
-  category   RuleCategoryType
-  code       String
-  name       String
-  amount     Decimal          @db.Decimal(12, 2)
-  baseAmount Decimal?         @map("base_amount") @db.Decimal(12, 2)
-  rate       Decimal?         @db.Decimal(5, 2)
-  createdAt  DateTime         @default(now()) @map("created_at")
-
-  payslip    Payslip          @relation(fields: [payslipId], references: [id], onDelete: Cascade)
-
-  @@index([payslipId])
-  @@map("payslip_lines")
-}
-
-model LeaveType {
-  id             String         @id @default(uuid())
-  organizationId String         @map("organization_id")
-  name           String
-  code           String
-  isPaid         Boolean        @default(true) @map("is_paid")
-  daysAllowed    Int            @default(10) @map("days_allowed")
-  createdAt      DateTime       @default(now()) @map("created_at")
-  updatedAt      DateTime       @updatedAt @map("updated_at")
-
-  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  requests       LeaveRequest[]
-
-  @@unique([organizationId, code])
-  @@index([organizationId])
-  @@map("leave_types")
-}
-
-model LeaveRequest {
-  id             String       @id @default(uuid())
-  organizationId String       @map("organization_id")
-  employeeId     String       @map("employee_id")
-  leaveTypeId    String       @map("leave_type_id")
-  startDate      DateTime     @map("start_date")
-  endDate        DateTime     @map("end_date")
-  numberOfDays   Decimal      @map("number_of_days") @db.Decimal(5, 2)
-  reason         String?
-  status         LeaveStatus  @default(DRAFT)
-  approvedById   String?      @map("approved_by_id")
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  employee       Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  leaveType      LeaveType    @relation(fields: [leaveTypeId], references: [id], onDelete: Restrict)
-  approvedBy     User?        @relation("LeaveApprover", fields: [approvedById], references: [id], onDelete: SetNull)
-
-  @@index([organizationId])
-  @@index([employeeId])
-  @@map("leave_requests")
-}
-
-model Attendance {
-  id             String           @id @default(uuid())
-  organizationId String           @map("organization_id")
-  employeeId     String           @map("employee_id")
-  date           DateTime         @db.Date
-  checkIn        DateTime         @map("check_in")
-  checkOut       DateTime?        @map("check_out")
-  workedHours    Decimal          @default(0) @map("worked_hours") @db.Decimal(5, 2)
-  status         AttendanceStatus @default(PRESENT)
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @updatedAt @map("updated_at")
-
-  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  employee       Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-
-  @@index([organizationId])
-  @@index([employeeId, date])
-  @@map("attendances")
-}
-

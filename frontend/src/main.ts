@@ -1,33 +1,4 @@
-import {
-  createIcons,
-  LayoutDashboard,
-  Users,
-  Building2,
-  Briefcase,
-  FileSignature,
-  CalendarClock,
-  Clock,
-  CalendarRange,
-  Landmark,
-  LineChart,
-  Settings,
-  Search,
-  Bell,
-  ChevronDown,
-  UserPlus,
-  FileText,
-  CheckCircle,
-  Clock4,
-  AlertTriangle,
-  User,
-  LogOut,
-  Check,
-  X,
-  Eye,
-  Plus,
-  Shield,
-  RefreshCw,
-} from 'lucide';
+import { createIcons, icons } from 'lucide';
 import { authStore } from './state/auth';
 import { api } from './api/client';
 import {
@@ -45,6 +16,21 @@ import {
   DashboardOverview,
   Department,
 } from './api/types';
+import {
+  setAdminToastHandler,
+  renderAdminDashboard,
+  renderUserManagementView,
+  renderRolesPermissionsView,
+  renderOrganizationView,
+  renderEmployeesView,
+  renderPositionsGradesView,
+  renderWorkflowsApprovalsView,
+  renderAuditLogsView,
+  renderSystemSettingsView,
+  renderSecurityView,
+  renderStorageDocumentsView,
+  renderNotificationsView,
+} from './modules/views';
 import './style.css';
 
 // Helpers to extract data from standardized JSON API responses
@@ -65,35 +51,7 @@ function extractData<T>(res: any, defaultValue: T): T {
 // Initialize Lucide icons on any rendered DOM
 function refreshIcons() {
   createIcons({
-    icons: {
-      LayoutDashboard,
-      Users,
-      Building2,
-      Briefcase,
-      FileSignature,
-      CalendarClock,
-      Clock,
-      CalendarRange,
-      Landmark,
-      LineChart,
-      Settings,
-      Search,
-      Bell,
-      ChevronDown,
-      UserPlus,
-      FileText,
-      CheckCircle,
-      Clock4,
-      AlertTriangle,
-      User,
-      LogOut,
-      Check,
-      X,
-      Eye,
-      Plus,
-      Shield,
-      RefreshCw,
-    },
+    icons: { ...icons },
   });
 }
 
@@ -124,6 +82,19 @@ let activeTab: string = 'dashboard';
 async function initApp() {
   const app = document.getElementById('app');
   if (!app) return;
+
+  setAdminToastHandler(showToast);
+
+  // Global tab switch listener (e.g. from KPI cards)
+  window.addEventListener('switch-tab', (e: any) => {
+    if (e.detail?.tab) {
+      activeTab = e.detail.tab;
+      document.querySelectorAll('.nav-item').forEach((b) => b.classList.remove('active'));
+      const activeNav = document.querySelector(`.nav-item[data-tab="${activeTab}"]`);
+      if (activeNav) activeNav.classList.add('active');
+      loadActiveTabContent();
+    }
+  });
 
   // Listen to auth store state changes
   authStore.subscribe((state) => {
@@ -240,121 +211,109 @@ function renderLogin(container: HTMLElement) {
 }
 
 // ----------------------------------------------------
-// DASHBOARD SHELL & NAVIGATION
+// DASHBOARD SHELL & NAVIGATION (REFERENCE DESIGN & ADMIN MODULES)
 // ----------------------------------------------------
 function renderDashboardShell(container: HTMLElement, user: UserType) {
-  const isEmployeeOnly = user.role === 'EMPLOYEE';
-  const isPayroll =
-    user.role === 'HR_PAYROLL_MANAGER' ||
-    user.role === 'HR_PAYROLL_USER' ||
-    user.role === 'ADMIN';
-
-  const displayName = `${user.firstName || 'System'} ${user.lastName || 'Administrator'}`.trim();
-  const displayRole = (user.role || 'ADMIN').replace(/_/g, ' ');
-
+  const displayName = `${user?.firstName || 'Jerome'} ${user?.lastName || 'Bell'}`.trim();
   container.innerHTML = `
     <div class="hr-dashboard">
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="brand">
           <div class="brand-icon-wrapper">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+              <path d="M2 17l10 5 10-5"></path>
+              <path d="M2 12l10 5 10-5"></path>
             </svg>
           </div>
           <div class="brand-text">
             <h2>PeoplePay360</h2>
-            <span>${user.organization?.name || 'HR Management'}</span>
+            <span>Admin Portal</span>
           </div>
         </div>
 
         <nav class="nav-menu">
+          <div class="nav-group-title">👑 Admin Modules</div>
           <a href="#" class="nav-item ${activeTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard">
             <i data-lucide="layout-dashboard"></i> Dashboard
           </a>
-          ${
-            !isEmployeeOnly
-              ? `
-            <a href="#" class="nav-item ${activeTab === 'employees' ? 'active' : ''}" data-tab="employees">
-              <i data-lucide="users"></i> Employees
-            </a>
-            <a href="#" class="nav-item ${activeTab === 'departments' ? 'active' : ''}" data-tab="departments">
-              <i data-lucide="building-2"></i> Departments
-            </a>
-            <a href="#" class="nav-item ${activeTab === 'contracts' ? 'active' : ''}" data-tab="contracts">
-              <i data-lucide="file-signature"></i> Contracts
-            </a>
-            <a href="#" class="nav-item ${activeTab === 'schedules' ? 'active' : ''}" data-tab="schedules">
-              <i data-lucide="calendar-clock"></i> Working Schedules
-            </a>
-          `
-              : ''
-          }
-          <a href="#" class="nav-item ${activeTab === 'attendance' ? 'active' : ''}" data-tab="attendance">
-            <i data-lucide="clock"></i> Attendance
+          <a href="#" class="nav-item ${activeTab === 'users' ? 'active' : ''}" data-tab="users">
+            <i data-lucide="users"></i> User Management
           </a>
-          <a href="#" class="nav-item ${activeTab === 'leaves' ? 'active' : ''}" data-tab="leaves">
-            <i data-lucide="calendar-range"></i> Time Off
+          <a href="#" class="nav-item ${activeTab === 'roles' ? 'active' : ''}" data-tab="roles">
+            <i data-lucide="shield"></i> Roles & Permissions
           </a>
-          ${
-            isPayroll
-              ? `
-            <a href="#" class="nav-item ${activeTab === 'payroll' ? 'active' : ''}" data-tab="payroll">
-              <i data-lucide="landmark"></i> Payroll
-            </a>
-          `
-              : ''
-          }
-          <a href="#" class="nav-item ${activeTab === 'payslips' ? 'active' : ''}" data-tab="payslips">
-            <i data-lucide="file-text"></i> Payslips
+          <a href="#" class="nav-item ${activeTab === 'organization' ? 'active' : ''}" data-tab="organization">
+            <i data-lucide="building-2"></i> Organization
           </a>
-          <div class="nav-divider"></div>
+          <a href="#" class="nav-item ${activeTab === 'employees' ? 'active' : ''}" data-tab="employees">
+            <i data-lucide="user-check"></i> Employees
+          </a>
+          <a href="#" class="nav-item ${activeTab === 'positions' ? 'active' : ''}" data-tab="positions">
+            <i data-lucide="briefcase"></i> Positions & Grades
+          </a>
+          <a href="#" class="nav-item ${activeTab === 'workflows' ? 'active' : ''}" data-tab="workflows">
+            <i data-lucide="git-branch"></i> Workflows & Approvals
+          </a>
+          <a href="#" class="nav-item ${activeTab === 'audit' ? 'active' : ''}" data-tab="audit">
+            <i data-lucide="file-text"></i> Audit Logs
+          </a>
           <a href="#" class="nav-item ${activeTab === 'settings' ? 'active' : ''}" data-tab="settings">
-            <i data-lucide="settings"></i> Settings
+            <i data-lucide="settings"></i> System Settings
+          </a>
+          <a href="#" class="nav-item ${activeTab === 'security' ? 'active' : ''}" data-tab="security">
+            <i data-lucide="lock"></i> Security
+          </a>
+          <a href="#" class="nav-item ${activeTab === 'storage' ? 'active' : ''}" data-tab="storage">
+            <i data-lucide="folder-lock"></i> Storage & Documents
+          </a>
+          <a href="#" class="nav-item ${activeTab === 'notifications' ? 'active' : ''}" data-tab="notifications">
+            <i data-lucide="bell"></i> Notifications
           </a>
         </nav>
+
+        <!-- PRO PROMO CARD (REFERENCE DESIGN) -->
+        <div class="sidebar-pro-card">
+          <p>Just click and go<br><strong>PRO</strong> version</p>
+          <div class="sidebar-pro-graphic">
+            <div class="pro-shape-semicircle"></div>
+            <div class="pro-shape-pill"></div>
+          </div>
+        </div>
+
+        <!-- LOGOUT -->
+        <button class="sidebar-logout" id="btn-logout" title="Sign Out">
+          <i data-lucide="log-out"></i> Logout
+        </button>
       </aside>
 
       <!-- MAIN CONTENT -->
       <main class="main-content">
-        <!-- HEADER -->
-        <header class="topbar">
-          <div class="header-titles">
-            <h1 id="header-tab-title">HR Dashboard</h1>
-            <p id="header-tab-subtitle">Overview of your workforce and HR activities</p>
+        <!-- TOPBAR MINIMAL (MATCHES REFERENCE IMAGE) -->
+        <header class="topbar-minimal">
+          <div class="topbar-left">
+            <h1 id="header-tab-title">Dashboard</h1>
+            <button class="date-pill-btn" id="date-picker-btn">
+              <span>Aug 11,2022</span>
+              <i data-lucide="chevron-down"></i>
           </div>
-          
-          <div class="header-actions">
-            <div class="search-bar">
-              <i data-lucide="search"></i>
-              <input type="text" id="global-search" placeholder="Search employees, departments, contracts...">
-            </div>
-            
-            <button class="icon-btn notification-btn" title="Notifications">
-              <i data-lucide="bell"></i>
-              <span class="badge" id="notification-badge">0</span>
-            </button>
-            
-            <div class="user-profile">
-              <div class="avatar">
-                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eef2ff&color=4f46e5" alt="${displayName}">
+
+          <div class="topbar-right">
+            <div class="profile-greeting-widget">
+              <div class="avatar-ring-warm">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="${user.firstName}">
               </div>
-              <div class="user-info">
-                <span class="user-name">${displayName}</span>
-                <span class="user-role">${displayRole}</span>
+              <div class="profile-text-meta">
+                <span class="welcome-caption">Welcome back,</span>
+                <span class="profile-user-name">${displayName}</span>
               </div>
-              <button class="icon-btn" id="btn-logout" title="Sign Out" style="margin-left: 0.5rem; background: none; border: none; cursor: pointer; color: #6b7280;">
-                <i data-lucide="log-out"></i>
-              </button>
             </div>
           </div>
         </header>
 
         <!-- DYNAMIC TAB CONTENT -->
-        <div id="tab-content" style="padding: 2rem;">
+        <div id="tab-content">
           <!-- Injected dynamically based on active tab -->
         </div>
       </main>
@@ -391,61 +350,100 @@ function renderDashboardShell(container: HTMLElement, user: UserType) {
 function loadActiveTabContent() {
   const contentArea = document.getElementById('tab-content');
   const headerTitle = document.getElementById('header-tab-title');
-  const headerSubtitle = document.getElementById('header-tab-subtitle');
   if (!contentArea) return;
 
   switch (activeTab) {
     case 'dashboard':
-      if (headerTitle) headerTitle.innerText = 'HR Dashboard';
-      if (headerSubtitle) headerSubtitle.innerText = 'Real-time PostgreSQL workforce metrics and alerts';
-      loadDashboardView(contentArea);
+      if (headerTitle) headerTitle.innerText = 'Dashboard';
+      renderAdminDashboard(contentArea);
+      break;
+    case 'users':
+      if (headerTitle) headerTitle.innerText = 'User Management';
+      renderUserManagementView(contentArea);
+      break;
+    case 'roles':
+      if (headerTitle) headerTitle.innerText = 'Roles & Permissions';
+      renderRolesPermissionsView(contentArea);
+      break;
+    case 'organization':
+      if (headerTitle) headerTitle.innerText = 'Organization Structure';
+      renderOrganizationView(contentArea);
       break;
     case 'employees':
-      if (headerTitle) headerTitle.innerText = 'Employee Directory';
-      if (headerSubtitle) headerSubtitle.innerText = 'Manage employee records, profiles and designations';
-      loadEmployeesView(contentArea);
+      if (headerTitle) headerTitle.innerText = 'Employees Directory';
+      renderEmployeesView(contentArea);
       break;
-    case 'departments':
-      if (headerTitle) headerTitle.innerText = 'Organizational Departments';
-      if (headerSubtitle) headerSubtitle.innerText = 'Department hierarchy, heads, and headcounts';
-      loadDepartmentsView(contentArea);
+    case 'positions':
+      if (headerTitle) headerTitle.innerText = 'Positions & Grades';
+      renderPositionsGradesView(contentArea);
+      break;
+    case 'workflows':
+      if (headerTitle) headerTitle.innerText = 'Workflows & Approvals';
+      renderWorkflowsApprovalsView(contentArea);
+      break;
+    case 'audit':
+      if (headerTitle) headerTitle.innerText = 'Audit Logs';
+      renderAuditLogsView(contentArea);
+      break;
+    case 'settings':
+      if (headerTitle) headerTitle.innerText = 'System Settings';
+      renderSystemSettingsView(contentArea);
+      break;
+    case 'security':
+      if (headerTitle) headerTitle.innerText = 'Security Management';
+      renderSecurityView(contentArea);
+      break;
+    case 'storage':
+      if (headerTitle) headerTitle.innerText = 'Storage & Documents';
+      renderStorageDocumentsView(contentArea);
+      break;
+    case 'notifications':
+      if (headerTitle) headerTitle.innerText = 'Notifications & Templates';
+      renderNotificationsView(contentArea);
       break;
     case 'contracts':
       if (headerTitle) headerTitle.innerText = 'Compensation Contracts';
-      if (headerSubtitle) headerSubtitle.innerText = 'Employee wage terms, salary structures, and validity periods';
       loadContractsView(contentArea);
       break;
     case 'schedules':
       if (headerTitle) headerTitle.innerText = 'Working Schedules';
-      if (headerSubtitle) headerSubtitle.innerText = 'Weekly shift lines, standard hours, and break allocations';
       loadSchedulesView(contentArea);
       break;
     case 'attendance':
       if (headerTitle) headerTitle.innerText = 'Attendance Tracking';
-      if (headerSubtitle) headerSubtitle.innerText = 'Daily clock-in/out logs, worked hours, and manual corrections';
       loadAttendanceView(contentArea);
       break;
     case 'leaves':
       if (headerTitle) headerTitle.innerText = 'Time Off & Leaves';
-      if (headerSubtitle) headerSubtitle.innerText = 'Accrued leave balances, approval workflow, and holiday requests';
       loadLeavesView(contentArea);
       break;
     case 'payroll':
       if (headerTitle) headerTitle.innerText = 'Payroll & Payrun Batches';
-      if (headerSubtitle) headerSubtitle.innerText = 'Salary rule engine execution, validation, and disbursements';
       loadPayrollView(contentArea);
       break;
     case 'payslips':
       if (headerTitle) headerTitle.innerText = 'Generated Payslips';
-      if (headerSubtitle) headerSubtitle.innerText = 'Official compensation records, deductions, and tax breakdowns';
       loadPayslipsView(contentArea);
       break;
-    case 'settings':
-      if (headerTitle) headerTitle.innerText = 'Platform Settings';
-      if (headerSubtitle) headerSubtitle.innerText = 'Organization configuration and security settings';
+    case 'legacy_dashboard':
+      loadDashboardView(contentArea);
+      break;
+    case 'legacy_employees':
+      loadEmployeesView(contentArea);
+      break;
+    case 'legacy_departments':
+      loadDepartmentsView(contentArea);
+      break;
+    case 'legacy_settings':
       loadSettingsView(contentArea);
       break;
+    default:
+      if (headerTitle) headerTitle.innerText = 'Dashboard';
+      renderAdminDashboard(contentArea);
+      break;
   }
+
+  refreshIcons();
 }
 
 // ----------------------------------------------------

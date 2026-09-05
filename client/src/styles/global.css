@@ -525,7 +525,7 @@ body.login-page #root {
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   box-sizing: border-box;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .sidebar-brand-container {
@@ -579,6 +579,13 @@ body.login-page #root {
   width: 100%;
   flex: 1;
   overflow-y: auto;
+  /* Hide scrollbar */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 .sidebar-nav-link {

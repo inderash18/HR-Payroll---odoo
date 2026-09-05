@@ -54,14 +54,49 @@ export const payrollService = {
   },
 
   async createPayrun(organizationId, dto) {
-    return payrollRepository.createPayrun({
-      organizationId,
-      name: dto.name,
-      startDate: new Date(dto.startDate),
-      endDate: new Date(dto.endDate),
-      legalEntityId: dto.legalEntityId || null,
-      salaryStructureId: dto.salaryStructureId || null,
-      status: 'DRAFT',
+    return prisma.$transaction(async (tx) => {
+      const payrun = await payrollRepository.createPayrun({
+        organizationId,
+        name: dto.name,
+        startDate: new Date(dto.startDate),
+        endDate: new Date(dto.endDate),
+        legalEntityId: dto.legalEntityId || null,
+        salaryStructureId: dto.salaryStructureId || null,
+        status: 'DRAFT',
+      }, tx);
+
+      if (dto.employeeIds && dto.employeeIds.length > 0) {
+        // Find valid contracts for the selected employees
+        const activeContracts = await tx.contract.findMany({
+          where: {
+            organizationId,
+            employeeId: { in: dto.employeeIds },
+            status: 'ACTIVE',
+            startDate: { lte: new Date(dto.endDate) },
+            OR: [{ endDate: null }, { endDate: { gte: new Date(dto.startDate) } }],
+          },
+          orderBy: { startDate: 'desc' }, // Get the latest valid contract if overlaps exist
+        });
+
+        const uniqueEmployeeContracts = new Map();
+        for (const contract of activeContracts) {
+          if (!uniqueEmployeeContracts.has(contract.employeeId)) {
+            uniqueEmployeeContracts.set(contract.employeeId, contract.id);
+          }
+        }
+
+        const payrunEmployees = Array.from(uniqueEmployeeContracts.entries()).map(([employeeId, contractId]) => ({
+          payrunId: payrun.id,
+          employeeId,
+          contractId,
+        }));
+
+        if (payrunEmployees.length > 0) {
+          await tx.payrunEmployee.createMany({ data: payrunEmployees });
+        }
+      }
+
+      return payrun;
     });
   },
 
@@ -79,14 +114,24 @@ export const payrollService = {
       await tx.payslip.deleteMany({ where: { payrunId: id } });
       await tx.payrollWarning.deleteMany({ where: { payrunId: id } });
 
+      // If this payrun has explicit selected employees, only compute for them
+      const payrunEmployees = await tx.payrunEmployee.findMany({
+        where: { payrunId: id },
+      });
+
+      const hasExplicitEmployees = payrunEmployees.length > 0;
+      const explicitEmployeeIds = payrunEmployees.map((pe) => pe.employeeId);
+
       // Find all active contracts covering this payrun period
-      const activeContracts = await tx.contract.findMany({
+      const allActiveContracts = await tx.contract.findMany({
         where: {
           organizationId,
           status: 'ACTIVE',
+          ...(hasExplicitEmployees ? { employeeId: { in: explicitEmployeeIds } } : {}),
           startDate: { lte: payrun.endDate },
           OR: [{ endDate: null }, { endDate: { gte: payrun.startDate } }],
         },
+        orderBy: { startDate: 'desc' }, // Latest contract first for overlap resolution
         include: {
           employee: true,
           structure: {
@@ -95,13 +140,33 @@ export const payrollService = {
         },
       });
 
+      // Filter overlapping contracts safely: keep only the latest valid contract per employee
+      const activeContractsMap = new Map();
+      const overlapWarnings = [];
+      
+      for (const contract of allActiveContracts) {
+        if (!activeContractsMap.has(contract.employeeId)) {
+          activeContractsMap.set(contract.employeeId, contract);
+        } else {
+          overlapWarnings.push({
+            payrunId: id,
+            employeeId: contract.employeeId,
+            code: 'OVERLAPPING_CONTRACT_IGNORED',
+            message: `Employee ${contract.employee.firstName} ${contract.employee.lastName} has overlapping contracts. Using the most recent contract.`,
+            severity: 'INFO',
+          });
+        }
+      }
+      
+      const activeContracts = Array.from(activeContractsMap.values());
+
       if (activeContracts.length === 0) {
         throw new Error('No active contracts found for this payrun period.');
       }
 
       let totalGross = 0;
       let totalNet = 0;
-      const warnings = [];
+      const warnings = [...overlapWarnings];
 
       for (const contract of activeContracts) {
         const rules = contract.structure?.rules || [];

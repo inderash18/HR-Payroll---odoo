@@ -25,6 +25,7 @@ export const createPayrunSchema = z.object({
   endDate: z.string().min(1, 'End Date is required'),
   legalEntityId: z.string().uuid().optional().nullable(),
   salaryStructureId: z.string().uuid().optional().nullable(),
+  employeeIds: z.array(z.string().uuid()).optional().nullable(),
 });
 
 export const createUserSchema = z.object({

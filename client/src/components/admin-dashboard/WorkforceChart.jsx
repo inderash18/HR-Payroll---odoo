@@ -69,11 +69,7 @@ export function WorkforceChart({ trendData }) {
         <div className="chart-metric-item">
           <div className="chart-metric-val" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <Users size={16} style={{ color: '#0f172a' }} />
-<<<<<<< HEAD
             {metrics.totalWorkforce || (dataset.length > 0 ? dataset[dataset.length - 1].count : 0)}
-=======
-            {metrics.totalWorkforce || 0}
->>>>>>> 426b5f8 (Update dashboard and roles middleware)
           </div>
           <span className="chart-metric-lbl">Total Workforce</span>
         </div>

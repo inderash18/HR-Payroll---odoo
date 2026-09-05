@@ -1,6 +1,8 @@
 import { leaveService } from '../services/leave.service.js';
 import { payrollService } from '../services/payroll.service.js';
 import { dashboardService, auditService } from '../services/dashboard.service.js';
+import { employeeRepository } from '../repositories/employee.repository.js';
+import { sendForbidden } from '../middleware/rbac.middleware.js';
 import { successResponse } from '../utils/response.js';
 
 export const leaveController = {
@@ -24,7 +26,15 @@ export const leaveController = {
 
   async listAllocations(req, res, next) {
     try {
-      const allocations = await leaveService.listAllocations(req.user.organizationId, req.query.employeeId);
+      let employeeId = req.query.employeeId;
+      if (req.user.role === 'EMPLOYEE') {
+        const emp = await employeeRepository.findByUserId(req.user.organizationId, req.user.id);
+        if (!emp) {
+          return successResponse(res, [], 'Leave allocations');
+        }
+        employeeId = emp.id;
+      }
+      const allocations = await leaveService.listAllocations(req.user.organizationId, employeeId);
       return successResponse(res, allocations, 'Leave allocations');
     } catch (err) {
       next(err);
@@ -42,7 +52,15 @@ export const leaveController = {
 
   async listRequests(req, res, next) {
     try {
-      const result = await leaveService.listRequests(req.user.organizationId, req.query);
+      const query = { ...req.query };
+      if (req.user.role === 'EMPLOYEE') {
+        const emp = await employeeRepository.findByUserId(req.user.organizationId, req.user.id);
+        if (!emp) {
+          return successResponse(res, [], 'Leave requests', 200, { page: 1, limit: 50, total: 0, totalPages: 1 });
+        }
+        query.employeeId = emp.id;
+      }
+      const result = await leaveService.listRequests(req.user.organizationId, query);
       return successResponse(res, result.items, 'Leave requests', 200, result.pagination);
     } catch (err) {
       next(err);
@@ -170,7 +188,15 @@ export const payrollController = {
 
   async listPayslips(req, res, next) {
     try {
-      const result = await payrollService.listPayslips(req.user.organizationId, req.query);
+      const query = { ...req.query };
+      if (req.user.role === 'EMPLOYEE') {
+        const emp = await employeeRepository.findByUserId(req.user.organizationId, req.user.id);
+        if (!emp) {
+          return successResponse(res, [], 'Payslips list', 200, { page: 1, limit: 50, total: 0, totalPages: 1 });
+        }
+        query.employeeId = emp.id;
+      }
+      const result = await payrollService.listPayslips(req.user.organizationId, query);
       return successResponse(res, result.items, 'Payslips list', 200, result.pagination);
     } catch (err) {
       next(err);
@@ -180,6 +206,12 @@ export const payrollController = {
   async getPayslipById(req, res, next) {
     try {
       const payslip = await payrollService.findPayslipById(req.user.organizationId, req.params.id);
+      if (req.user.role === 'EMPLOYEE') {
+        const emp = await employeeRepository.findByUserId(req.user.organizationId, req.user.id);
+        if (!emp || payslip.employeeId !== emp.id) {
+          return sendForbidden(res, 'You do not have permission to view another employee’s payslip');
+        }
+      }
       return successResponse(res, payslip, 'Payslip details');
     } catch (err) {
       next(err);
@@ -188,6 +220,13 @@ export const payrollController = {
 
   async getPayslipHtml(req, res, next) {
     try {
+      const payslip = await payrollService.findPayslipById(req.user.organizationId, req.params.id);
+      if (req.user.role === 'EMPLOYEE') {
+        const emp = await employeeRepository.findByUserId(req.user.organizationId, req.user.id);
+        if (!emp || payslip.employeeId !== emp.id) {
+          return sendForbidden(res, 'You do not have permission to view another employee’s payslip');
+        }
+      }
       const html = await payrollService.generatePayslipHtml(req.user.organizationId, req.params.id);
       return successResponse(res, { html }, 'Payslip HTML representation');
     } catch (err) {

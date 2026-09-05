@@ -1,27 +1,32 @@
 import { ROLES } from '../config/constants.js';
-import { hasPermission, ROLE_PERMISSIONS } from '../config/permissions.js';
-import { errorResponse } from '../utils/response.js';
-import { prisma } from '../repositories/prisma.js';
+import { hasPermission } from '../config/permissions.js';
+
+export function sendForbidden(res, message = 'You do not have permission to perform this action') {
+  return res.status(403).json({
+    success: false,
+    message,
+    error: {
+      code: 'FORBIDDEN',
+    },
+  });
+}
 
 export function requireRole(...allowedRoles) {
   return (req, res, next) => {
     if (!req.user || !req.user.role) {
-      return errorResponse(res, 'Authentication required for role verification', 401, null, 'UNAUTHENTICATED');
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+        error: { code: 'UNAUTHENTICATED' },
+      });
     }
 
-    // SUPER_ADMIN and ORGANIZATION_ADMIN / ADMIN bypass role list
     if (req.user.role === ROLES.SUPER_ADMIN || req.user.role === ROLES.ORGANIZATION_ADMIN || req.user.role === ROLES.ADMIN) {
       return next();
     }
 
     if (allowedRoles.length > 0 && !allowedRoles.includes(req.user.role)) {
-      return errorResponse(
-        res,
-        `Access denied: Required roles [${allowedRoles.join(', ')}], Current role: ${req.user.role}`,
-        403,
-        null,
-        'FORBIDDEN'
-      );
+      return sendForbidden(res, 'You do not have permission to perform this action');
     }
 
     next();
@@ -31,11 +36,14 @@ export function requireRole(...allowedRoles) {
 export function requirePermission(...requiredPermissions) {
   return (req, res, next) => {
     if (!req.user || !req.user.role) {
-      return errorResponse(res, 'Authentication required for permission verification', 401, null, 'UNAUTHENTICATED');
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+        error: { code: 'UNAUTHENTICATED' },
+      });
     }
 
-    // Super admin & org admin have universal access
-    if (req.user.role === ROLES.SUPER_ADMIN || req.user.role === ROLES.ORGANIZATION_ADMIN || req.user.role === ROLES.ADMIN) {
+    if (req.user.role === ROLES.SUPER_ADMIN) {
       return next();
     }
 
@@ -43,13 +51,32 @@ export function requirePermission(...requiredPermissions) {
     const hasAll = requiredPermissions.every((perm) => hasPermission(userRole, perm));
 
     if (!hasAll) {
-      return errorResponse(
-        res,
-        `Access denied: Missing required permission(s): [${requiredPermissions.join(', ')}]`,
-        403,
-        null,
-        'FORBIDDEN_PERMISSION'
-      );
+      return sendForbidden(res, 'You do not have permission to perform this action');
+    }
+
+    next();
+  };
+}
+
+export function requireAnyPermission(...permissions) {
+  return (req, res, next) => {
+    if (!req.user || !req.user.role) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+        error: { code: 'UNAUTHENTICATED' },
+      });
+    }
+
+    if (req.user.role === ROLES.SUPER_ADMIN) {
+      return next();
+    }
+
+    const userRole = req.user.role;
+    const hasAny = permissions.some((perm) => hasPermission(userRole, perm));
+
+    if (!hasAny) {
+      return sendForbidden(res, 'You do not have permission to perform this action');
     }
 
     next();
@@ -58,23 +85,20 @@ export function requirePermission(...requiredPermissions) {
 
 export function validateTenant(req, res, next) {
   if (!req.user) {
-    return errorResponse(res, 'Authentication required', 401, null, 'UNAUTHENTICATED');
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required',
+      error: { code: 'UNAUTHENTICATED' },
+    });
   }
 
-  // Super admin can access cross-tenant if explicitly provided, otherwise default to org
   if (req.user.role === ROLES.SUPER_ADMIN) {
     return next();
   }
 
   const headerOrgId = req.headers['x-organization-id'];
   if (headerOrgId && headerOrgId !== req.user.organizationId) {
-    return errorResponse(
-      res,
-      'Cross-tenant access prohibited',
-      403,
-      null,
-      'TENANT_MISMATCH'
-    );
+    return sendForbidden(res, 'Cross-tenant access prohibited');
   }
 
   next();
@@ -83,18 +107,12 @@ export function validateTenant(req, res, next) {
 export function enforceAuditorReadOnly(req, res, next) {
   if (req.user && req.user.role === ROLES.AUDITOR) {
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
-      // Only allow export actions for auditor
       if (req.path.includes('/export')) {
         return next();
       }
-      return errorResponse(
-        res,
-        'Auditor role has strictly read-only access. Modification is prohibited.',
-        403,
-        null,
-        'AUDITOR_READ_ONLY'
-      );
+      return sendForbidden(res, 'Auditor role has strictly read-only access. Modification is prohibited.');
     }
   }
   next();
 }
+

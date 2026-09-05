@@ -62,4 +62,10 @@ export const employeeService = {
       ...(dto.joiningDate ? { joiningDate: new Date(dto.joiningDate) } : {}),
     });
   },
+
+  async delete(organizationId, id) {
+    await employeeService.findById(organizationId, id);
+    return employeeRepository.delete(organizationId, id);
+  },
 };
+

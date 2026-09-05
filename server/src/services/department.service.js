@@ -40,4 +40,9 @@ export const departmentService = {
     await departmentService.findById(organizationId, id);
     return departmentRepository.update(organizationId, id, dto);
   },
+
+  async delete(organizationId, id) {
+    await departmentService.findById(organizationId, id);
+    return departmentRepository.delete(organizationId, id);
+  },
 };

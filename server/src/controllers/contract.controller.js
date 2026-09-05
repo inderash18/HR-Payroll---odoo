@@ -1,6 +1,7 @@
 import { contractService } from '../services/contract.service.js';
 import { scheduleService } from '../services/schedule.service.js';
 import { attendanceService } from '../services/attendance.service.js';
+import { employeeRepository } from '../repositories/employee.repository.js';
 import { successResponse } from '../utils/response.js';
 
 export const contractController = {
@@ -82,7 +83,12 @@ export const scheduleController = {
 export const attendanceController = {
   async list(req, res, next) {
     try {
-      const result = await attendanceService.list(req.user.organizationId, req.query);
+      const query = { ...req.query };
+      if (req.user.role === 'EMPLOYEE') {
+        const emp = await employeeRepository.findByUserId(req.user.organizationId, req.user.id);
+        query.employeeId = emp ? emp.id : 'no-match';
+      }
+      const result = await attendanceService.list(req.user.organizationId, query);
       return successResponse(res, result.items, 'Attendance logs', 200, result.pagination);
     } catch (err) {
       next(err);
@@ -107,3 +113,4 @@ export const attendanceController = {
     }
   },
 };
+

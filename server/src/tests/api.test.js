@@ -167,10 +167,10 @@ describe('PeoplePay360 Express Backend API Tests', () => {
     expect(Array.isArray(res.body.data)).toBe(true);
   });
 
-  it('GET /api/v1/payroll/structures lists salary structures', async () => {
+  it('GET /api/v1/payroll/structures lists salary structures for Payroll Manager', async () => {
     const res = await request(app)
       .get('/api/v1/payroll/structures')
-      .set('Cookie', authCookie);
+      .set('Cookie', payrollCookie);
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);

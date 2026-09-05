@@ -1,7 +1,7 @@
 import { prisma } from '../config/prisma.js';
 
 export const employeeRepository = {
-  findMany: (organizationId, { skip = 0, take = 50, departmentId, workMode, location, employmentType, search, isActive } = {}) => {
+  findMany: async (organizationId, { skip = 0, take = 50, departmentId, workMode, location, employmentType, search, isActive } = {}) => {
     const where = {
       organizationId,
       ...(departmentId ? { departmentId } : {}),
@@ -21,25 +21,25 @@ export const employeeRepository = {
         : {}),
     };
 
-    return Promise.all([
-      prisma.employee.count({ where }),
-      prisma.employee.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          department: { select: { id: true, name: true, code: true } },
-          jobPosition: { select: { id: true, title: true, code: true } },
-          workingSchedule: { select: { id: true, name: true } },
-          contracts: {
-            where: { status: 'ACTIVE' },
-            take: 1,
-            select: { id: true, name: true, wage: true, status: true },
-          },
+    const total = await prisma.employee.count({ where });
+    const items = await prisma.employee.findMany({
+      where,
+      skip,
+      take,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        department: { select: { id: true, name: true, code: true } },
+        jobPosition: { select: { id: true, title: true, code: true } },
+        workingSchedule: { select: { id: true, name: true } },
+        contracts: {
+          where: { status: 'ACTIVE' },
+          take: 1,
+          select: { id: true, name: true, wage: true, status: true },
         },
-      }),
-    ]);
+      },
+    });
+
+    return [total, items];
   },
 
   findById: (organizationId, id) => {
@@ -82,4 +82,11 @@ export const employeeRepository = {
       data,
     });
   },
+
+  delete: (organizationId, id, tx = prisma) => {
+    return tx.employee.delete({
+      where: { id },
+    });
+  },
 };
+

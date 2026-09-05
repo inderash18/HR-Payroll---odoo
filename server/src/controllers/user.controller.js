@@ -210,6 +210,15 @@ export const departmentController = {
       next(err);
     }
   },
+
+  async delete(req, res, next) {
+    try {
+      const result = await departmentService.delete(req.user.organizationId, req.params.id);
+      return successResponse(res, result, 'Department deleted successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
 };
 
 export const employeeController = {
@@ -224,6 +233,18 @@ export const employeeController = {
 
   async getById(req, res, next) {
     try {
+      // If user is regular employee without employees.read permission, ensure they can only access their own record
+      if (req.user.role === 'EMPLOYEE') {
+        const ownEmp = await employeeService.findByUserId(req.user.organizationId, req.user.id);
+        if (!ownEmp || ownEmp.id !== req.params.id) {
+          return res.status(403).json({
+            success: false,
+            message: 'You do not have permission to perform this action',
+            error: { code: 'FORBIDDEN' },
+          });
+        }
+      }
+
       const emp = await employeeService.findById(req.user.organizationId, req.params.id);
       return successResponse(res, emp, 'Employee details');
     } catch (err) {
@@ -248,4 +269,14 @@ export const employeeController = {
       next(err);
     }
   },
+
+  async delete(req, res, next) {
+    try {
+      const result = await employeeService.delete(req.user.organizationId, req.params.id);
+      return successResponse(res, result, 'Employee deleted successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
 };
+

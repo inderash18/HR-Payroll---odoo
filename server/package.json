@@ -11,7 +11,7 @@
     "prisma:migrate": "node scripts/ensure-env.js && prisma migrate dev",
     "prisma:seed": "node scripts/ensure-env.js && node prisma/seed.js",
     "seed": "node scripts/ensure-env.js && node prisma/seed.js",
-    "test": "vitest run"
+    "test": "vitest run --fileParallelism=false"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",

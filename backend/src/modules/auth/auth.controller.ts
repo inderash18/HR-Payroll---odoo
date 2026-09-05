@@ -28,6 +28,7 @@ import { ZodValidationPipe } from '@common/validation/zod-validation.pipe';
 import { Public, CurrentUser } from '@common/auth/decorators/auth.decorator';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { AuthenticatedUser } from '@common/auth/interfaces/token-payload.interface';
+import { UnauthorizedError } from '@common/errors/app-error';
 
 const ACCESS_COOKIE_NAME = 'pp360_access_token';
 const REFRESH_COOKIE_NAME = 'pp360_refresh_token';
@@ -122,13 +123,15 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Rotate tokens using HTTP-only refresh cookie' })
+  @ApiOperation({ summary: 'Rotate tokens using HTTP-only refresh cookie or request body' })
   @ApiResponse({ status: 200, description: 'Tokens rotated successfully' })
   async refresh(
+    @Body() body: { refreshToken?: string } | undefined,
     @Req() req: FastifyRequest,
     @Res({ passthrough: true }) res: FastifyReply,
   ) {
-    const rawRefreshToken = (req.cookies as Record<string, string>)?.[REFRESH_COOKIE_NAME];
+    const rawRefreshToken =
+      body?.refreshToken || (req.cookies as Record<string, string>)?.[REFRESH_COOKIE_NAME];
     if (!rawRefreshToken) {
       throw new UnauthorizedError('No active refresh session found');
     }

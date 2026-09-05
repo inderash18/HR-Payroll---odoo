@@ -26,6 +26,7 @@ async function attemptTokenRefresh(): Promise<boolean> {
       const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
         credentials: 'include',
       });
       return res.ok;
@@ -54,8 +55,11 @@ async function request<T = any>(endpoint: string, options: RequestInit = {}, isR
     credentials: 'include', // Automatically passes and sets HttpOnly cookies
   });
 
-  // Handle 401 and attempt automatic transparent refresh
-  const isAuthEndpoint = endpoint.includes('/auth/login') || endpoint.includes('/auth/refresh') || endpoint.includes('/auth/logout');
+  // Handle 401 and attempt automatic transparent refresh (only for business endpoints)
+  const isAuthEndpoint =
+    endpoint.includes('/auth/') ||
+    endpoint.startsWith('/auth') ||
+    endpoint.startsWith('auth/');
   if (response.status === 401 && !isRetry && !isAuthEndpoint) {
     const refreshed = await attemptTokenRefresh();
     if (refreshed) {

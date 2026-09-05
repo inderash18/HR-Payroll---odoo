@@ -9,6 +9,8 @@ import {
   Shield,
   Laptop,
   LogOut,
+  KeyRound,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Sidebar } from './Sidebar';
@@ -36,7 +38,7 @@ export function Topbar() {
     if (path.startsWith('/payslips')) return 'Payslip Management';
     if (path.startsWith('/users')) return 'User Access Management';
     if (path.startsWith('/audit')) return 'Audit & Security Logs';
-    if (path.startsWith('/security') || path.startsWith('/sessions')) return 'Account Security';
+    if (path.startsWith('/security') || path.startsWith('/sessions') || path.startsWith('/profile/security')) return 'Account Security';
     if (path.startsWith('/profile')) return 'User Profile';
     if (path.startsWith('/settings')) return 'System Settings';
     return 'PeoplePay360';
@@ -47,6 +49,7 @@ export function Topbar() {
     ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ''}`.toUpperCase()
     : 'AD';
   const roleLabel = (user?.role || 'ADMIN').replace(/_/g, ' ');
+  const employeeId = user?.employee?.employeeNum || user?.employeeNum || 'EMP-PP360';
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -68,9 +71,10 @@ export function Topbar() {
       else if (q.includes('leave') || q.includes('time')) navigate('/leaves');
       else if (q.includes('attend')) navigate('/attendance');
       else if (q.includes('user')) navigate('/users');
-      else if (q.includes('sec') || q.includes('pass')) navigate('/security');
-      else if (q.includes('sess')) navigate('/security');
+      else if (q.includes('sec') || q.includes('pass')) navigate('/profile/security');
+      else if (q.includes('sess')) navigate('/profile/security');
       else if (q.includes('prof')) navigate('/profile');
+      else if (q.includes('doc')) navigate('/profile/documents');
       else if (q.includes('audit') || q.includes('log')) navigate('/audit');
       else if (q.includes('set')) navigate('/settings');
     }
@@ -130,20 +134,47 @@ export function Topbar() {
             id="user-profile-menu-trigger"
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
-            <div className="user-avatar-initials">{initials}</div>
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt="Avatar"
+                style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-subtle)' }}
+              />
+            ) : (
+              <div className="user-avatar-initials">{initials}</div>
+            )}
             <span className="user-profile-name">{displayName}</span>
             <ChevronDown size={14} style={{ color: 'var(--text-muted)', marginLeft: '-2px' }} />
           </div>
 
           <div className={`profile-dropdown-menu ${dropdownOpen ? 'show' : ''}`} id="profile-dropdown-menu">
             <div className="dropdown-user-header">
-              <div className="dropdown-user-name">{displayName}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt="Avatar"
+                    style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '2px solid #ffffff' }}
+                  />
+                ) : (
+                  <div className="user-avatar-initials" style={{ width: 40, height: 40, fontSize: '0.95rem' }}>
+                    {initials}
+                  </div>
+                )}
+                <div>
+                  <div className="dropdown-user-name">{displayName}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                    ID: {employeeId}
+                  </div>
+                </div>
+              </div>
               <div className="dropdown-user-email">{user?.email || 'admin@peoplepay360.local'}</div>
               <span className="dropdown-user-role">{roleLabel}</span>
             </div>
             <div className="dropdown-nav-list">
               <div
                 className="dropdown-nav-item"
+                id="dropdown-my-profile"
                 onClick={() => {
                   setDropdownOpen(false);
                   navigate('/profile');
@@ -154,28 +185,45 @@ export function Topbar() {
               </div>
               <div
                 className="dropdown-nav-item"
+                id="dropdown-account-settings"
                 onClick={() => {
                   setDropdownOpen(false);
-                  navigate('/security');
+                  navigate('/settings');
                 }}
               >
-                <Shield size={16} />
-                <span>Account Security</span>
+                <Settings size={16} />
+                <span>Account Settings</span>
               </div>
               <div
                 className="dropdown-nav-item"
+                id="dropdown-change-password"
                 onClick={() => {
                   setDropdownOpen(false);
-                  navigate('/security');
+                  navigate('/profile/security');
+                }}
+              >
+                <KeyRound size={16} />
+                <span>Change Password</span>
+              </div>
+              <div
+                className="dropdown-nav-item"
+                id="dropdown-active-sessions"
+                onClick={() => {
+                  setDropdownOpen(false);
+                  navigate('/profile/security');
                 }}
               >
                 <Laptop size={16} />
                 <span>Active Sessions</span>
               </div>
               <div className="dropdown-divider"></div>
-              <div className="dropdown-nav-item logout-danger" onClick={handleLogout}>
+              <div
+                className="dropdown-nav-item logout-danger"
+                id="dropdown-logout"
+                onClick={handleLogout}
+              >
                 <LogOut size={16} />
-                <span>Sign Out</span>
+                <span>Logout</span>
               </div>
             </div>
           </div>

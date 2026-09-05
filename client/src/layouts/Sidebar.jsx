@@ -25,10 +25,28 @@ export function Sidebar() {
           onClick={() => navigate('/dashboard')}
         >
           <div className="sidebar-brand-logo">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 17L12 22L22 17" stroke="#38BDF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 12L12 17L22 12" stroke="#818CF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M4 12C4 7.58 7.58 4 12 4C15.37 4 18.28 6.09 19.45 9"
+                stroke="#FFFFFF"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+              />
+              <path
+                d="M20 12C20 16.42 16.42 20 12 20C8.63 20 5.72 17.91 4.55 15"
+                stroke="#38BDF8"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+              />
+              <path
+                d="M9.5 8.5H13.2C14.47 8.5 15.5 9.53 15.5 10.8C15.5 12.07 14.47 13.1 13.2 13.1H9.5V16.5"
+                stroke="#FFFFFF"
+                strokeWidth="2.1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="19.5" cy="9" r="1.5" fill="#38BDF8" />
+              <circle cx="4.5" cy="15" r="1.5" fill="#FFFFFF" />
             </svg>
           </div>
           <div className="sidebar-brand-text">

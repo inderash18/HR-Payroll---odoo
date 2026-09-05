@@ -1,78 +1,104 @@
+import { createIcons, Shield, Mail, Lock, Eye, LogIn, CheckSquare } from 'lucide';
+import './style.css';
+
 const app = document.getElementById('app');
 
 if (app) {
   app.innerHTML = `
-    <div class="app-container">
-      <aside class="sidebar">
-        <div class="brand">
-          <span class="brand-badge">360</span>
-          <span>PeoplePay360</span>
+    <div class="login-section">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <div class="brand-text">
+          <h2>PeoplePay360</h2>
+          <p>HR & Payroll Management</p>
         </div>
-        <ul class="nav-list">
-          <li class="nav-item active"><a href="#dashboard">📊 Dashboard</a></li>
-          <li class="nav-item"><a href="#employees">👥 Employees</a></li>
-          <li class="nav-item"><a href="#contracts">📑 Contracts</a></li>
-          <li class="nav-item"><a href="#attendance">⏱️ Attendance</a></li>
-          <li class="nav-item"><a href="#timeoff">🌴 Time Off</a></li>
-          <li class="nav-item"><a href="#payroll">💰 Payroll & Payruns</a></li>
-          <li class="nav-item"><a href="#reports">📈 Reports & Audit</a></li>
-        </ul>
-      </aside>
+      </div>
 
-      <main class="main-layout">
-        <header class="topbar">
-          <h1 class="page-title">HR & Payroll Overview</h1>
-          <div class="user-badge">
-            <div class="avatar">AD</div>
-            <span>Admin</span>
-          </div>
-        </header>
+      <div class="welcome-text">
+        <h1>Welcome Back</h1>
+        <p>Sign in to continue to your workspace.</p>
+      </div>
 
-        <section class="content-area">
-          <div class="dashboard-grid">
-            <div class="card">
-              <span class="stat-label">Active Employees</span>
-              <div class="stat-value">148</div>
-            </div>
-            <div class="card">
-              <span class="stat-label">Active Contracts</span>
-              <div class="stat-value">142</div>
-            </div>
-            <div class="card">
-              <span class="stat-label">Pending Time-Off</span>
-              <div class="stat-value">6</div>
-            </div>
-            <div class="card">
-              <span class="stat-label">Current Payrun Status</span>
-              <div class="stat-value" style="color: #10b981;">Draft</div>
-            </div>
+      <form class="login-form" id="login-form">
+        <div class="form-group">
+          <label>Work Email</label>
+          <div class="input-wrapper">
+            <i data-lucide="mail" class="left-icon"></i>
+            <input type="email" placeholder="name@company.com" required>
           </div>
+        </div>
 
-          <div class="card" style="margin-top: 2rem;">
-            <h3>Quick Actions</h3>
-            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-              <button class="btn btn-primary" id="btn-health">Check Backend Health</button>
-            </div>
-            <div id="health-output" style="margin-top: 1rem; font-family: monospace; font-size: 0.875rem; color: #9ca3af;"></div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrapper">
+            <i data-lucide="lock" class="left-icon"></i>
+            <input type="password" placeholder="••••••••" required id="password-input">
+            <i data-lucide="eye" class="right-icon" id="toggle-password"></i>
           </div>
-        </section>
-      </main>
+        </div>
+
+        <div class="form-options" style="justify-content: flex-end;">
+          <a href="#" class="forgot-password">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          <i data-lucide="log-in"></i>
+          Sign In
+        </button>
+      </form>
+
+      <div class="signup-link">
+        Accounts are created by an administrator.
+      </div>
+
+      <div class="security-badge" style="margin-top: 1rem; text-align: center;">
+        After sign-in, show only the modules and actions allowed by the user's assigned role.
+      </div>
+    </div>
+
+    <div class="image-section">
+      <div class="image-overlay-text">
+        <h2>Empowering People.</h2>
+        <h2 class="highlight">Simplifying Payroll.</h2>
+        <p>All-in-one HR & Payroll solution<br>for modern organizations.</p>
+      </div>
     </div>
   `;
 
-  const btnHealth = document.getElementById('btn-health');
-  const output = document.getElementById('health-output');
+  // Initialize Lucide icons
+  createIcons({
+    icons: {
+      Shield,
+      Mail,
+      Lock,
+      Eye,
+      LogIn,
+      CheckSquare
+    }
+  });
 
-  if (btnHealth && output) {
-    btnHealth.addEventListener('click', async () => {
-      output.innerText = 'Checking backend health...';
-      try {
-        const res = await fetch('/api/v1/health/readiness');
-        const data = await res.json();
-        output.innerText = JSON.stringify(data, null, 2);
-      } catch (err) {
-        output.innerText = 'Backend offline or connection failed.';
-      }
+  // Password toggle
+  const togglePassword = document.getElementById('toggle-password');
+  const passwordInput = document.getElementById('password-input') as HTMLInputElement;
+
+  if (togglePassword && passwordInput) {
+    togglePassword.addEventListener('click', () => {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+    });
+  }
+
+  // Handle form submit to prevent reload
+  const form = document.getElementById('login-form');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      // add login logic here
     });
   }
 }

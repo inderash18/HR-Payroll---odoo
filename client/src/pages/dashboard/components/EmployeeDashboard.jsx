@@ -18,6 +18,7 @@ import '../../../styles/admin-dashboard.css';
 export function EmployeeDashboard({ data, onRefresh }) {
   const navigate = useNavigate();
   const [isClocking, setIsClocking] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
   const profile = data?.profileSummary || {};
   const attendance = data?.todayAttendance || {};
   const leave = data?.leaveSummary || {};
@@ -25,24 +26,30 @@ export function EmployeeDashboard({ data, onRefresh }) {
   const holidays = data?.upcomingHolidays || [];
 
   const handleClockIn = async () => {
+    setErrorMsg(null);
     setIsClocking(true);
     try {
       await api.post('/attendance/clock-in', {});
       if (onRefresh) onRefresh();
     } catch (e) {
       console.error('Clock in failed:', e);
+      setErrorMsg(e.response?.data?.message || e.response?.data?.error || e.message || 'Clock in failed');
+      setTimeout(() => setErrorMsg(null), 4000);
     } finally {
       setIsClocking(false);
     }
   };
 
   const handleClockOut = async () => {
+    setErrorMsg(null);
     setIsClocking(true);
     try {
       await api.post('/attendance/clock-out', {});
       if (onRefresh) onRefresh();
     } catch (e) {
       console.error('Clock out failed:', e);
+      setErrorMsg(e.response?.data?.message || e.response?.data?.error || e.message || 'Clock out failed');
+      setTimeout(() => setErrorMsg(null), 4000);
     } finally {
       setIsClocking(false);
     }
@@ -101,6 +108,11 @@ export function EmployeeDashboard({ data, onRefresh }) {
               ? `In at ${new Date(attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
               : 'Ready to start your work day'}
           </div>
+          {errorMsg && (
+            <div style={{ background: '#fef2f2', color: '#b91c1c', padding: '0.4rem', borderRadius: '4px', fontSize: '0.75rem', marginTop: '0.5rem', fontWeight: 600 }}>
+              {errorMsg}
+            </div>
+          )}
           <div style={{ marginTop: '0.85rem' }}>
             {attendance.checkOutTime ? (
               <button

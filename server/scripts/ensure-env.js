@@ -8,13 +8,13 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '../../');
 const serverDir = path.resolve(__dirname, '../');
 
-const DEFAULT_ENV = `# PeoplePay360 / ODOO Environment Variables
+const DEFAULT_ENV = `# Odoo Environment Variables
 NODE_ENV=development
 PORT=3000
 API_PREFIX=/api/v1
-APP_NAME=PeoplePay360
+APP_NAME=Odoo
 
-DATABASE_URL="postgresql://postgres:password123@192.168.102.160:5432/peoplepay360?schema=public"
+DATABASE_URL="postgresql://postgres:password123@192.168.102.160:5432/odoo?schema=public"
 
 JWT_ACCESS_SECRET="super_secret_access_key_change_in_production_min_32_chars"
 JWT_ACCESS_EXPIRES_IN="15m"
@@ -27,12 +27,12 @@ SMTP_HOST=localhost
 SMTP_PORT=1025
 SMTP_USER=
 SMTP_PASSWORD=
-SMTP_FROM=no-reply@peoplepay360.local
+SMTP_FROM=no-reply@odoo.local
 
 STORAGE_LOCAL_PATH=./uploads
 
 DEV_FIXED_AUTH_ENABLED=true
-DEV_FIXED_AUTH_EMAIL=admin@peoplepay360.local
+DEV_FIXED_AUTH_EMAIL=admin@odoo.local
 DEV_FIXED_AUTH_PASSWORD=admin123
 DEV_FIXED_AUTH_ROLE=ADMIN
 DEV_FIXED_AUTH_NAME="Development Admin"

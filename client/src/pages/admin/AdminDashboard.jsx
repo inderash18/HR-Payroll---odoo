@@ -72,7 +72,7 @@ export function AdminDashboard({ user }) {
   };
 
   const handleDownloadReport = () => {
-    triggerToast('Generating PeoplePay360 Comprehensive Executive Report (PDF)...');
+    triggerToast('Generating Odoo Comprehensive Executive Report (PDF)...');
   };
 
   const handleKpiCardClick = (type) => {

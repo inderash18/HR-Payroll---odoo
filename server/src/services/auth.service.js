@@ -32,75 +32,75 @@ function generateRefreshToken() {
 const PRESET_USERS = [
   {
     id: 'user-superadmin-001',
-    organizationId: 'org-pp360-ind',
-    email: 'superadmin@peoplepay360.local',
+    organizationId: 'org-odoo-ind',
+    email: 'superadmin@odoo.local',
     firstName: 'Dev',
     lastName: 'Platform',
     role: 'SUPER_ADMIN',
-    organization: { id: 'org-pp360-ind', name: 'PeoplePay360 India Private Limited', code: 'PP360-IND' },
+    organization: { id: 'org-odoo-ind', name: 'Odoo India Private Limited', code: 'ODOO-IND' },
   },
   {
     id: 'user-admin-002',
-    organizationId: 'org-pp360-ind',
-    email: 'admin@peoplepay360.local',
+    organizationId: 'org-odoo-ind',
+    email: 'admin@odoo.local',
     firstName: 'Aarav',
     lastName: 'Sharma',
     role: 'ORGANIZATION_ADMIN',
-    organization: { id: 'org-pp360-ind', name: 'PeoplePay360 India Private Limited', code: 'PP360-IND' },
+    organization: { id: 'org-odoo-ind', name: 'Odoo India Private Limited', code: 'ODOO-IND' },
   },
   {
     id: 'user-hr-003',
-    organizationId: 'org-pp360-ind',
-    email: 'hr@peoplepay360.local',
+    organizationId: 'org-odoo-ind',
+    email: 'hr@odoo.local',
     firstName: 'Priya',
     lastName: 'Iyer',
     role: 'HR_MANAGER',
-    organization: { id: 'org-pp360-ind', name: 'PeoplePay360 India Private Limited', code: 'PP360-IND' },
+    organization: { id: 'org-odoo-ind', name: 'Odoo India Private Limited', code: 'ODOO-IND' },
   },
   {
     id: 'user-payroll-004',
-    organizationId: 'org-pp360-ind',
-    email: 'payroll@peoplepay360.local',
+    organizationId: 'org-odoo-ind',
+    email: 'payroll@odoo.local',
     firstName: 'Rajesh',
     lastName: 'Kumar',
     role: 'PAYROLL_MANAGER',
-    organization: { id: 'org-pp360-ind', name: 'PeoplePay360 India Private Limited', code: 'PP360-IND' },
+    organization: { id: 'org-odoo-ind', name: 'Odoo India Private Limited', code: 'ODOO-IND' },
   },
   {
     id: 'user-finance-005',
-    organizationId: 'org-pp360-ind',
-    email: 'finance@peoplepay360.local',
+    organizationId: 'org-odoo-ind',
+    email: 'finance@odoo.local',
     firstName: 'Ananya',
     lastName: 'Deshmukh',
     role: 'FINANCE_MANAGER',
-    organization: { id: 'org-pp360-ind', name: 'PeoplePay360 India Private Limited', code: 'PP360-IND' },
+    organization: { id: 'org-odoo-ind', name: 'Odoo India Private Limited', code: 'ODOO-IND' },
   },
   {
     id: 'user-manager-006',
-    organizationId: 'org-pp360-ind',
-    email: 'manager@peoplepay360.local',
+    organizationId: 'org-odoo-ind',
+    email: 'manager@odoo.local',
     firstName: 'Rohan',
     lastName: 'Verma',
     role: 'DEPARTMENT_MANAGER',
-    organization: { id: 'org-pp360-ind', name: 'PeoplePay360 India Private Limited', code: 'PP360-IND' },
+    organization: { id: 'org-odoo-ind', name: 'Odoo India Private Limited', code: 'ODOO-IND' },
   },
   {
     id: 'user-employee-007',
-    organizationId: 'org-pp360-ind',
-    email: 'employee@peoplepay360.local',
+    organizationId: 'org-odoo-ind',
+    email: 'employee@odoo.local',
     firstName: 'Vikram',
     lastName: 'Patel',
     role: 'EMPLOYEE',
-    organization: { id: 'org-pp360-ind', name: 'PeoplePay360 India Private Limited', code: 'PP360-IND' },
+    organization: { id: 'org-odoo-ind', name: 'Odoo India Private Limited', code: 'ODOO-IND' },
   },
   {
     id: 'user-auditor-008',
-    organizationId: 'org-pp360-ind',
-    email: 'auditor@peoplepay360.local',
+    organizationId: 'org-odoo-ind',
+    email: 'auditor@odoo.local',
     firstName: 'Sneha',
     lastName: 'Iyer',
     role: 'AUDITOR',
-    organization: { id: 'org-pp360-ind', name: 'PeoplePay360 India Private Limited', code: 'PP360-IND' },
+    organization: { id: 'org-odoo-ind', name: 'Odoo India Private Limited', code: 'ODOO-IND' },
   },
 ];
 
@@ -114,58 +114,66 @@ export const authService = {
         throw new Error('Organization code already exists');
       }
 
-      const organization = await tx.organization.create({
+      const org = await tx.organization.create({
         data: {
           name: dto.organizationName,
           code: dto.organizationCode,
+          currency: dto.currency || 'INR',
+          timezone: dto.timezone || 'Asia/Kolkata',
+          fiscalYearStart: dto.fiscalYearStart || 4,
         },
       });
 
-      const passwordHash = await bcrypt.hash(dto.password, 10);
+      const legalEntity = await tx.legalEntity.create({
+        data: {
+          organizationId: org.id,
+          name: `${dto.organizationName} Main Entity`,
+          registrationNumber: dto.registrationNumber || null,
+        },
+      });
+
+      const passwordHash = await bcrypt.hash(dto.adminPassword, 12);
       const user = await tx.user.create({
         data: {
-          organizationId: organization.id,
-          email: dto.email,
+          organizationId: org.id,
+          email: dto.adminEmail,
           passwordHash,
-          firstName: dto.firstName,
-          lastName: dto.lastName,
-          role: 'ORGANIZATION_ADMIN',
-          isEmailVerified: true,
+          firstName: dto.adminFirstName,
+          lastName: dto.adminLastName,
+          role: 'ADMIN',
         },
       });
 
       const accessToken = generateAccessToken(user);
-      const rawRefreshToken = generateRefreshToken();
-      const tokenHash = hashToken(rawRefreshToken);
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      const refreshToken = generateRefreshToken();
 
       await tx.refreshToken.create({
         data: {
           userId: user.id,
-          tokenHash,
-          expiresAt,
+          tokenHash: hashToken(refreshToken),
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         },
       });
 
       return {
-        accessToken,
-        refreshToken: rawRefreshToken,
+        organization: org,
+        legalEntity,
         user: {
           id: user.id,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
-          organization: { id: organization.id, name: organization.name, code: organization.code },
         },
+        accessToken,
+        refreshToken,
       };
     });
   },
 
-  async login(dto, meta = {}) {
+  async login(dto, userAgent = '', ipAddress = '') {
+    // 1. Attempt database lookup
     let user = null;
-
-    // 1. Try querying database if reachable
     try {
       user = await userRepository.findByEmailGlobal(dto.email);
     } catch (dbErr) {
@@ -176,7 +184,9 @@ export const authService = {
     let defaultOrg = null;
     try {
       defaultOrg = await prisma.organization.findFirst({
-        where: { code: 'PP360-IND' },
+        where: { code: 'ODOO-IND' },
+      }) || await prisma.organization.findFirst({
+        where: { code: 'ODOO' },
       }) || await prisma.organization.findFirst();
     } catch (e) {}
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { api } from '../../api/client';
 import {
   User,
@@ -34,10 +35,14 @@ import {
   ExternalLink,
   ChevronRight,
   FileSpreadsheet,
+  Sun,
+  Moon,
+  Monitor,
 } from 'lucide-react';
 
 export function ProfilePage({ tab: propTab }) {
   const { user, refreshUser, updateUser, logout } = useAuth();
+  const { theme: currentTheme, setTheme: setGlobalTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const fileInputRef = useRef(null);
@@ -439,7 +444,7 @@ export function ProfilePage({ tab: propTab }) {
   const displayName = `${profileData?.firstName || ''} ${profileData?.lastName || ''}`.trim() || user?.email || 'User';
   const roleLabel = (profileData?.role || user?.role || 'EMPLOYEE').replace(/_/g, ' ');
   const initials = `${(profileData?.firstName || 'U')[0]}${(profileData?.lastName || '')[0] || ''}`.toUpperCase();
-  const employeeId = profileData?.employee?.employeeNum || user?.employee?.employeeNum || 'EMP-PP360';
+  const employeeId = profileData?.employee?.employeeNum || user?.employee?.employeeNum || 'EMP-ODOO';
   const managerObj = profileData?.employee?.department?.manager;
   const managerName = managerObj ? `${managerObj.firstName} ${managerObj.lastName || ''}`.trim() : 'System Administrator';
 
@@ -1099,6 +1104,87 @@ export function ProfilePage({ tab: propTab }) {
           </div>
 
           <div>
+            {/* Theme Preference */}
+            <div style={{ padding: '1.25rem 0', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text-main)', marginBottom: '0.3rem' }}>
+                Appearance & Theme Mode
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                Choose your preferred interface theme across light, dark, or automatic system matching.
+              </div>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.6rem 1.25rem',
+                    borderRadius: '10px',
+                    border: (preferences.theme === 'light' || currentTheme === 'light') ? '2px solid var(--primary)' : '1px solid var(--border)',
+                    background: (preferences.theme === 'light' || currentTheme === 'light') ? 'var(--primary-soft)' : 'var(--surface-soft)',
+                    color: (preferences.theme === 'light' || currentTheme === 'light') ? 'var(--primary)' : 'var(--text-primary)',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    setPreferences({ ...preferences, theme: 'light' });
+                    setGlobalTheme('light');
+                  }}
+                >
+                  <Sun size={16} />
+                  <span>Light Theme</span>
+                </button>
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.6rem 1.25rem',
+                    borderRadius: '10px',
+                    border: (preferences.theme === 'dark' || currentTheme === 'dark') ? '2px solid var(--primary)' : '1px solid var(--border)',
+                    background: (preferences.theme === 'dark' || currentTheme === 'dark') ? 'var(--primary-soft)' : 'var(--surface-soft)',
+                    color: (preferences.theme === 'dark' || currentTheme === 'dark') ? 'var(--primary)' : 'var(--text-primary)',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    setPreferences({ ...preferences, theme: 'dark' });
+                    setGlobalTheme('dark');
+                  }}
+                >
+                  <Moon size={16} />
+                  <span>Dark Theme</span>
+                </button>
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.6rem 1.25rem',
+                    borderRadius: '10px',
+                    border: (preferences.theme === 'system' || currentTheme === 'system') ? '2px solid var(--primary)' : '1px solid var(--border)',
+                    background: (preferences.theme === 'system' || currentTheme === 'system') ? 'var(--primary-soft)' : 'var(--surface-soft)',
+                    color: (preferences.theme === 'system' || currentTheme === 'system') ? 'var(--primary)' : 'var(--text-primary)',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    setPreferences({ ...preferences, theme: 'system' });
+                    setGlobalTheme('system');
+                  }}
+                >
+                  <Monitor size={16} />
+                  <span>System Auto</span>
+                </button>
+              </div>
+            </div>
+
             <div className="toggle-switch-row">
               <div>
                 <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text-main)' }}>
@@ -1417,7 +1503,7 @@ export function SettingsPage() {
           <div>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>{displayName}</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              {user?.email || 'admin@peoplepay360.local'}
+              {user?.email || 'admin@odoo.local'}
             </p>
             <span className="badge blue" style={{ marginTop: '0.5rem' }}>
               {(user?.role || 'ADMIN').replace(/_/g, ' ')}

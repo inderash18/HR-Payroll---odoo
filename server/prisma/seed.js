@@ -13,30 +13,30 @@ import bcrypt from 'bcrypt';
 const prisma = new PrismaClient({
   datasources: {
     db: {
-      url: process.env.DATABASE_URL || 'postgresql://postgres:password123@192.168.102.160:5432/peoplepay360?schema=public',
+      url: process.env.DATABASE_URL || 'postgresql://postgres:password123@192.168.102.160:5432/odoo?schema=public',
     },
   },
 });
 
 const SALT_ROUNDS = 10;
-const DEFAULT_PASSWORD = 'PeoplePay360@123';
+const DEFAULT_PASSWORD = 'Odoo@123';
 
 async function main() {
-  console.log('🌱 Starting high-speed IT Company HRMS database seed for PeoplePay360 Technologies Pvt. Ltd....');
+  console.log('🌱 Starting high-speed IT Company HRMS database seed for Odoo India Private Limited...');
 
   const defaultPasswordHash = await bcrypt.hash(DEFAULT_PASSWORD, SALT_ROUNDS);
 
   // 1. Organization
   const organization = await prisma.organization.upsert({
-    where: { code: 'PP360' },
+    where: { code: 'ODOO' },
     update: {
-      name: 'PeoplePay360 Technologies Pvt. Ltd.',
+      name: 'Odoo India Private Limited',
       currency: 'INR',
       timezone: 'Asia/Kolkata',
     },
     create: {
-      name: 'PeoplePay360 Technologies Pvt. Ltd.',
-      code: 'PP360',
+      name: 'Odoo India Private Limited',
+      code: 'ODOO',
       currency: 'INR',
       timezone: 'Asia/Kolkata',
     },
@@ -48,11 +48,11 @@ async function main() {
     where: {
       organizationId_code: {
         organizationId: organization.id,
-        code: 'PP360-HQ',
+        code: 'ODOO-HQ',
       },
     },
     update: {
-      name: 'PeoplePay360 Technologies Pvt. Ltd. (HQ Coimbatore)',
+      name: 'Odoo India Private Limited (HQ Coimbatore)',
       taxId: '33ABCDE1234F1Z5',
       country: 'IN',
       currency: 'INR',
@@ -68,8 +68,8 @@ async function main() {
     },
     create: {
       organizationId: organization.id,
-      name: 'PeoplePay360 Technologies Pvt. Ltd. (HQ Coimbatore)',
-      code: 'PP360-HQ',
+      name: 'Odoo India Private Limited (HQ Coimbatore)',
+      code: 'ODOO-HQ',
       registrationNum: 'U72900TZ2022PTC038912',
       taxId: '33ABCDE1234F1Z5',
       country: 'IN',
@@ -217,14 +217,14 @@ async function main() {
 
   // 7. Key Role Accounts
   const keyUsersDef = [
-    { email: 'platform.admin@peoplepay360.in', firstName: 'Platform', lastName: 'Administrator', role: 'SUPER_ADMIN', deptCode: 'ENG', empNum: 'PP360-1001', title: 'Chief Technology Officer', ctc: 320000, workMode: 'HYBRID', location: 'Coimbatore', empType: 'FULL_TIME', skills: ['Architecture', 'Kubernetes', 'Security', 'PostgreSQL'] },
-    { email: 'indhu.admin@peoplepay360.in', firstName: 'Indhu', lastName: 'Mathi', role: 'ORGANIZATION_ADMIN', deptCode: 'OPS', empNum: 'PP360-1002', title: 'Managing Director & COO', ctc: 280000, workMode: 'OFFICE', location: 'Coimbatore', empType: 'FULL_TIME', skills: ['Operations', 'IT Strategy', 'Leadership', 'Compliance'] },
-    { email: 'kavya.hr@peoplepay360.in', firstName: 'Kavya', lastName: 'Priya', role: 'HR_MANAGER', deptCode: 'HR', empNum: 'PP360-1003', title: 'Head of Human Resources', ctc: 140000, workMode: 'HYBRID', location: 'Coimbatore', empType: 'FULL_TIME', skills: ['Recruitment', 'HR Analytics', 'Employee Relations'] },
-    { email: 'vishal.payroll@peoplepay360.in', firstName: 'Vishal', lastName: 'Shah', role: 'PAYROLL_MANAGER', deptCode: 'FIN', empNum: 'PP360-1004', title: 'Compensation & Payroll Manager', ctc: 125000, workMode: 'HYBRID', location: 'Chennai', empType: 'FULL_TIME', skills: ['Payroll', 'TDS/PF/PT', 'Statutory Audits'] },
-    { email: 'finance.manager@peoplepay360.in', firstName: 'Sanjay', lastName: 'Raghavan', role: 'FINANCE_MANAGER', deptCode: 'FIN', empNum: 'PP360-1005', title: 'VP of Finance & Accounts', ctc: 210000, workMode: 'OFFICE', location: 'Coimbatore', empType: 'FULL_TIME', skills: ['Financial Planning', 'Cost Accounting', 'ERP'] },
-    { email: 'aravind.manager@peoplepay360.in', firstName: 'Aravind', lastName: 'Kumar', role: 'DEPARTMENT_MANAGER', deptCode: 'ENG', empNum: 'PP360-1006', title: 'VP of Engineering', ctc: 240000, workMode: 'HYBRID', location: 'Coimbatore', empType: 'FULL_TIME', skills: ['React', 'Node.js', 'Distributed Systems', 'Agile'] },
-    { email: 'employee@peoplepay360.in', firstName: 'Indersh', lastName: 'Guhan', role: 'EMPLOYEE', deptCode: 'ENG', empNum: 'PP360-1007', title: 'Senior Full Stack Engineer', ctc: 95000, workMode: 'REMOTE', location: 'Coimbatore', empType: 'FULL_TIME', skills: ['React', 'Node.js', 'Express', 'Prisma', 'TypeScript'] },
-    { email: 'auditor@peoplepay360.in', firstName: 'Rajeshwari', lastName: 'Venkat', role: 'AUDITOR', deptCode: 'FIN', empNum: 'PP360-1008', title: 'Lead Statutory & Compliance Auditor', ctc: 110000, workMode: 'REMOTE', location: 'Chennai', empType: 'FULL_TIME', skills: ['IT Auditing', 'SOC2 Compliance', 'Audit Trail Analysis'] },
+    { email: 'platform.admin@odoo.in', firstName: 'Platform', lastName: 'Administrator', role: 'SUPER_ADMIN', deptCode: 'ENG', empNum: 'ODOO-1001', title: 'Chief Technology Officer', ctc: 320000, workMode: 'HYBRID', location: 'Coimbatore', empType: 'FULL_TIME', skills: ['Architecture', 'Kubernetes', 'Security', 'PostgreSQL'] },
+    { email: 'indhu.admin@odoo.in', firstName: 'Indhu', lastName: 'Mathi', role: 'ORGANIZATION_ADMIN', deptCode: 'OPS', empNum: 'ODOO-1002', title: 'Managing Director & COO', ctc: 280000, workMode: 'OFFICE', location: 'Coimbatore', empType: 'FULL_TIME', skills: ['Operations', 'IT Strategy', 'Leadership', 'Compliance'] },
+    { email: 'kavya.hr@odoo.in', firstName: 'Kavya', lastName: 'Priya', role: 'HR_MANAGER', deptCode: 'HR', empNum: 'ODOO-1003', title: 'Head of Human Resources', ctc: 140000, workMode: 'HYBRID', location: 'Coimbatore', empType: 'FULL_TIME', skills: ['Recruitment', 'HR Analytics', 'Employee Relations'] },
+    { email: 'vishal.payroll@odoo.in', firstName: 'Vishal', lastName: 'Shah', role: 'PAYROLL_MANAGER', deptCode: 'FIN', empNum: 'ODOO-1004', title: 'Compensation & Payroll Manager', ctc: 125000, workMode: 'HYBRID', location: 'Chennai', empType: 'FULL_TIME', skills: ['Payroll', 'TDS/PF/PT', 'Statutory Audits'] },
+    { email: 'finance.manager@odoo.in', firstName: 'Sanjay', lastName: 'Raghavan', role: 'FINANCE_MANAGER', deptCode: 'FIN', empNum: 'ODOO-1005', title: 'VP of Finance & Accounts', ctc: 210000, workMode: 'OFFICE', location: 'Coimbatore', empType: 'FULL_TIME', skills: ['Financial Planning', 'Cost Accounting', 'ERP'] },
+    { email: 'aravind.manager@odoo.in', firstName: 'Aravind', lastName: 'Kumar', role: 'DEPARTMENT_MANAGER', deptCode: 'ENG', empNum: 'ODOO-1006', title: 'VP of Engineering', ctc: 240000, workMode: 'HYBRID', location: 'Coimbatore', empType: 'FULL_TIME', skills: ['React', 'Node.js', 'Distributed Systems', 'Agile'] },
+    { email: 'employee@odoo.in', firstName: 'Indersh', lastName: 'Guhan', role: 'EMPLOYEE', deptCode: 'ENG', empNum: 'ODOO-1007', title: 'Senior Full Stack Engineer', ctc: 95000, workMode: 'REMOTE', location: 'Coimbatore', empType: 'FULL_TIME', skills: ['React', 'Node.js', 'Express', 'Prisma', 'TypeScript'] },
+    { email: 'auditor@odoo.in', firstName: 'Rajeshwari', lastName: 'Venkat', role: 'AUDITOR', deptCode: 'FIN', empNum: 'ODOO-1008', title: 'Lead Statutory & Compliance Auditor', ctc: 110000, workMode: 'REMOTE', location: 'Chennai', empType: 'FULL_TIME', skills: ['IT Auditing', 'SOC2 Compliance', 'Audit Trail Analysis'] },
   ];
 
   const firstNamesPool = ['Aarav', 'Indersh', 'Guhan', 'Muhammad', 'Pughazh', 'Hari', 'Jack', 'Karan', 'Kiruthik', 'Aravind', 'Indhu', 'Kavya', 'Vishal', 'Sanjay', 'Nithya', 'Ananya', 'Praveen', 'Karthik', 'Deepika', 'Rahul', 'Meera', 'Harish', 'Sangeetha', 'Rajeshwari', 'Vikram', 'Divya', 'Surya', 'Pooja', 'Manoj', 'Keerthi', 'Aditya', 'Sneha', 'Pradeep', 'Swetha', 'Dinesh', 'Lavanya', 'Ashwin', 'Shruthi', 'Gautam', 'Pavithra', 'Ramesh', 'Varsha', 'Ajay', 'Reshma', 'Kishore', 'Bhavana', 'Vignesh', 'Sandhya', 'Saravanan', 'Yamini'];
@@ -318,8 +318,8 @@ async function main() {
     for (let i = 0; i < toGenerate; i++) {
       const fName = firstNamesPool[(empSequence * 7 + i) % firstNamesPool.length];
       const lName = lastNamesPool[(empSequence * 13 + i) % lastNamesPool.length];
-      const email = `${fName.toLowerCase()}.${lName.toLowerCase()}.${empSequence}@peoplepay360.in`;
-      const empNum = `PP360-${empSequence}`;
+      const email = `${fName.toLowerCase()}.${lName.toLowerCase()}.${empSequence}@odoo.in`;
+      const empNum = `ODOO-${empSequence}`;
       const desig = deptDesignations[i % deptDesignations.length];
       const ctc = Math.floor(desig.min + Math.random() * (desig.max - desig.min));
       const workMode = workModesList[(i + empSequence) % workModesList.length];
@@ -421,7 +421,7 @@ async function main() {
   console.log(`✅ Leave Allocations created (${allocationsBatch.length} records)`);
 
   // Engineering Manager
-  const aravindUser = allUsers.find(u => u.email === 'aravind.manager@peoplepay360.in');
+  const aravindUser = allUsers.find(u => u.email === 'aravind.manager@odoo.in');
   if (aravindUser && departments.ENG) {
     await prisma.department.update({
       where: { id: departments.ENG.id },
@@ -431,7 +431,7 @@ async function main() {
 
   // 8. 6 IT Projects
   const projectsDef = [
-    { code: 'P360-HRMS', name: 'PeoplePay360 NextGen HRMS', type: 'INTERNAL_SAAS', status: 'ACTIVE', techStack: ['React', 'Node.js', 'Prisma', 'PostgreSQL', 'Docker', 'Vite', 'TailwindCSS'], deptCode: 'ENG' },
+    { code: 'ODOO-HRMS', name: 'Odoo NextGen HRMS', type: 'INTERNAL_SAAS', status: 'ACTIVE', techStack: ['React', 'Node.js', 'Prisma', 'PostgreSQL', 'Docker', 'Vite'], deptCode: 'ENG' },
     { code: 'NEXUS-AI', name: 'Nexus AI Analytics Engine', type: 'CLIENT_PROJECT', status: 'ACTIVE', techStack: ['Python', 'FastAPI', 'TensorFlow', 'PostgreSQL', 'Docker', 'AWS'], deptCode: 'DATA' },
     { code: 'FLOW-ERP', name: 'FlowERP Enterprise Suite', type: 'CLIENT_PROJECT', status: 'ACTIVE', techStack: ['React', 'Express', 'Prisma', 'PostgreSQL', 'Redis', 'AWS'], deptCode: 'ENG' },
     { code: 'CLOUD-OPS', name: 'CloudOps Infrastructure Automation', type: 'INTERNAL_PRODUCT', status: 'ACTIVE', techStack: ['Kubernetes', 'Terraform', 'AWS', 'Prometheus', 'Grafana', 'Docker'], deptCode: 'DEVOPS' },
@@ -653,7 +653,7 @@ async function main() {
     { title: '🌟 Nexus AI Analytics Engine — Project Kickoff', category: 'ENGINEERING', priority: 'NORMAL', content: 'We are thrilled to commence Phase 1 of Nexus AI Analytics for our enterprise customer. The squad will be led by Aravind Kumar and Deepika N with cutting-edge LLM and FastAPI architecture.' },
     { title: '🛡️ Mandatory Annual Cybersecurity & Data Privacy Refresher', category: 'POLICY', priority: 'HIGH', content: 'All team members across Coimbatore, Chennai, Bengaluru, and Remote locations must complete the 2026 SOC2/ISO 27001 data privacy compliance modules by September 25.' },
     { title: '🎉 Welcome 14 New Engineering & QA Team Members!', category: 'CELEBRATION', priority: 'NORMAL', content: 'Please join us in extending a warm welcome to our newest software developers, QA engineers, and cloud specialists joining across our Coimbatore and Chennai hubs.' },
-    { title: '🌴 Revised Work-From-Home & Hybrid Schedule Policy', category: 'POLICY', priority: 'NORMAL', content: 'Starting September 1st, all team members are eligible for 4 flexible WFH days per month with streamlined one-click approvals in PeoplePay360.' },
+    { title: '🌴 Revised Work-From-Home & Hybrid Schedule Policy', category: 'POLICY', priority: 'NORMAL', content: 'Starting September 1st, all team members are eligible for 4 flexible WFH days per month with streamlined one-click approvals in Odoo.' },
   ];
 
   for (let aIdx = 0; aIdx < announcementsDef.length; aIdx++) {
@@ -711,7 +711,7 @@ async function main() {
 
   // SUMMARY
   console.log('\n=============================================================');
-  console.log('🎉 MASTER SEED COMPLETED FOR PEOPLEPAY360 TECHNOLOGIES PVT. LTD.');
+  console.log('🎉 MASTER SEED COMPLETED FOR ODOO INDIA PRIVATE LIMITED');
   console.log('=============================================================');
   console.log(`🏢 Organization:   ${organization.name} (${organization.code})`);
   console.log(`🏛️ Legal Entity:   ${legalEntity.name}`);
@@ -722,15 +722,15 @@ async function main() {
   console.log(`🌴 Leaves:         25 requests with 12 in pending queue`);
   console.log(`💰 Payroll Runs:   3 monthly batches (July, Aug, Sept)`);
   console.log('-------------------------------------------------------------');
-  console.log('🔑 TEST ROLE LOGIN ACCOUNTS (Password: PeoplePay360@123):');
-  console.log('1. SUPER_ADMIN:          platform.admin@peoplepay360.in');
-  console.log('2. ORGANIZATION_ADMIN:   indhu.admin@peoplepay360.in');
-  console.log('3. HR_MANAGER:           kavya.hr@peoplepay360.in');
-  console.log('4. PAYROLL_MANAGER:      vishal.payroll@peoplepay360.in');
-  console.log('5. FINANCE_MANAGER:      finance.manager@peoplepay360.in');
-  console.log('6. DEPARTMENT_MANAGER:   aravind.manager@peoplepay360.in');
-  console.log('7. EMPLOYEE:             employee@peoplepay360.in');
-  console.log('8. AUDITOR:              auditor@peoplepay360.in');
+  console.log('🔑 TEST ROLE LOGIN ACCOUNTS (Password: Odoo@123):');
+  console.log('1. SUPER_ADMIN:          platform.admin@odoo.in');
+  console.log('2. ORGANIZATION_ADMIN:   indhu.admin@odoo.in');
+  console.log('3. HR_MANAGER:           kavya.hr@odoo.in');
+  console.log('4. PAYROLL_MANAGER:      vishal.payroll@odoo.in');
+  console.log('5. FINANCE_MANAGER:      finance.manager@odoo.in');
+  console.log('6. DEPARTMENT_MANAGER:   aravind.manager@odoo.in');
+  console.log('7. EMPLOYEE:             employee@odoo.in');
+  console.log('8. AUDITOR:              auditor@odoo.in');
   console.log('=============================================================\n');
 }
 

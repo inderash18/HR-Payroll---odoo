@@ -14,7 +14,12 @@ export function authenticate(req, res, next) {
 
   // 2. Check HttpOnly access token cookie
   if (!token && req.cookies) {
-    token = req.cookies[COOKIE_NAMES.ACCESS_TOKEN] || req.cookies['accessToken'] || req.cookies['access_token'];
+    token =
+      req.cookies[COOKIE_NAMES.ACCESS_TOKEN] ||
+      req.cookies['odoo_access_token'] ||
+      req.cookies['pp360_access_token'] ||
+      req.cookies['accessToken'] ||
+      req.cookies['access_token'];
   }
 
   if (!token) {
@@ -25,8 +30,8 @@ export function authenticate(req, res, next) {
     const payload = jwt.verify(token, env.JWT_ACCESS_SECRET);
     let organizationId = payload.organizationId;
 
-    // Resolve active organization if token has legacy/dummy org ID
-    if (!organizationId || organizationId === 'org-pp360-ind') {
+    // Resolve active organization if token has dummy org ID
+    if (!organizationId || organizationId === 'org-odoo-ind' || organizationId === 'org-pp360-ind') {
       organizationId = 'aed94e15-27b5-4206-9217-064efd21c1a0';
     }
 

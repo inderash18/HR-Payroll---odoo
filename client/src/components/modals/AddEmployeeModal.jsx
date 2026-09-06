@@ -11,7 +11,7 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }) {
   const [generatedCredentials, setGeneratedCredentials] = useState(null);
 
   const [formData, setFormData] = useState({
-    employeeNum: `PP360-${Math.floor(1000 + Math.random() * 9000)}`,
+    employeeNum: `ODOO-${Math.floor(1000 + Math.random() * 9000)}`,
     firstName: '',
     lastName: '',
     departmentId: '',
@@ -127,50 +127,50 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }) {
   };
 
   return (
-    <div className="modal-overlay" style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'grid', placeItems: 'center', zIndex: 1000, padding: '1rem', overflowY: 'auto' }}>
-      <div className="modal-card" style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '640px', width: '100%', padding: '1.75rem', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)' }}>
-        <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.85rem' }}>
+    <div className="modal-overlay" style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'grid', placeItems: 'center', zIndex: 1000, padding: '1rem', overflowY: 'auto' }}>
+      <div className="modal-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', maxWidth: '640px', width: '100%', padding: '1.75rem', boxShadow: 'var(--shadow-modal)' }}>
+        <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.85rem' }}>
           <div>
-            <h3 className="modal-title" style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>Onboard New Team Member</h3>
-            <p style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '0.2rem' }}>Add a new engineer, designer, or specialist to the PeoplePay360 roster</p>
+            <h3 className="modal-title" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>Onboard New Team Member</h3>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Add a new engineer, designer, or specialist to the Odoo roster</p>
           </div>
           <button
             className="modal-close-btn"
             onClick={onClose}
-            style={{ border: 'none', background: '#f1f5f9', width: '32px', height: '32px', borderRadius: '50%', fontSize: '1.25rem', cursor: 'pointer', display: 'grid', placeItems: 'center' }}
+            style={{ border: 'none', background: 'var(--surface-soft)', color: 'var(--text-primary)', width: '32px', height: '32px', borderRadius: '50%', fontSize: '1.25rem', cursor: 'pointer', display: 'grid', placeItems: 'center' }}
           >
             &times;
           </button>
         </div>
 
         {errorMessage && !generatedCredentials && (
-          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1rem' }}>
+          <div style={{ background: 'var(--danger-soft)', border: '1px solid var(--border)', color: 'var(--danger)', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1rem' }}>
             {errorMessage}
           </div>
         )}
 
         {generatedCredentials ? (
           <div className="success-credentials" style={{ textAlign: 'center', padding: '1rem 0' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
-              <User size={24} color="#16a34a" />
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--success-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+              <User size={24} color="var(--success)" />
             </div>
-            <h4 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '0.5rem', color: '#0f172a' }}>Employee Onboarded!</h4>
-            <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.5rem' }}>
+            <h4 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Employee Onboarded!</h4>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
               User account created automatically. Please share these credentials securely.
             </p>
             
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.25rem', textAlign: 'left', marginBottom: '1.5rem' }}>
+            <div style={{ background: 'var(--surface-soft)', border: '1px solid var(--border)', borderRadius: '8px', padding: '1.25rem', textAlign: 'left', marginBottom: '1.5rem' }}>
               <div style={{ marginBottom: '1rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Work Email</span>
-                <div style={{ fontSize: '1rem', fontWeight: 500, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
-                  <Mail size={16} color="#64748b" />
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Work Email</span>
+                <div style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                  <Mail size={16} color="var(--text-muted)" />
                   {generatedCredentials.email}
                 </div>
               </div>
               <div>
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Temporary Password</span>
-                <div style={{ fontSize: '1rem', fontWeight: 500, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
-                  <Hash size={16} color="#64748b" />
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Temporary Password</span>
+                <div style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                  <Hash size={16} color="var(--text-muted)" />
                   {generatedCredentials.password}
                 </div>
               </div>
@@ -179,7 +179,7 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }) {
             <button
               onClick={handleFinish}
               className="btn-pill-primary"
-              style={{ padding: '0.6rem 1.4rem', borderRadius: '9999px', border: 'none', background: '#0f172a', color: '#ffffff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', width: '100%' }}
+              style={{ padding: '0.6rem 1.4rem', borderRadius: '9999px', border: 'none', background: 'var(--primary)', color: '#ffffff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', width: '100%' }}
             >
               Done
             </button>
@@ -189,14 +189,14 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }) {
           {/* Row 1: Employee ID */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
             <div className="modal-form-group">
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '0.35rem' }}>Employee ID</label>
+              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>Employee ID</label>
               <input
                 type="text"
                 required
-                placeholder="PP360-1050"
+                placeholder="ODOO-1050"
                 value={formData.employeeNum}
                 onChange={(e) => setFormData({ ...formData, employeeNum: e.target.value })}
-                style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface-soft)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
               />
             </div>
           </div>

@@ -39,7 +39,7 @@ export function AttendanceOverview({ attendanceData }) {
               cy="65"
               r="52"
               fill="none"
-              stroke="#f1f5f9"
+              stroke="var(--surface-soft)"
               strokeWidth="12"
             />
             <circle
@@ -47,7 +47,7 @@ export function AttendanceOverview({ attendanceData }) {
               cy="65"
               r="52"
               fill="none"
-              stroke="#0f172a"
+              stroke="var(--primary)"
               strokeWidth="12"
               strokeDasharray="326.7"
               strokeDashoffset={326.7 * (1 - attendanceRate / 100)}
@@ -57,10 +57,10 @@ export function AttendanceOverview({ attendanceData }) {
             />
           </svg>
           <div style={{ position: 'absolute', textAlign: 'center' }}>
-            <div style={{ fontSize: '1.45rem', fontWeight: 900, color: '#0f172a', lineHeight: 1 }}>
+            <div style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
               {attendanceRate}%
             </div>
-            <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#047857', marginTop: '0.2rem' }}>
+            <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--success)', marginTop: '0.2rem' }}>
               ● Operational
             </div>
           </div>
@@ -71,34 +71,34 @@ export function AttendanceOverview({ attendanceData }) {
       <div className="attendance-breakdown-list">
         <div className="attendance-breakdown-item">
           <div>
-            <span className="att-dot" style={{ background: '#047857' }} />
-            <span style={{ color: '#64748b' }}>Present</span>
+            <span className="att-dot" style={{ background: 'var(--success)' }} />
+            <span style={{ color: 'var(--text-secondary)' }}>Present</span>
           </div>
-          <strong style={{ color: '#0f172a' }}>{present}</strong>
+          <strong style={{ color: 'var(--text-primary)' }}>{present}</strong>
         </div>
 
         <div className="attendance-breakdown-item">
           <div>
-            <span className="att-dot" style={{ background: '#3b82f6' }} />
-            <span style={{ color: '#64748b' }}>On Leave</span>
+            <span className="att-dot" style={{ background: 'var(--secondary)' }} />
+            <span style={{ color: 'var(--text-secondary)' }}>On Leave</span>
           </div>
-          <strong style={{ color: '#0f172a' }}>{onLeave}</strong>
+          <strong style={{ color: 'var(--text-primary)' }}>{onLeave}</strong>
         </div>
 
         <div className="attendance-breakdown-item">
           <div>
-            <span className="att-dot" style={{ background: '#ef4444' }} />
-            <span style={{ color: '#64748b' }}>Absent</span>
+            <span className="att-dot" style={{ background: 'var(--danger)' }} />
+            <span style={{ color: 'var(--text-secondary)' }}>Absent</span>
           </div>
-          <strong style={{ color: '#0f172a' }}>{absent}</strong>
+          <strong style={{ color: 'var(--text-primary)' }}>{absent}</strong>
         </div>
 
         <div className="attendance-breakdown-item">
           <div>
-            <span className="att-dot" style={{ background: '#f59e0b' }} />
-            <span style={{ color: '#64748b' }}>Late</span>
+            <span className="att-dot" style={{ background: 'var(--warning)' }} />
+            <span style={{ color: 'var(--text-secondary)' }}>Late</span>
           </div>
-          <strong style={{ color: '#0f172a' }}>{lateCheckIn}</strong>
+          <strong style={{ color: 'var(--text-primary)' }}>{lateCheckIn}</strong>
         </div>
       </div>
     </div>

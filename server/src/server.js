@@ -6,7 +6,7 @@ async function bootstrap() {
   await connectPrisma();
 
   const server = app.listen(env.PORT, '0.0.0.0', () => {
-    console.log(`🚀 PeoplePay360 Node/Express Server listening on port ${env.PORT}`);
+    console.log(`🚀 Odoo Node/Express Server listening on port ${env.PORT}`);
     console.log(`📡 API Endpoints live at http://localhost:${env.PORT}${env.API_PREFIX}`);
   });
 

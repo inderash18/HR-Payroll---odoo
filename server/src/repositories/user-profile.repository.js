@@ -58,59 +58,85 @@ export class UserProfileRepository {
       },
     });
 
-    if (!user) return null;
+    let finalUser = user;
+    if (!finalUser) {
+      // Dev preset fallback
+      const devUsers = [
+        { id: 'user-superadmin-001', email: 'superadmin@odoo.local', firstName: 'Dev', lastName: 'Platform', role: 'SUPER_ADMIN' },
+        { id: 'user-admin-002', email: 'admin@odoo.local', firstName: 'Aarav', lastName: 'Sharma', role: 'ORGANIZATION_ADMIN' },
+        { id: 'user-hr-003', email: 'hr@odoo.local', firstName: 'Priya', lastName: 'Iyer', role: 'HR_MANAGER' },
+        { id: 'user-payroll-004', email: 'payroll@odoo.local', firstName: 'Vikram', lastName: 'Mehta', role: 'PAYROLL_MANAGER' },
+        { id: 'user-finance-005', email: 'finance@odoo.local', firstName: 'Ananya', lastName: 'Deshmukh', role: 'FINANCE_MANAGER' },
+        { id: 'user-deptmgr-006', email: 'deptmgr@odoo.local', firstName: 'Rohan', lastName: 'Verma', role: 'DEPARTMENT_MANAGER' },
+        { id: 'user-emp-007', email: 'employee@odoo.local', firstName: 'Sneha', lastName: 'Patel', role: 'EMPLOYEE' },
+        { id: 'user-auditor-008', email: 'auditor@odoo.local', firstName: 'Karthik', lastName: 'Nair', role: 'AUDITOR' },
+        { id: 'usr-dev-admin-fixed-uuid-101', email: 'admin@odoo.local', firstName: 'Indhu', lastName: 'Admin', role: 'ORGANIZATION_ADMIN' },
+      ];
+      const match = devUsers.find(u => u.id === userId);
+      if (match) {
+        finalUser = {
+          ...match,
+          isActive: true,
+          organization: { id: 'org-odoo-ind', name: 'Odoo India Private Limited', code: 'ODOO-IND', currency: 'INR', timezone: 'Asia/Kolkata' },
+          employee: null,
+          createdAt: new Date(),
+          lastLoginAt: new Date(),
+        };
+      }
+    }
+
+    if (!finalUser) return null;
 
     const avatars = readJsonFile(AVATARS_FILE, {});
     const preferences = readJsonFile(PREFERENCES_FILE, {});
 
     return {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: user.role,
-      isActive: user.isActive,
-      avatarUrl: avatars[user.id] || null,
-      preferences: preferences[user.id] || {
+      id: finalUser.id,
+      email: finalUser.email,
+      firstName: finalUser.firstName,
+      lastName: finalUser.lastName,
+      role: finalUser.role,
+      isActive: finalUser.isActive,
+      avatarUrl: avatars[finalUser.id] || null,
+      preferences: preferences[finalUser.id] || {
         emailNotifications: true,
         payrollAlerts: true,
         leaveAlerts: true,
         securityAlerts: true,
         theme: 'light',
       },
-      organization: user.organization
+      organization: finalUser.organization
         ? {
-            id: user.organization.id,
-            name: user.organization.name,
-            code: user.organization.code,
-            currency: user.organization.currency,
-            timezone: user.organization.timezone,
+            id: finalUser.organization.id,
+            name: finalUser.organization.name,
+            code: finalUser.organization.code,
+            currency: finalUser.organization.currency || 'USD',
+            timezone: finalUser.organization.timezone || 'UTC',
           }
         : null,
-      employee: user.employee
+      employee: finalUser.employee
         ? {
-            id: user.employee.id,
-            employeeNum: user.employee.employeeNum,
-            workEmail: user.employee.workEmail,
-            personalEmail: user.employee.personalEmail,
-            phone: user.employee.phone,
-            bankName: user.employee.bankName,
-            bankAccountMasked: user.employee.bankAccountMasked,
-            joiningDate: user.employee.joiningDate,
-            department: user.employee.department
+            id: finalUser.employee.id,
+            employeeNum: finalUser.employee.employeeNum,
+            workEmail: finalUser.employee.workEmail,
+            personalEmail: finalUser.employee.personalEmail,
+            phone: finalUser.employee.phone,
+            bankName: finalUser.employee.bankName,
+            bankAccountMasked: finalUser.employee.bankAccountMasked,
+            joiningDate: finalUser.employee.joiningDate,
+            department: finalUser.employee.department
               ? {
-                  id: user.employee.department.id,
-                  name: user.employee.department.name,
-                  manager: user.employee.department.manager || null,
+                  id: finalUser.employee.department.id,
+                  name: finalUser.employee.department.name,
+                  manager: finalUser.employee.department.manager || null,
                 }
               : null,
-            jobPosition: user.employee.jobPosition ? { id: user.employee.jobPosition.id, title: user.employee.jobPosition.title } : null,
-            workingSchedule: user.employee.workingSchedule ? { id: user.employee.workingSchedule.id, name: user.employee.workingSchedule.name } : null,
-            activeContract: user.employee.contracts?.[0] || null,
+            jobPosition: finalUser.employee.jobPosition ? { id: finalUser.employee.jobPosition.id, title: finalUser.employee.jobPosition.title } : null,
+            workingSchedule: finalUser.employee.workingSchedule ? { id: finalUser.employee.workingSchedule.id, name: finalUser.employee.workingSchedule.name } : null,
+            activeContract: finalUser.employee.contracts?.[0] || null,
           }
         : null,
-      createdAt: user.createdAt,
-      lastLoginAt: user.lastLoginAt,
+      createdAt: finalUser.createdAt,
     };
   }
 

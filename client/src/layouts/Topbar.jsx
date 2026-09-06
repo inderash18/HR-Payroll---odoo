@@ -11,21 +11,27 @@ import {
   LogOut,
   KeyRound,
   Settings,
+  Sun,
+  Moon,
+  Monitor,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { Sidebar } from './Sidebar';
-
 import { useLayout } from '../contexts/LayoutContext';
 import { PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 
 export function Topbar() {
   const { user, logout } = useAuth();
+  const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme();
   const { isSidebarCollapsed, toggleSidebar } = useLayout();
   const navigate = useNavigate();
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const dropdownRef = useRef(null);
+  const themeDropdownRef = useRef(null);
 
   const getPageTitle = (path) => {
     if (path.startsWith('/dashboard')) return 'Dashboard';
@@ -45,20 +51,23 @@ export function Topbar() {
     if (path.startsWith('/security') || path.startsWith('/sessions') || path.startsWith('/profile/security')) return 'Account Security';
     if (path.startsWith('/profile')) return 'User Profile';
     if (path.startsWith('/settings')) return 'System Settings';
-    return 'PeoplePay360';
+    return 'Odoo';
   };
 
   const displayName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Administrator';
   const initials = user?.firstName
     ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ''}`.toUpperCase()
-    : 'AD';
+    : 'OD';
   const roleLabel = (user?.role || 'ADMIN').replace(/_/g, ' ');
-  const employeeId = user?.employee?.employeeNum || user?.employeeNum || 'EMP-PP360';
+  const employeeId = user?.employee?.employeeNum || user?.employeeNum || 'EMP-ODOO';
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
+      }
+      if (themeDropdownRef.current && !themeDropdownRef.current.contains(e.target)) {
+        setThemeDropdownOpen(false);
       }
     };
     document.addEventListener('click', handleClickOutside);
@@ -113,7 +122,7 @@ export function Topbar() {
           <input
             type="text"
             id="topbar-global-search"
-            placeholder="Search across PeoplePay360..."
+            placeholder="Search across Odoo..."
             autoComplete="off"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
@@ -123,6 +132,65 @@ export function Topbar() {
       </div>
 
       <div className="topbar-right">
+        {/* Light / Dark / System Theme Toggle */}
+        <div className="relative" ref={themeDropdownRef}>
+          <button
+            className="topbar-icon-btn"
+            id="btn-topbar-theme"
+            title={`Current theme: ${theme} (${resolvedTheme})`}
+            onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}
+          >
+            {resolvedTheme === 'dark' ? <Moon size={19} /> : <Sun size={19} />}
+          </button>
+
+          {themeDropdownOpen && (
+            <div
+              className="absolute right-0 mt-2 w-36 rounded-xl shadow-lg border border-[var(--border)] py-1.5 z-50 bg-[var(--surface)] text-[var(--text-primary)]"
+              style={{ minWidth: '140px' }}
+            >
+              <button
+                type="button"
+                className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-left transition-colors border-none cursor-pointer ${
+                  theme === 'light' ? 'text-[var(--primary)] bg-[var(--primary-soft)]' : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] bg-transparent'
+                }`}
+                onClick={() => {
+                  setTheme('light');
+                  setThemeDropdownOpen(false);
+                }}
+              >
+                <Sun size={15} />
+                <span>Light</span>
+              </button>
+              <button
+                type="button"
+                className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-left transition-colors border-none cursor-pointer ${
+                  theme === 'dark' ? 'text-[var(--primary)] bg-[var(--primary-soft)]' : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] bg-transparent'
+                }`}
+                onClick={() => {
+                  setTheme('dark');
+                  setThemeDropdownOpen(false);
+                }}
+              >
+                <Moon size={15} />
+                <span>Dark</span>
+              </button>
+              <button
+                type="button"
+                className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-left transition-colors border-none cursor-pointer ${
+                  theme === 'system' ? 'text-[var(--primary)] bg-[var(--primary-soft)]' : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] bg-transparent'
+                }`}
+                onClick={() => {
+                  setTheme('system');
+                  setThemeDropdownOpen(false);
+                }}
+              >
+                <Monitor size={15} />
+                <span>System</span>
+              </button>
+            </div>
+          )}
+        </div>
+
         <button
           className="action-pill-btn"
           id="btn-quick-add"
@@ -153,7 +221,7 @@ export function Topbar() {
               <img
                 src={user.avatarUrl}
                 alt="Avatar"
-                style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-subtle)' }}
+                style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border)' }}
               />
             ) : (
               <div className="user-avatar-initials">{initials}</div>
@@ -169,7 +237,7 @@ export function Topbar() {
                   <img
                     src={user.avatarUrl}
                     alt="Avatar"
-                    style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '2px solid #ffffff' }}
+                    style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary)' }}
                   />
                 ) : (
                   <div className="user-avatar-initials" style={{ width: 40, height: 40, fontSize: '0.95rem' }}>
@@ -183,7 +251,7 @@ export function Topbar() {
                   </div>
                 </div>
               </div>
-              <div className="dropdown-user-email">{user?.email || 'admin@peoplepay360.local'}</div>
+              <div className="dropdown-user-email">{user?.email || 'admin@odoo.local'}</div>
               <span className="dropdown-user-role">{roleLabel}</span>
             </div>
             <div className="dropdown-nav-list">

@@ -65,7 +65,7 @@ export function EmployeeDashboard({ data, onRefresh }) {
           </div>
           <h2 className="admin-welcome-title">Welcome back, {profile.name || 'Team Member'}!</h2>
           <p className="admin-welcome-sub">
-            {profile.jobTitle || 'Senior Engineer'} • {profile.department || 'Engineering'} • ID: <span style={{ fontFamily: 'monospace', color: '#cbd5e1' }}>{profile.employeeNum || 'PP360-1007'}</span>
+            {profile.jobTitle || 'Senior Engineer'} • {profile.department || 'Engineering'} • ID: <span style={{ fontFamily: 'monospace', color: 'var(--primary-soft)' }}>{profile.employeeNum || 'ODOO-1007'}</span>
           </p>
         </div>
         <div className="admin-welcome-actions">

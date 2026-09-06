@@ -159,11 +159,11 @@ export function SuperAdminDashboard({ data }) {
                 <tr>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div className="table-avatar-pill">PE</div>
-                      <span style={{ fontWeight: 700, color: '#0f172a' }}>PeoplePay360 Technologies Pvt. Ltd.</span>
+                      <div className="table-avatar-pill">OD</div>
+                      <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Odoo India Technologies Pvt. Ltd.</span>
                     </div>
                   </td>
-                  <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#475569' }}>PP360</td>
+                  <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>ODOO</td>
                   <td style={{ fontWeight: 600, color: '#334155' }}>INR (Asia/Kolkata)</td>
                   <td style={{ textAlign: 'center', fontWeight: 800 }}>252</td>
                   <td style={{ textAlign: 'center', fontWeight: 800 }}>164</td>

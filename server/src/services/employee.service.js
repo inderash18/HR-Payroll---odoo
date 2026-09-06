@@ -8,9 +8,9 @@ const generateCredentials = async (firstName, lastName, employeeNum, organizatio
   const fName = cleanStr(firstName);
   const lName = cleanStr(lastName);
   
-  let baseEmail = `${fName}.${lName}@peoplepay360.in`;
+  let baseEmail = `${fName}.${lName}@odoo.in`;
   if (!fName || !lName) {
-    baseEmail = `${fName || lName}.employee@peoplepay360.in`;
+    baseEmail = `${fName || lName}.employee@odoo.in`;
   }
   
   let workEmail = baseEmail;
@@ -26,7 +26,7 @@ const generateCredentials = async (firstName, lastName, employeeNum, organizatio
     
     if (!existing && !existingEmp) break;
     
-    workEmail = `${baseEmail.split('@')[0]}${counter}@peoplepay360.in`;
+    workEmail = `${baseEmail.split('@')[0]}${counter}@odoo.in`;
     counter++;
   }
 

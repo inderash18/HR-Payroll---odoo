@@ -1,5 +1,5 @@
 {
-  "name": "peoplepay360-monorepo",
+  "name": "odoo-monorepo",
   "version": "1.0.0",
   "private": true,
   "workspaces": [

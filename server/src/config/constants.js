@@ -58,6 +58,6 @@ export const ATTENDANCE_STATUS = {
 };
 
 export const COOKIE_NAMES = {
-  ACCESS_TOKEN: 'pp360_access_token',
-  REFRESH_TOKEN: 'pp360_refresh_token',
+  ACCESS_TOKEN: 'odoo_access_token',
+  REFRESH_TOKEN: 'odoo_refresh_token',
 };

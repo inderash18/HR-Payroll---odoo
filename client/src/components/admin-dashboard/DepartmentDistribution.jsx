@@ -73,15 +73,15 @@ export function DepartmentDistribution({ departments = [] }) {
                             width: '28px',
                             height: '28px',
                             borderRadius: '0.5rem',
-                            background: '#f1f5f9',
+                            background: 'var(--surface-soft)',
                             display: 'grid',
                             placeItems: 'center',
-                            color: '#0f172a',
+                            color: 'var(--primary)',
                           }}
                         >
                           <Building size={14} />
                         </div>
-                        <strong style={{ color: '#0f172a' }}>{dept.name}</strong>
+                        <strong style={{ color: 'var(--text-primary)' }}>{dept.name}</strong>
                       </div>
                     </td>
                     <td style={{ textAlign: 'center', fontWeight: 700 }}>{empCount}</td>

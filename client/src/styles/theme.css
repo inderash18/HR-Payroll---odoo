@@ -1,0 +1,108 @@
+/**
+ * ODOO SEMANTIC THEME VARIABLES
+ * Derived directly from reference color swatch palette:
+ * - #3A004D, #8B4F67, #9E4B88, #D9C3D2, #FAF5F8
+ */
+
+@import './tokens.css';
+
+:root {
+  /* LIGHT MODE (DEFAULT) */
+  --app-bg: #FAF5F8;
+  --surface: #FFFFFF;
+  --surface-soft: #F5ECF3;
+  --surface-hover: #EFE2EC;
+
+  --sidebar-bg: #280236;
+  --sidebar-border: #3A004D;
+  --sidebar-text: #D9C3D2;
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-active-bg: #4E115D;
+  --sidebar-active-text: #FFFFFF;
+
+  --text-primary: #230B29;
+  --text-secondary: #5E3D59;
+  --text-muted: #8C6C87;
+  --border: #E6D5E1;
+  --border-strong: #D3B9CC;
+
+  --primary: #8B4F67;
+  --primary-hover: #753E54;
+  --primary-soft: #F7EBF1;
+  --primary-active: #5E2C41;
+
+  --secondary: #9E4B88;
+  --secondary-hover: #8C3E77;
+  --secondary-soft: #F9EDF5;
+
+  --accent: #3A004D;
+  --accent-hover: #520B6B;
+  --accent-soft: #EFE4F3;
+
+  --success: #166534;
+  --success-soft: #DCFCE7;
+  --warning: #B45309;
+  --warning-soft: #FEF3C7;
+  --danger: #B91C1C;
+  --danger-soft: #FEE2E2;
+  --info: #8B4F67;
+  --info-soft: #F7EBF1;
+
+  --card-bg: var(--surface);
+  --card-border: var(--border);
+  --input-bg: #FFFFFF;
+  --input-border: var(--border);
+  --input-focus-border: var(--primary);
+  --input-focus-ring: rgba(139, 79, 103, 0.2);
+}
+
+/* DARK MODE */
+[data-theme="dark"],
+.dark {
+  --app-bg: #120218;
+  --surface: #1D0626;
+  --surface-soft: #290B34;
+  --surface-hover: #371245;
+
+  --sidebar-bg: #0E0114;
+  --sidebar-border: #2B0639;
+  --sidebar-text: #C4ADC0;
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-active-bg: #3A004D;
+  --sidebar-active-text: #FFFFFF;
+
+  --text-primary: #FAF2F8;
+  --text-secondary: #D4BED0;
+  --text-muted: #A1859C;
+  --border: #3D1849;
+  --border-strong: #572568;
+
+  --primary: #C97495;
+  --primary-hover: #DB8BAA;
+  --primary-soft: #381324;
+  --primary-active: #E6A2BC;
+
+  --secondary: #C77AB0;
+  --secondary-hover: #D792C3;
+  --secondary-soft: #3B1634;
+
+  --accent: #E587FF;
+  --accent-hover: #EEA6FF;
+  --accent-soft: #420A54;
+
+  --success: #4ADE80;
+  --success-soft: #143820;
+  --warning: #FBBF24;
+  --warning-soft: #42280A;
+  --danger: #F87171;
+  --danger-soft: #451417;
+  --info: #C97495;
+  --info-soft: #381324;
+
+  --card-bg: var(--surface);
+  --card-border: var(--border);
+  --input-bg: #17031F;
+  --input-border: var(--border);
+  --input-focus-border: var(--primary);
+  --input-focus-ring: rgba(201, 116, 149, 0.3);
+}

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { LayoutProvider } from './contexts/LayoutContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { AppRoutes } from './routes/AppRoutes';
 
 export function App() {
@@ -12,11 +13,13 @@ export function App() {
         v7_relativeSplatPath: true,
       }}
     >
-      <AuthProvider>
-        <LayoutProvider>
-          <AppRoutes />
-        </LayoutProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <LayoutProvider>
+            <AppRoutes />
+          </LayoutProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

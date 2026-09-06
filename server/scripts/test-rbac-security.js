@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 const BASE_URL = 'http://localhost:3000/api/v1';
-const DEV_PASSWORD = process.env.DEV_PASSWORD || 'PeoplePay360@123';
+const DEV_PASSWORD = process.env.DEV_PASSWORD || 'Odoo@123';
 
 const ACCOUNTS = {
-  ADMIN: { email: 'indhu.admin@peoplepay360.in', role: 'ORGANIZATION_ADMIN' },
-  HR: { email: 'kavya.hr@peoplepay360.in', role: 'HR_MANAGER' },
-  PAYROLL: { email: 'vishal.payroll@peoplepay360.in', role: 'PAYROLL_MANAGER' },
-  EMPLOYEE: { email: 'employee@peoplepay360.in', role: 'EMPLOYEE' },
+  ADMIN: { email: 'indhu.admin@odoo.in', role: 'ORGANIZATION_ADMIN' },
+  HR: { email: 'kavya.hr@odoo.in', role: 'HR_MANAGER' },
+  PAYROLL: { email: 'vishal.payroll@odoo.in', role: 'PAYROLL_MANAGER' },
+  EMPLOYEE: { email: 'employee@odoo.in', role: 'EMPLOYEE' },
 };
 
 async function login(email, password = DEV_PASSWORD) {

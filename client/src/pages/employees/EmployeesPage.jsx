@@ -100,7 +100,7 @@ export function EmployeesPage() {
         <div>
           <h1 className="directory-page-title">Team Members Directory</h1>
           <p className="directory-page-sub">
-            Manage PeoplePay360 engineering squads, design teams, operations, and IT workforce allocations.
+            Manage Odoo engineering squads, design teams, operations, and IT workforce allocations.
           </p>
         </div>
         <div className="directory-actions">
@@ -121,7 +121,7 @@ export function EmployeesPage() {
           <Search size={16} className="search-icon" />
           <input
             type="text"
-            placeholder="Search by name, email, employee ID (PP360-xxxx)..."
+            placeholder="Search by name, email, employee ID (ODOO-xxxx)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

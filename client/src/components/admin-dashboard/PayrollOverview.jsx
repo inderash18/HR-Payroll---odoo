@@ -33,9 +33,9 @@ export function PayrollOverview({ payrollData, summary = {} }) {
             borderRadius: '9999px',
             fontSize: '0.72rem',
             fontWeight: 700,
-            background: '#eff6ff',
-            color: '#1d4ed8',
-            border: '1px solid #bfdbfe',
+            background: 'var(--primary-soft)',
+            color: 'var(--primary)',
+            border: '1px solid var(--border)',
           }}
         >
           {status}
@@ -45,17 +45,17 @@ export function PayrollOverview({ payrollData, summary = {} }) {
       {/* Progress Bar */}
       <div style={{ marginBottom: '1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.4rem' }}>
-          <span style={{ color: '#0f172a' }}>
+          <span style={{ color: 'var(--text-primary)' }}>
             Processing Readiness ({employeesIncluded} / {totalEmployees} Personnel)
           </span>
-          <span style={{ color: '#0f172a' }}>{processingCompletion}%</span>
+          <span style={{ color: 'var(--text-primary)' }}>{processingCompletion}%</span>
         </div>
-        <div style={{ height: '8px', background: '#f1f5f9', borderRadius: '9999px', overflow: 'hidden' }}>
+        <div style={{ height: '8px', background: 'var(--surface-soft)', borderRadius: '9999px', overflow: 'hidden' }}>
           <div
             style={{
               width: `${processingCompletion}%`,
               height: '100%',
-              background: '#0f172a',
+              background: 'var(--primary)',
               borderRadius: '9999px',
               transition: 'width 0.4s ease',
             }}
@@ -65,23 +65,23 @@ export function PayrollOverview({ payrollData, summary = {} }) {
 
       {/* Financial 3-box Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.85rem', marginBottom: '1.25rem' }}>
-        <div style={{ background: '#f8fafc', padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '1px solid #f1f5f9' }}>
-          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Gross Payroll</span>
-          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a', marginTop: '0.2rem' }}>
+        <div style={{ background: 'var(--surface-soft)', padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '1px solid var(--border)' }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Gross Payroll</span>
+          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-primary)', marginTop: '0.2rem' }}>
             {formatINR(grossPayroll)}
           </div>
         </div>
 
-        <div style={{ background: '#f8fafc', padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '1px solid #f1f5f9' }}>
-          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Total Deductions</span>
-          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#64748b', marginTop: '0.2rem' }}>
+        <div style={{ background: 'var(--surface-soft)', padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '1px solid var(--border)' }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Total Deductions</span>
+          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
             {formatINR(totalDeductions)}
           </div>
         </div>
 
-        <div style={{ background: '#ecfdf5', padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '1px solid #d1fae5' }}>
-          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#047857', textTransform: 'uppercase' }}>Estimated Net Payout</span>
-          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#047857', marginTop: '0.2rem' }}>
+        <div style={{ background: 'var(--success-soft)', padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '1px solid var(--border)' }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--success)', textTransform: 'uppercase' }}>Estimated Net Payout</span>
+          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--success)', marginTop: '0.2rem' }}>
             {formatINR(estimatedNetPayout)}
           </div>
         </div>

@@ -1,0 +1,67 @@
+/**
+ * ODOO HRMS DESIGN TOKENS
+ * Derived directly from reference color swatch palette:
+ * - Plum 950 / Deep Midnight: #3A004D
+ * - Velvet Berry / Dusty Wine: #8B4F67
+ * - Mauve / Orchid Lilac: #9E4B88
+ * - Lavender Mist / Blush: #D9C3D2
+ * - Porcelain Lilac White: #FAF5F8
+ */
+
+:root {
+  /* Raw Color Primitives */
+  --raw-plum-950: #23022E;
+  --raw-plum-900: #3A004D;
+  --raw-plum-800: #520B6B;
+  --raw-plum-700: #6B198A;
+  --raw-berry-700: #753E54;
+  --raw-berry-600: #8B4F67;
+  --raw-berry-500: #A3627D;
+  --raw-orchid-600: #8C3E77;
+  --raw-orchid-500: #9E4B88;
+  --raw-orchid-400: #B766A1;
+  --raw-orchid-300: #CF8BBB;
+  --raw-lavender-200: #D9C3D2;
+  --raw-lavender-100: #EADCE5;
+  --raw-lilac-50: #FAF5F8;
+  --raw-white: #FFFFFF;
+
+  /* Semantic Status Tokens */
+  --raw-success-700: #166534;
+  --raw-success-500: #22C55E;
+  --raw-success-100: #DCFCE7;
+  --raw-warning-700: #9A3412;
+  --raw-warning-500: #F97316;
+  --raw-warning-100: #FFEDD5;
+  --raw-danger-700: #991B1B;
+  --raw-danger-500: #EF4444;
+  --raw-danger-100: #FEE2E2;
+  --raw-info-700: #1E40AF;
+  --raw-info-500: #3B82F6;
+  --raw-info-100: #DBEAFE;
+
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Shadows (Plum-tinted soft shadows) */
+  --shadow-sm: 0 1px 2px 0 rgba(58, 0, 77, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(58, 0, 77, 0.08), 0 2px 4px -2px rgba(58, 0, 77, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(58, 0, 77, 0.1), 0 4px 6px -4px rgba(58, 0, 77, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(58, 0, 77, 0.12), 0 8px 10px -6px rgba(58, 0, 77, 0.06);
+  --shadow-glow: 0 0 20px rgba(158, 75, 136, 0.35);
+
+  /* Font Families */
+  --font-heading: 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+}

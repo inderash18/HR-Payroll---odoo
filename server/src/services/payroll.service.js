@@ -336,7 +336,7 @@ export const payrollService = {
 <body>
   <div class="header">
     <div>
-      <div class="title">PEOPLEPAY360 SALARY STATEMENT</div>
+      <div class="title">ODOO SALARY STATEMENT</div>
       <div class="company">Official Payslip Record</div>
     </div>
     <div style="text-align: right;">

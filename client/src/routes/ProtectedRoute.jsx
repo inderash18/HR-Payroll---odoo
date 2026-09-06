@@ -10,8 +10,8 @@ export function ProtectedRoute({ allowedRoles = [], requiredPermissions = [], ch
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-main)' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-main)', marginBottom: '8px' }}>
-            PeoplePay360
+          <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--primary)', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
+            Odoo
           </div>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Verifying secure session &amp; role permissions...</div>
         </div>

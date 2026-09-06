@@ -3,7 +3,7 @@ import request from 'supertest';
 import { app } from '../app.js';
 import { connectPrisma } from '../config/prisma.js';
 
-describe('PeoplePay360 Express Backend API Tests', () => {
+describe('Odoo Express Backend API Tests', () => {
   let authCookie = null;
   let employeeCookie = null;
   let hrCookie = null;
@@ -27,30 +27,30 @@ describe('PeoplePay360 Express Backend API Tests', () => {
     const res = await request(app)
       .post('/api/v1/auth/login')
       .send({
-        email: 'admin@peoplepay360.local',
+        email: 'admin@odoo.local',
         password: 'admin123',
       });
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.email).toBe('admin@peoplepay360.local');
+    expect(res.body.data.email).toBe('admin@odoo.local');
     expect(['ADMIN', 'ORGANIZATION_ADMIN']).toContain(res.body.data.role);
 
     const cookies = res.headers['set-cookie'];
     expect(cookies).toBeDefined();
-    authCookie = cookies.find((c) => c.startsWith('pp360_access_token='));
+    authCookie = cookies.find((c) => c.startsWith('odoo_access_token=') || c.startsWith('pp360_access_token='));
     expect(authCookie).toBeDefined();
   });
 
   it('POST /api/v1/auth/login succeeds for all other 7 roles', async () => {
     const rolesToTest = [
-      { email: 'superadmin@peoplepay360.local', role: 'SUPER_ADMIN' },
-      { email: 'hr@peoplepay360.local', role: 'HR_MANAGER' },
-      { email: 'payroll@peoplepay360.local', role: 'PAYROLL_MANAGER' },
-      { email: 'finance@peoplepay360.local', role: 'FINANCE_MANAGER' },
-      { email: 'manager@peoplepay360.local', role: 'DEPARTMENT_MANAGER' },
-      { email: 'employee@peoplepay360.local', role: 'EMPLOYEE' },
-      { email: 'auditor@peoplepay360.local', role: 'AUDITOR' },
+      { email: 'superadmin@odoo.local', role: 'SUPER_ADMIN' },
+      { email: 'hr@odoo.local', role: 'HR_MANAGER' },
+      { email: 'payroll@odoo.local', role: 'PAYROLL_MANAGER' },
+      { email: 'finance@odoo.local', role: 'FINANCE_MANAGER' },
+      { email: 'manager@odoo.local', role: 'DEPARTMENT_MANAGER' },
+      { email: 'employee@odoo.local', role: 'EMPLOYEE' },
+      { email: 'auditor@odoo.local', role: 'AUDITOR' },
     ];
 
     for (const r of rolesToTest) {
@@ -62,7 +62,7 @@ describe('PeoplePay360 Express Backend API Tests', () => {
       expect(res.body.success).toBe(true);
       expect(res.body.data.email).toBe(r.email);
 
-      const cookie = res.headers['set-cookie']?.find((c) => c.startsWith('pp360_access_token='));
+      const cookie = res.headers['set-cookie']?.find((c) => c.startsWith('odoo_access_token=') || c.startsWith('pp360_access_token='));
       if (r.role === 'SUPER_ADMIN') superAdminCookie = cookie;
       if (r.role === 'HR_MANAGER') hrCookie = cookie;
       if (r.role === 'PAYROLL_MANAGER') payrollCookie = cookie;
@@ -184,7 +184,7 @@ describe('PeoplePay360 Express Backend API Tests', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.email).toBe('admin@peoplepay360.local');
+    expect(res.body.data.email).toBe('admin@odoo.local');
     expect(res.body.data.organization).toBeDefined();
   });
 

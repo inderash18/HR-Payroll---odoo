@@ -4,7 +4,7 @@ import { app } from '../app.js';
 import { connectPrisma } from '../config/prisma.js';
 
 describe('Strict RBAC Security Tests for the 4 Dedicated Roles', { timeout: 20000 }, () => {
-  const DEV_PASSWORD = process.env.DEV_PASSWORD || 'PeoplePay360@123';
+  const DEV_PASSWORD = process.env.DEV_PASSWORD || 'Odoo@123';
 
   let adminCookie = null;
   let hrCookie = null;
@@ -24,60 +24,60 @@ describe('Strict RBAC Security Tests for the 4 Dedicated Roles', { timeout: 2000
     // Admin login
     const adminRes = await request(app)
       .post('/api/v1/auth/login')
-      .send({ email: 'indhu.admin@peoplepay360.in', password: DEV_PASSWORD });
+      .send({ email: 'indhu.admin@odoo.in', password: DEV_PASSWORD });
     expect(adminRes.status).toBe(200);
     expect(adminRes.body.success).toBe(true);
     expect(['ORGANIZATION_ADMIN', 'ADMIN']).toContain(adminRes.body.data.role);
-    adminCookie = adminRes.headers['set-cookie']?.find((c) => c.startsWith('pp360_access_token='));
+    adminCookie = adminRes.headers['set-cookie']?.find((c) => c.startsWith('odoo_access_token=') || c.startsWith('pp360_access_token='));
     adminUser = adminRes.body.data;
 
     // HR Manager login
     const hrRes = await request(app)
       .post('/api/v1/auth/login')
-      .send({ email: 'kavya.hr@peoplepay360.in', password: DEV_PASSWORD });
+      .send({ email: 'kavya.hr@odoo.in', password: DEV_PASSWORD });
     expect(hrRes.status).toBe(200);
     expect(hrRes.body.success).toBe(true);
     expect(hrRes.body.data.role).toBe('HR_MANAGER');
-    hrCookie = hrRes.headers['set-cookie']?.find((c) => c.startsWith('pp360_access_token='));
+    hrCookie = hrRes.headers['set-cookie']?.find((c) => c.startsWith('odoo_access_token=') || c.startsWith('pp360_access_token='));
     hrUser = hrRes.body.data;
 
     // Payroll Manager login
     const payrollRes = await request(app)
       .post('/api/v1/auth/login')
-      .send({ email: 'vishal.payroll@peoplepay360.in', password: DEV_PASSWORD });
+      .send({ email: 'vishal.payroll@odoo.in', password: DEV_PASSWORD });
     expect(payrollRes.status).toBe(200);
     expect(payrollRes.body.success).toBe(true);
     expect(payrollRes.body.data.role).toBe('PAYROLL_MANAGER');
-    payrollCookie = payrollRes.headers['set-cookie']?.find((c) => c.startsWith('pp360_access_token='));
+    payrollCookie = payrollRes.headers['set-cookie']?.find((c) => c.startsWith('odoo_access_token=') || c.startsWith('pp360_access_token='));
     payrollUser = payrollRes.body.data;
 
     // Employee login
     const empRes = await request(app)
       .post('/api/v1/auth/login')
-      .send({ email: 'employee@peoplepay360.in', password: DEV_PASSWORD });
+      .send({ email: 'employee@odoo.in', password: DEV_PASSWORD });
     expect(empRes.status).toBe(200);
     expect(empRes.body.success).toBe(true);
     expect(empRes.body.data.role).toBe('EMPLOYEE');
-    employeeCookie = empRes.headers['set-cookie']?.find((c) => c.startsWith('pp360_access_token='));
+    employeeCookie = empRes.headers['set-cookie']?.find((c) => c.startsWith('odoo_access_token=') || c.startsWith('pp360_access_token='));
     employeeUser = empRes.body.data;
   });
 
   it('2. GET /api/v1/auth/me returns the active session for all 4 roles', async () => {
     const adminMe = await request(app).get('/api/v1/auth/me').set('Cookie', adminCookie);
     expect(adminMe.status).toBe(200);
-    expect(adminMe.body.data.email).toBe('indhu.admin@peoplepay360.in');
+    expect(adminMe.body.data.email).toBe('indhu.admin@odoo.in');
 
     const hrMe = await request(app).get('/api/v1/auth/me').set('Cookie', hrCookie);
     expect(hrMe.status).toBe(200);
-    expect(hrMe.body.data.email).toBe('kavya.hr@peoplepay360.in');
+    expect(hrMe.body.data.email).toBe('kavya.hr@odoo.in');
 
     const payrollMe = await request(app).get('/api/v1/auth/me').set('Cookie', payrollCookie);
     expect(payrollMe.status).toBe(200);
-    expect(payrollMe.body.data.email).toBe('vishal.payroll@peoplepay360.in');
+    expect(payrollMe.body.data.email).toBe('vishal.payroll@odoo.in');
 
     const empMe = await request(app).get('/api/v1/auth/me').set('Cookie', employeeCookie);
     expect(empMe.status).toBe(200);
-    expect(empMe.body.data.email).toBe('employee@peoplepay360.in');
+    expect(empMe.body.data.email).toBe('employee@odoo.in');
   });
 
   it('3. Organization Admin has complete administrative access', async () => {

@@ -1,5 +1,5 @@
 /**
- * PeoplePay360 AST Payroll Calculation Engine
+ * Odoo AST Payroll Calculation Engine
  * Evaluates sequenced salary rules, allowances, deductions, gross, and net pay.
  */
 export const payrollEngine = {

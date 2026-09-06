@@ -14,7 +14,7 @@ export function WelcomeHeader({ userName = 'Indhu', onAddEmployee, onDownloadRep
       <div>
         <h1 className="admin-welcome-title">Good morning, {userName}</h1>
         <p className="admin-welcome-sub">
-          Here’s what’s happening across PeoplePay360 Technologies today.
+          Here’s what’s happening across Odoo today.
         </p>
       </div>
 

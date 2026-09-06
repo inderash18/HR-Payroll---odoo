@@ -55,7 +55,7 @@ export function WorkforceChart({ trendData }) {
                 className="chart-bar-wrap"
                 style={{
                   height: `${heightPct}%`,
-                  background: idx === dataset.length - 1 ? '#0f172a' : '#94a3b8',
+                  background: idx === dataset.length - 1 ? 'var(--primary)' : 'var(--border-strong)',
                 }}
               />
               <span className="chart-bar-label">{item.label}</span>
@@ -67,15 +67,15 @@ export function WorkforceChart({ trendData }) {
       {/* Footer Metrics */}
       <div className="chart-footer-metrics">
         <div className="chart-metric-item">
-          <div className="chart-metric-val" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <Users size={16} style={{ color: '#0f172a' }} />
+          <div className="chart-metric-val" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-primary)' }}>
+            <Users size={16} style={{ color: 'var(--primary)' }} />
             {metrics.totalWorkforce || 0}
           </div>
           <span className="chart-metric-lbl">Total Workforce</span>
         </div>
 
         <div className="chart-metric-item">
-          <div className="chart-metric-val" style={{ color: '#047857', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <div className="chart-metric-val" style={{ color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <UserPlus size={16} />
             +{metrics.newHiresMonth || 0}
           </div>
@@ -83,7 +83,7 @@ export function WorkforceChart({ trendData }) {
         </div>
 
         <div className="chart-metric-item">
-          <div className="chart-metric-val" style={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <div className="chart-metric-val" style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <UserMinus size={16} />
             {metrics.departuresMonth || 0}
           </div>

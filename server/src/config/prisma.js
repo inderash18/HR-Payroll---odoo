@@ -4,7 +4,7 @@ import { env } from './env.js';
 const databaseUrl =
   env.DATABASE_URL ||
   process.env.DATABASE_URL ||
-  'postgresql://postgres:postgres@localhost:5432/peoplepay360?schema=public';
+  'postgresql://postgres:postgres@localhost:5432/odoo?schema=public';
 
 export const prisma = new PrismaClient({
   datasources: {

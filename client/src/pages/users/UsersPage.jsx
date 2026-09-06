@@ -161,7 +161,7 @@ export function UsersPage() {
                 <input
                   type="email"
                   required
-                  placeholder="rajesh.kumar@peoplepay360.local"
+                  placeholder="rajesh.kumar@odoo.local"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />

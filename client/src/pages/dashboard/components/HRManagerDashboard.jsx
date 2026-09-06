@@ -116,7 +116,11 @@ export function HRManagerDashboard({ data, onRefresh }) {
               <Clock size={18} />
             </div>
           </div>
-          <div className="admin-stat-val" style={{ color: '#9333ea' }}>{summary.attendanceRate || 0}%</div>
+          <div className="admin-stat-val" style={{ color: '#9333ea' }}>
+            {(summary.employeeCount > 0 
+              ? Math.round(((summary.presentToday || 0) / summary.employeeCount) * 100) 
+              : summary.attendanceRate) || 100}%
+          </div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{summary.employeesOnLeaveToday || 0} on approved leave</span>
           </div>

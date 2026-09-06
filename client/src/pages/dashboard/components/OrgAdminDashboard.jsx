@@ -100,7 +100,11 @@ export function OrgAdminDashboard({ data, onRefresh }) {
               <Clock size={18} />
             </div>
           </div>
-          <div className="admin-stat-val" style={{ color: '#059669' }}>{summary.attendanceRate || 0}%</div>
+          <div className="admin-stat-val" style={{ color: '#059669' }}>
+            {(summary.totalEmployees > 0 
+              ? Math.round(((summary.presentToday || 0) / summary.totalEmployees) * 100) 
+              : summary.attendanceRate) || 100}%
+          </div>
           <div className="admin-stat-bottom">
             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{summary.presentToday || 0} clocked in today</span>
           </div>

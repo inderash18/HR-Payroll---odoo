@@ -9,7 +9,8 @@ export function AdminStatsGrid({ summary, onCardClick }) {
   const totalEmployeesTrend = typeof summary.totalEmployees === 'object' ? summary.totalEmployees.trend : 'Live Database';
 
   const presentTodayVal = typeof summary.presentToday === 'object' ? summary.presentToday.value : (summary.presentToday ?? 0);
-  const attendanceRate = summary.attendanceRate ?? 100;
+  const calculatedRate = totalEmployeesVal > 0 ? Math.round((presentTodayVal / totalEmployeesVal) * 100) : 100;
+  const attendanceRate = summary.attendanceRate && summary.attendanceRate > 0 ? summary.attendanceRate : calculatedRate;
   const presentTodayText = typeof summary.presentToday === 'object' ? summary.presentToday.changeText : `${attendanceRate}% today's rate`;
   const presentTodayTrend = typeof summary.presentToday === 'object' ? summary.presentToday.trend : 'Verified';
 

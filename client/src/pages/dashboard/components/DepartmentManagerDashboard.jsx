@@ -96,7 +96,9 @@ export function DepartmentManagerDashboard({ data, onRefresh }) {
           <div className="admin-stat-val" style={{ color: '#059669' }}>{summary.presentToday || 0}</div>
           <div className="admin-stat-bottom">
             <span className="trend-badge-pill trend-positive">
-              {summary.teamAttendanceRate || 0}% attendance rate
+              {(summary.teamSize > 0 
+                ? Math.round(((summary.presentCount || 0) / summary.teamSize) * 100) 
+                : summary.teamAttendanceRate) || 100}% attendance rate
             </span>
           </div>
         </div>

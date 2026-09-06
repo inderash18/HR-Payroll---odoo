@@ -7,7 +7,9 @@ export function AttendanceOverview({ attendanceData }) {
 
   if (!attendanceData) return null;
 
-  const { present = 0, onLeave = 0, absent = 0, lateCheckIn = 0, attendanceRate = 0 } = attendanceData;
+  const { present = 0, onLeave = 0, absent = 0, lateCheckIn = 0 } = attendanceData;
+  const total = present + onLeave + absent + lateCheckIn;
+  const attendanceRate = total > 0 ? Math.round((present / total) * 100) : 100;
 
   return (
     <div className="admin-card-white" id="admin-attendance-overview-card">

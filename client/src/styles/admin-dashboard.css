@@ -186,6 +186,7 @@
   display: grid;
   grid-template-columns: 1.55fr 1fr;
   gap: 1.25rem;
+  align-items: start;
 }
 
 @media (max-width: 1024px) {

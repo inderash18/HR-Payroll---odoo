@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../api/client';
 import { Plus, Calendar, Check, X, UserPlus, Clock } from 'lucide-react';
+import { LocalTableSearch } from '../../components/search/LocalTableSearch';
 
 import { useAuth } from '../../contexts/AuthContext';
 
 export function LeavesPage() {
   const [requests, setRequests] = useState([]);
+  const [search, setSearch] = useState('');
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -13,6 +15,7 @@ export function LeavesPage() {
   // Auth
   const { user, hasRole } = useAuth();
   const canAllocate = hasRole('SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'HR_MANAGER');
+  const canApprove = hasRole('SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'HR_MANAGER', 'DEPARTMENT_MANAGER') || user?.role === 'ORGANIZATION_ADMIN' || user?.role === 'ADMIN' || user?.role === 'HR_MANAGER';
 
   // Modals
   const [showReqModal, setShowReqModal] = useState(false);
@@ -64,23 +67,38 @@ export function LeavesPage() {
 
   const handleApprove = async (id) => {
     try {
-      await api.patch(`/leaves/requests/${id}/approve`);
-      setToastMessage('Leave request approved');
+      await api.post(`/leaves/requests/${id}/approve`);
+      setToastMessage('Leave request accepted & approved successfully');
       setTimeout(() => setToastMessage(null), 3000);
       loadData();
     } catch (err) {
-      setErrorMessage(err.response?.data?.message || err.message || 'Approval failed');
+      // Fallback to patch if needed
+      try {
+        await api.patch(`/leaves/requests/${id}/approve`);
+        setToastMessage('Leave request accepted & approved successfully');
+        setTimeout(() => setToastMessage(null), 3000);
+        loadData();
+      } catch (patchErr) {
+        setErrorMessage(patchErr.response?.data?.message || patchErr.message || 'Approval failed');
+      }
     }
   };
 
   const handleReject = async (id) => {
     try {
-      await api.patch(`/leaves/requests/${id}/reject`, { rejectionReason: 'Rejected by administrator' });
-      setToastMessage('Leave request rejected');
+      await api.post(`/leaves/requests/${id}/reject`, { rejectionReason: 'Declined by administrator' });
+      setToastMessage('Leave request declined');
       setTimeout(() => setToastMessage(null), 3000);
       loadData();
     } catch (err) {
-      setErrorMessage(err.response?.data?.message || err.message || 'Rejection failed');
+      try {
+        await api.patch(`/leaves/requests/${id}/reject`, { rejectionReason: 'Declined by administrator' });
+        setToastMessage('Leave request declined');
+        setTimeout(() => setToastMessage(null), 3000);
+        loadData();
+      } catch (patchErr) {
+        setErrorMessage(patchErr.response?.data?.message || patchErr.message || 'Decline failed');
+      }
     }
   };
 
@@ -130,16 +148,35 @@ export function LeavesPage() {
     }
   };
 
+  const filteredRequests = useMemo(() => {
+    if (!search.trim()) return requests;
+    const q = search.trim().toLowerCase();
+    return requests.filter((r) => {
+      const empName = `${r.employee?.firstName || ''} ${r.employee?.lastName || ''}`.toLowerCase();
+      const leaveType = (r.leaveType?.name || '').toLowerCase();
+      const reason = (r.reason || '').toLowerCase();
+      return empName.includes(q) || leaveType.includes(q) || reason.includes(q);
+    });
+  }, [requests, search]);
+
   return (
     <div>
       <div className="card">
         <div
           className="card-header"
-          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '1rem', flexWrap: 'wrap' }}
         >
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
-            Leaves & Time Off Administration
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flex: 1 }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
+              Leaves & Time Off Administration ({filteredRequests.length})
+            </h2>
+            <LocalTableSearch
+              value={search}
+              onChange={setSearch}
+              placeholder="Search employee or leave type..."
+              id="search-leaves"
+            />
+          </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             {canAllocate && (
               <button
@@ -197,14 +234,14 @@ export function LeavesPage() {
                     Loading leave requests from PostgreSQL...
                   </td>
                 </tr>
-              ) : requests.length === 0 ? (
+              ) : filteredRequests.length === 0 ? (
                 <tr>
                   <td colSpan="7" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                    No time off requests found.
+                    No time off requests found matching search.
                   </td>
                 </tr>
               ) : (
-                requests.map((r) => (
+                filteredRequests.map((r) => (
                   <tr key={r.id}>
                     <td style={{ padding: '1rem 1.25rem', fontWeight: 600 }}>
                       {r.employee ? `${r.employee.firstName} ${r.employee.lastName}` : 'Current Employee'}
@@ -229,25 +266,58 @@ export function LeavesPage() {
                       </span>
                     </td>
                     <td style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>
-                      {r.status === 'PENDING' ? (
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                          <button
-                            className="btn-pill-primary"
-                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', background: 'var(--green)' }}
-                            onClick={() => handleApprove(r.id)}
-                          >
-                            <Check size={14} /> Approve
-                          </button>
-                          <button
-                            className="btn-pill-secondary"
-                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', color: 'var(--red)' }}
-                            onClick={() => handleReject(r.id)}
-                          >
-                            <X size={14} /> Reject
-                          </button>
-                        </div>
+                      {(r.status === 'PENDING_APPROVAL' || r.status === 'PENDING') ? (
+                        canApprove ? (
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.45rem' }}>
+                            <button
+                              className="btn-pill-primary"
+                              style={{
+                                padding: '0.4rem 0.85rem',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                background: '#16a34a',
+                                color: '#FFFFFF',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                cursor: 'pointer',
+                                border: 'none',
+                                borderRadius: '9999px',
+                                boxShadow: '0 2px 4px rgba(22, 163, 74, 0.25)',
+                              }}
+                              title="Accept & Approve leave request"
+                              onClick={() => handleApprove(r.id)}
+                            >
+                              <Check size={14} /> Accept
+                            </button>
+                            <button
+                              className="btn-pill-secondary"
+                              style={{
+                                padding: '0.4rem 0.85rem',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                color: '#dc2626',
+                                borderColor: '#fca5a5',
+                                background: '#fef2f2',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                cursor: 'pointer',
+                                borderRadius: '9999px',
+                              }}
+                              title="Decline & Reject leave request"
+                              onClick={() => handleReject(r.id)}
+                            >
+                              <X size={14} /> Decline
+                            </button>
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: '0.82rem', color: 'var(--warning)', fontWeight: 600 }}>Awaiting Approval</span>
+                        )
                       ) : (
-                        <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Completed</span>
+                        <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+                          {r.status === 'APPROVED' ? 'Approved' : r.status === 'REJECTED' ? 'Declined' : 'Completed'}
+                        </span>
                       )}
                     </td>
                   </tr>

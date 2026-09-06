@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
-import { LogIn, LogOut, CheckCircle2, Search } from 'lucide-react';
+import { LogIn, LogOut, CheckCircle2 } from 'lucide-react';
+import { LocalTableSearch } from '../../components/search/LocalTableSearch';
 
 export function AttendancePage() {
   const { user } = useAuth();
@@ -71,32 +72,22 @@ export function AttendancePage() {
       <div className="card">
         <div
           className="card-header"
-          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '1rem', flexWrap: 'wrap' }}
         >
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
-            Attendance Log ({filteredLogs.length} Entries)
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flex: 1 }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
+              Attendance Log ({filteredLogs.length} Entries)
+            </h2>
+            <LocalTableSearch
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search team members..."
+              id="search-attendance"
+            />
+          </div>
           
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            {isAdmin ? (
-              <div style={{ position: 'relative' }}>
-                <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
-                <input
-                  type="text"
-                  placeholder="Search employees..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    padding: '0.5rem 1rem 0.5rem 2.25rem',
-                    borderRadius: '8px',
-                    border: '1px solid #e2e8f0',
-                    fontSize: '0.875rem',
-                    outline: 'none',
-                    minWidth: '220px'
-                  }}
-                />
-              </div>
-            ) : (
+            {!isAdmin && (
               <>
                 <button
                   className="btn-pill-primary"

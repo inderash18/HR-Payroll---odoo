@@ -2,27 +2,31 @@ import { authService } from '../services/auth.service.js';
 import { successResponse, errorResponse } from '../utils/response.js';
 import { COOKIE_NAMES } from '../config/constants.js';
 
-function setAuthCookies(res, { accessToken, refreshToken }) {
+export function setAuthCookies(res, { accessToken, refreshToken }) {
   const isProd = process.env.NODE_ENV === 'production';
 
-  res.cookie(COOKIE_NAMES.ACCESS_TOKEN, accessToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 15 * 60 * 1000, // 15 minutes
-  });
+  if (accessToken) {
+    res.cookie(COOKIE_NAMES.ACCESS_TOKEN, accessToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+  }
 
-  res.cookie(COOKIE_NAMES.REFRESH_TOKEN, refreshToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-  });
+  if (refreshToken) {
+    res.cookie(COOKIE_NAMES.REFRESH_TOKEN, refreshToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+  }
 }
 
-function clearAuthCookies(res) {
+export function clearAuthCookies(res) {
   const isProd = process.env.NODE_ENV === 'production';
 
   res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, {

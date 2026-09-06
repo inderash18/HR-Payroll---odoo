@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { FileText, Printer, ArrowRight } from 'lucide-react';
+import { LocalTableSearch } from '../../components/search/LocalTableSearch';
 
 export function PayslipsPage() {
   const [payslips, setPayslips] = useState([]);
+  const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -24,13 +26,32 @@ export function PayslipsPage() {
     loadData();
   }, []);
 
+  const filteredPayslips = useMemo(() => {
+    if (!search.trim()) return payslips;
+    const q = search.trim().toLowerCase();
+    return payslips.filter((ps) => {
+      const empName = `${ps.employee?.firstName || ''} ${ps.employee?.lastName || ''}`.toLowerCase();
+      const slipRef = `ps-${ps.id.slice(0, 8)}`.toLowerCase();
+      const empNum = (ps.employee?.employeeNum || '').toLowerCase();
+      return empName.includes(q) || slipRef.includes(q) || empNum.includes(q);
+    });
+  }, [payslips, search]);
+
   return (
     <div>
       <div className="card">
-        <div className="card-header" style={{ marginBottom: '1.25rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
-            Generated Payslips ({payslips.length})
-          </h2>
+        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flex: 1 }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
+              Generated Payslips ({filteredPayslips.length})
+            </h2>
+            <LocalTableSearch
+              value={search}
+              onChange={setSearch}
+              placeholder="Search employee or payslip ID..."
+              id="search-payslips"
+            />
+          </div>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -53,14 +74,14 @@ export function PayslipsPage() {
                     Loading payslip records from PostgreSQL...
                   </td>
                 </tr>
-              ) : payslips.length === 0 ? (
+              ) : filteredPayslips.length === 0 ? (
                 <tr>
                   <td colSpan="7" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                    No payslips computed yet. Run a Payrun to generate slips.
+                    No payslips found matching your search.
                   </td>
                 </tr>
               ) : (
-                payslips.map((ps) => (
+                filteredPayslips.map((ps) => (
                   <tr
                     key={ps.id}
                     className="clickable-row"

@@ -27,18 +27,17 @@ const processQueue = (error, token = null) => {
 // Response interceptor to catch 401 and refresh token silently
 api.interceptors.response.use(
   (response) => {
-    // Standardize returning data
+    // Standardize returning data payload
     return response.data;
   },
   async (error) => {
     const originalRequest = error.config;
 
-    // Skip refresh attempt for auth endpoints (/login, /logout, /refresh, /me bootstrap)
+    // Skip refresh attempt for auth mutation endpoints
     const isAuthPath =
       originalRequest?.url?.includes('/auth/login') ||
       originalRequest?.url?.includes('/auth/logout') ||
-      originalRequest?.url?.includes('/auth/refresh') ||
-      originalRequest?.url?.includes('/auth/me');
+      originalRequest?.url?.includes('/auth/refresh');
 
     if (error.response?.status === 401 && !originalRequest?._retry && !isAuthPath) {
       if (isRefreshing) {
@@ -63,9 +62,6 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshErr) {
         processQueue(refreshErr, null);
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-          window.location.href = '/login';
-        }
         return Promise.reject(refreshErr);
       } finally {
         isRefreshing = false;

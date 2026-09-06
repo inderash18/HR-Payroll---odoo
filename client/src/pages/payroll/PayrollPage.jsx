@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { Plus, Landmark, CheckCircle2, Play, Check, DollarSign } from 'lucide-react';
+import { LocalTableSearch } from '../../components/search/LocalTableSearch';
 
 export function PayrollPage() {
   const [payruns, setPayruns] = useState([]);
+  const [search, setSearch] = useState('');
   const [structures, setStructures] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -112,6 +114,12 @@ export function PayrollPage() {
     }
   };
 
+  const filteredPayruns = useMemo(() => {
+    if (!search.trim()) return payruns;
+    const q = search.trim().toLowerCase();
+    return payruns.filter((p) => p.name?.toLowerCase().includes(q) || p.status?.toLowerCase().includes(q));
+  }, [payruns, search]);
+
   return (
     <div>
       {toast && (
@@ -143,11 +151,19 @@ export function PayrollPage() {
       <div className="card" style={{ marginBottom: '1.5rem' }}>
         <div
           className="card-header"
-          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '1rem', flexWrap: 'wrap' }}
         >
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
-            Payroll Payrun Batches ({payruns.length})
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flex: 1 }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
+              Payroll Payrun Batches ({filteredPayruns.length})
+            </h2>
+            <LocalTableSearch
+              value={search}
+              onChange={setSearch}
+              placeholder="Search payroll cycles..."
+              id="search-payruns"
+            />
+          </div>
           <button
             className="btn-pill-primary"
             id="btn-create-payrun"
@@ -177,14 +193,14 @@ export function PayrollPage() {
                     Loading payrun batches from PostgreSQL...
                   </td>
                 </tr>
-              ) : payruns.length === 0 ? (
+              ) : filteredPayruns.length === 0 ? (
                 <tr>
                   <td colSpan="6" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                    No payrun batches found.
+                    No payrun batches found matching search.
                   </td>
                 </tr>
               ) : (
-                payruns.map((p) => (
+                filteredPayruns.map((p) => (
                   <tr
                     key={p.id}
                     className="clickable-row"

@@ -517,19 +517,19 @@ body.login-page #root {
 
 /* ULTRA-DARK FIXED 260PX LEFT SIDEBAR */
 .sidebar-dark {
-  width: 260px;
-  min-width: 260px;
-  max-width: 260px;
-  background: var(--sidebar-bg);
+  width: 270px;
+  min-width: 270px;
+  max-width: 270px;
+  background: var(--sidebar-bg, #21002B);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.25rem 0.85rem 1rem 0.85rem;
+  padding: 1.4rem 1.1rem 1rem 1.1rem;
   border-radius: 0;
   user-select: none;
   z-index: 30;
   flex-shrink: 0;
-  border-right: 1px solid var(--sidebar-border);
+  border-right: 1px solid var(--sidebar-border, #51205B);
   box-sizing: border-box;
   height: 100vh;
   overflow: hidden;
@@ -551,38 +551,45 @@ body.login-page #root {
 }
 
 .sidebar-header-wrapper {
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.85rem;
-  border-bottom: 1px solid var(--sidebar-border);
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.75rem;
 }
 
 .sidebar-brand-container {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.25rem 0.2rem;
+  gap: 0.95rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 16px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
 }
 
 .sidebar-brand-container:hover {
-  opacity: 0.94;
-  transform: translateX(1px);
+  background: rgba(53, 8, 66, 0.45);
 }
 
 .sidebar-brand-logo {
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: #FFFFFF;
   display: grid;
   place-items: center;
   box-shadow: 
-    0 4px 16px rgba(15, 118, 110, 0.45),
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.3);
+    0 4px 14px rgba(0, 0, 0, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  transition: all 0.2s ease;
+}
+
+.sidebar-brand-container:hover .sidebar-brand-logo {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 
+    0 6px 18px rgba(0, 0, 0, 0.45),
+    0 0 14px rgba(221, 166, 255, 0.35);
 }
 
 .sidebar-brand-text {
@@ -592,22 +599,22 @@ body.login-page #root {
 }
 
 .sidebar-brand-title {
-  color: var(--sidebar-text-active);
-  font-size: 1.08rem;
+  color: var(--brand-text, #F9F3FF);
+  font-size: 1.3rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   line-height: 1.15;
-  font-family: var(--font-heading);
+  font-family: var(--font-heading, "Plus Jakarta Sans", sans-serif);
   white-space: nowrap;
 }
 
 .sidebar-brand-sub {
-  color: var(--sidebar-text);
+  color: var(--brand-muted, #C99BD8);
   font-size: 0.63rem;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.09em;
-  margin-top: 0.15rem;
+  letter-spacing: 0.1em;
+  margin-top: 0.18rem;
   white-space: nowrap;
 }
 
@@ -615,7 +622,7 @@ body.login-page #root {
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.22rem;
+  gap: 0.25rem;
   width: 100%;
   flex: 1;
   overflow-y: auto;
@@ -629,26 +636,25 @@ body.login-page #root {
 }
 
 .sidebar-section-label {
-  font-size: 0.66rem;
-  font-weight: 700;
-  color: var(--sidebar-text);
-  opacity: 0.65;
-  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #7B5578;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 0.85rem 0.75rem 0.35rem 0.75rem;
+  padding: 1.15rem 0.65rem 0.45rem 0.65rem;
   margin-top: 0.2rem;
 }
 
 .sidebar-nav-link {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem 0.85rem;
-  border-radius: 10px;
-  color: var(--sidebar-text);
+  gap: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+  color: #D4BED0;
   text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 600;
   transition: all 0.15s ease-in-out;
   background: transparent;
   border: 1px solid transparent;
@@ -662,7 +668,7 @@ body.login-page #root {
 .nav-icon-wrapper {
   display: grid;
   place-items: center;
-  color: var(--sidebar-text);
+  color: #D4BED0;
   transition: all 0.15s ease;
   flex-shrink: 0;
 }
@@ -675,37 +681,37 @@ body.login-page #root {
 }
 
 .sidebar-nav-link:hover {
-  color: var(--sidebar-text-active);
-  background: var(--sidebar-active-bg);
-  transform: translateX(2px);
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .sidebar-nav-link:hover .nav-icon-wrapper {
-  color: var(--sidebar-text-active);
+  color: #FFFFFF;
 }
 
-/* REFINED HIGH-END ACTIVE STATE */
+/* REFINED HIGH-END ACTIVE STATE DERIVED DIRECTLY FROM REFERENCE IMAGE */
 .sidebar-nav-link.active {
-  background: var(--sidebar-active-bg);
-  color: var(--sidebar-active-text);
-  font-weight: 600;
-  border: 1px solid var(--sidebar-border);
-  border-left: 3.5px solid var(--primary);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background: linear-gradient(90deg, #4F1848 0%, #3D1138 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  border: 1px solid rgba(183, 102, 161, 0.35);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar-nav-link.active .nav-icon-wrapper {
-  color: var(--primary);
-  filter: drop-shadow(0 0 6px rgba(52, 201, 155, 0.4));
+  color: #FFFFFF;
+  filter: none;
 }
 
 .active-glow-pill {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--primary);
-  box-shadow: 0 0 8px var(--primary);
+  background: #A85A93;
+  box-shadow: 0 0 8px #A85A93;
+  margin-left: auto;
   flex-shrink: 0;
+  opacity: 0.85;
 }
 
 /* ----------------------------------------------------

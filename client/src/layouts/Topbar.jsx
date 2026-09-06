@@ -20,6 +20,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { Sidebar } from './Sidebar';
 import { useLayout } from '../contexts/LayoutContext';
 import { PanelLeftOpen, PanelLeftClose } from 'lucide-react';
+import GlobalSearch from '../components/search/GlobalSearch';
 
 export function Topbar() {
   const { user, logout } = useAuth();
@@ -117,18 +118,7 @@ export function Topbar() {
       </div>
 
       <div className="topbar-center">
-        <div className="search-pill-box">
-          <Search size={17} />
-          <input
-            type="text"
-            id="topbar-global-search"
-            placeholder="Search across Odoo..."
-            autoComplete="off"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onKeyDown={handleSearchKeyDown}
-          />
-        </div>
+        <GlobalSearch />
       </div>
 
       <div className="topbar-right">

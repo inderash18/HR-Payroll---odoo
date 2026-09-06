@@ -24,13 +24,21 @@ export function EmployeesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
-  const [search, setSearch] = useState('');
-  const [selectedDept, setSelectedDept] = useState('');
+  const [searchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [selectedDept, setSelectedDept] = useState(searchParams.get('departmentId') || '');
   const [selectedWorkMode, setSelectedWorkMode] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const q = searchParams.get('search');
+    if (q !== null) setSearch(q);
+    const dept = searchParams.get('departmentId');
+    if (dept !== null) setSelectedDept(dept);
+  }, [searchParams]);
 
   // Load departments for filter dropdown
   useEffect(() => {

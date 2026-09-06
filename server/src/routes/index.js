@@ -2,10 +2,12 @@ import { Router } from 'express';
 import authRoutes from './auth.routes.js';
 import { userRoutes, organizationRoutes, departmentRoutes, employeeRoutes } from './user.routes.js';
 import { contractRoutes, scheduleRoutes, attendanceRoutes, leaveRoutes, payrollRoutes, dashboardRoutes, auditRoutes, healthRoutes } from './contract.routes.js';
+import searchRoutes from './search.routes.js';
 
 const router = Router();
 
 router.use('/auth', authRoutes);
+router.use('/search', searchRoutes);
 router.use('/users', userRoutes);
 router.use('/organizations', organizationRoutes);
 router.use('/departments', departmentRoutes);

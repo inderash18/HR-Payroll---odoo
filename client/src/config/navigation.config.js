@@ -26,7 +26,6 @@ export const ROLE_NAVIGATION = {
     { to: '/payroll', label: 'Payroll', icon: Landmark, section: 'Finance' },
     { to: '/audit', label: 'Reports', icon: FileSpreadsheet, section: 'Finance' },
     { to: '/users', label: 'Roles & Access', icon: UserCheck, section: 'Governance' },
-    { to: '/settings', label: 'Company Settings', icon: Layers, section: 'Governance' },
     { to: '/audit-logs', label: 'Audit Logs', icon: Shield, section: 'Governance' },
   ],
 
@@ -39,7 +38,6 @@ export const ROLE_NAVIGATION = {
     { to: '/payroll', label: 'Payroll', icon: Landmark, section: 'Finance' },
     { to: '/audit', label: 'Reports', icon: FileSpreadsheet, section: 'Finance' },
     { to: '/users', label: 'Roles & Access', icon: UserCheck, section: 'Governance' },
-    { to: '/settings', label: 'Company Settings', icon: Layers, section: 'Governance' },
     { to: '/audit-logs', label: 'Audit Logs', icon: Shield, section: 'Governance' },
   ],
 

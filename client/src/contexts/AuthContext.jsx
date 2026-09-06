@@ -1,36 +1,75 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../api/client';
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Bootstrap session on page refresh
-  useEffect(() => {
-    async function bootstrap() {
-      try {
-        const res = await api.get('/auth/me');
-        setUser(res.data);
-      } catch (e) {
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
+  // Attempt silent refresh
+  const attemptRefresh = useCallback(async () => {
+    try {
+      await axios.post(
+        `${API_BASE_URL}/auth/refresh`,
+        {},
+        { withCredentials: true }
+      );
+      return true;
+    } catch (e) {
+      return false;
     }
-
-    bootstrap();
   }, []);
+
+  // Bootstrap session on page refresh or startup
+  const bootstrapSession = useCallback(async () => {
+    setIsInitializing(true);
+    setError(null);
+
+    try {
+      // 1. Try directly reading profile with existing access cookie
+      const res = await api.get('/auth/me');
+      if (res?.data) {
+        setUser(res.data);
+        return;
+      }
+    } catch (err) {
+      // 2. If 401 or access token expired, attempt token refresh rotation
+      const refreshed = await attemptRefresh();
+      if (refreshed) {
+        try {
+          const retryRes = await api.get('/auth/me');
+          if (retryRes?.data) {
+            setUser(retryRes.data);
+            return;
+          }
+        } catch (retryErr) {
+          console.warn('Session refresh retry failed:', retryErr);
+        }
+      }
+      setUser(null);
+    } finally {
+      setIsInitializing(false);
+    }
+  }, [attemptRefresh]);
+
+  useEffect(() => {
+    bootstrapSession();
+  }, [bootstrapSession]);
 
   const login = async (email, password) => {
     setIsLoading(true);
     setError(null);
     try {
       const res = await api.post('/auth/login', { email: email.trim(), password });
-      setUser(res.data);
-      return res.data;
+      const authenticatedUser = res?.data || res;
+      setUser(authenticatedUser);
+      return authenticatedUser;
     } catch (err) {
       setError(err.message || 'Login failed');
       throw err;
@@ -40,20 +79,28 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
+    setIsLoading(true);
     try {
       await api.post('/auth/logout');
     } catch (e) {
-      console.warn('Logout warning:', e);
+      console.warn('Logout notification error:', e);
     } finally {
       setUser(null);
+      setIsLoading(false);
     }
+  };
+
+  const refreshSession = async () => {
+    return bootstrapSession();
   };
 
   const refreshUser = async () => {
     try {
       const res = await api.get('/auth/me');
-      setUser(res.data);
-      return res.data;
+      if (res?.data) {
+        setUser(res.data);
+        return res.data;
+      }
     } catch (e) {
       console.error('Failed to refresh user:', e);
     }
@@ -65,7 +112,7 @@ export function AuthProvider({ children }) {
 
   const hasRole = (...roles) => {
     if (!user) return false;
-    if (user.role === 'ADMIN') return true;
+    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') return true;
     return roles.includes(user.role);
   };
 
@@ -73,14 +120,16 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         user,
-        isLoading,
+        isAuthenticated: !!user,
+        isInitializing,
+        isLoading: isInitializing || isLoading,
         error,
         login,
         logout,
+        refreshSession,
         refreshUser,
         updateUser,
         hasRole,
-        isAuthenticated: !!user,
       }}
     >
       {children}
@@ -95,3 +144,4 @@ export function useAuth() {
   }
   return context;
 }
+

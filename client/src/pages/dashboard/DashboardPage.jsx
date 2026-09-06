@@ -20,9 +20,27 @@ export function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (user?.role && location.pathname === '/dashboard') {
-      const target = getRoleDashboardPath(user.role);
+    if (!user?.role) return;
+    const target = getRoleDashboardPath(user.role);
+
+    const DASHBOARD_ROUTES = {
+      '/super-admin/dashboard': ['SUPER_ADMIN'],
+      '/admin/dashboard': ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN'],
+      '/hr/dashboard': ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'HR_MANAGER'],
+      '/payroll/dashboard': ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'PAYROLL_MANAGER', 'HR_PAYROLL_MANAGER', 'HR_PAYROLL_USER'],
+      '/finance/dashboard': ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'FINANCE_MANAGER'],
+      '/manager/dashboard': ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'DEPARTMENT_MANAGER'],
+      '/auditor/dashboard': ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'AUDITOR'],
+      '/employee/dashboard': ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'ADMIN', 'EMPLOYEE', 'HR_MANAGER', 'PAYROLL_MANAGER', 'FINANCE_MANAGER', 'DEPARTMENT_MANAGER', 'AUDITOR'],
+    };
+
+    if (location.pathname === '/dashboard') {
       if (target && target !== '/dashboard') {
+        navigate(target, { replace: true });
+      }
+    } else if (DASHBOARD_ROUTES[location.pathname]) {
+      const allowed = DASHBOARD_ROUTES[location.pathname];
+      if (!allowed.includes(user.role)) {
         navigate(target, { replace: true });
       }
     }

@@ -7,9 +7,32 @@ export function AttendanceOverview({ attendanceData }) {
 
   if (!attendanceData) return null;
 
-  const { present = 0, onLeave = 0, absent = 0, lateCheckIn = 0 } = attendanceData;
-  const total = present + onLeave + absent + lateCheckIn;
-  const attendanceRate = total > 0 ? Math.round((present / total) * 100) : 100;
+  const {
+    present = 0,
+    onLeave = 0,
+    absent = 0,
+    lateCheckIn = 0,
+    late = 0,
+    attendanceRate: propRate,
+  } = attendanceData;
+
+  const lateCount = lateCheckIn || late || 0;
+  const total = present + onLeave + absent + lateCount;
+  const calculatedRate = total > 0 ? Math.round(((present + lateCount) / total) * 100) : 100;
+  const rate = propRate !== undefined ? Math.round(Number(propRate)) : calculatedRate;
+
+  // Dynamic status text and indicator color based on rate
+  let statusText = '● Operational';
+  let statusColor = 'var(--success)';
+  if (rate < 75) {
+    statusText = '● Attention Needed';
+    statusColor = 'var(--danger)';
+  } else if (rate < 90) {
+    statusText = '● Moderate';
+    statusColor = 'var(--warning)';
+  }
+
+  const strokeColor = rate < 75 ? 'var(--danger)' : rate < 90 ? 'var(--warning)' : 'var(--primary)';
 
   return (
     <div className="admin-card-white" id="admin-attendance-overview-card">
@@ -47,10 +70,10 @@ export function AttendanceOverview({ attendanceData }) {
               cy="65"
               r="52"
               fill="none"
-              stroke="var(--primary)"
+              stroke={strokeColor}
               strokeWidth="12"
               strokeDasharray="326.7"
-              strokeDashoffset={326.7 * (1 - attendanceRate / 100)}
+              strokeDashoffset={326.7 * (1 - Math.min(100, Math.max(0, rate)) / 100)}
               strokeLinecap="round"
               transform="rotate(-90 65 65)"
               style={{ transition: 'stroke-dashoffset 0.6s ease' }}
@@ -58,10 +81,10 @@ export function AttendanceOverview({ attendanceData }) {
           </svg>
           <div style={{ position: 'absolute', textAlign: 'center' }}>
             <div style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
-              {attendanceRate}%
+              {rate}%
             </div>
-            <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--success)', marginTop: '0.2rem' }}>
-              ● Operational
+            <div style={{ fontSize: '0.68rem', fontWeight: 700, color: statusColor, marginTop: '0.2rem' }}>
+              {statusText}
             </div>
           </div>
         </div>
@@ -98,7 +121,7 @@ export function AttendanceOverview({ attendanceData }) {
             <span className="att-dot" style={{ background: 'var(--warning)' }} />
             <span style={{ color: 'var(--text-secondary)' }}>Late</span>
           </div>
-          <strong style={{ color: 'var(--text-primary)' }}>{lateCheckIn}</strong>
+          <strong style={{ color: 'var(--text-primary)' }}>{lateCount}</strong>
         </div>
       </div>
     </div>

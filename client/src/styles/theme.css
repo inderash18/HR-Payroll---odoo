@@ -13,12 +13,17 @@
   --surface-soft: #F5ECF3;
   --surface-hover: #EFE2EC;
 
-  --sidebar-bg: #280236;
-  --sidebar-border: #3A004D;
-  --sidebar-text: #D9C3D2;
-  --sidebar-text-active: #FFFFFF;
-  --sidebar-active-bg: #4E115D;
-  --sidebar-active-text: #FFFFFF;
+  --sidebar-bg: #21002B;
+  --sidebar-surface: #350842;
+  --sidebar-border: #51205B;
+  --brand-primary: #DDA6FF;
+  --brand-secondary: #B36BCE;
+  --brand-text: #F9F3FF;
+  --brand-muted: #C99BD8;
+  --sidebar-text: #DDA6FF;
+  --sidebar-text-active: #F9F3FF;
+  --sidebar-active-bg: #350842;
+  --sidebar-active-text: #F9F3FF;
 
   --text-primary: #230B29;
   --text-secondary: #5E3D59;

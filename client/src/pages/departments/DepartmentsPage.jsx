@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../api/client';
 import { Plus } from 'lucide-react';
+import { LocalTableSearch } from '../../components/search/LocalTableSearch';
 
 export function DepartmentsPage() {
   const [departments, setDepartments] = useState([]);
+  const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ code: '', name: '' });
@@ -26,6 +28,16 @@ export function DepartmentsPage() {
     loadData();
   }, []);
 
+  const filteredDepartments = useMemo(() => {
+    if (!search.trim()) return departments;
+    const q = search.trim().toLowerCase();
+    return departments.filter(
+      (d) =>
+        d.name?.toLowerCase().includes(q) ||
+        d.code?.toLowerCase().includes(q)
+    );
+  }, [departments, search]);
+
   const handleCreate = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -47,11 +59,19 @@ export function DepartmentsPage() {
       <div className="card">
         <div
           className="card-header"
-          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '1rem', flexWrap: 'wrap' }}
         >
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
-            Departments ({departments.length})
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flex: 1 }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
+              Departments ({filteredDepartments.length})
+            </h2>
+            <LocalTableSearch
+              value={search}
+              onChange={setSearch}
+              placeholder="Search departments..."
+              id="search-departments"
+            />
+          </div>
           <button
             className="btn-pill-primary"
             id="btn-add-dept-header"
@@ -79,14 +99,14 @@ export function DepartmentsPage() {
                     Loading departments from PostgreSQL...
                   </td>
                 </tr>
-              ) : departments.length === 0 ? (
+              ) : filteredDepartments.length === 0 ? (
                 <tr>
                   <td colSpan="4" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                    No departments configured.
+                    No departments found matching your search.
                   </td>
                 </tr>
               ) : (
-                departments.map((d) => (
+                filteredDepartments.map((d) => (
                   <tr key={d.id}>
                     <td style={{ padding: '1rem 1.25rem', fontWeight: 600 }}>{d.code}</td>
                     <td style={{ padding: '1rem' }}>{d.name}</td>

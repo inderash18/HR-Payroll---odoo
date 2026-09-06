@@ -39,9 +39,10 @@ leaveRoutes.post('/types', requirePermission(PERMISSIONS.LEAVE_APPROVE), validat
 leaveRoutes.get('/allocations', requireAnyPermission(PERMISSIONS.LEAVE_READ_ALL, PERMISSIONS.LEAVE_READ_OWN), leaveController.listAllocations);
 leaveRoutes.post('/allocations', requirePermission(PERMISSIONS.LEAVE_APPROVE), validate(createLeaveAllocationSchema), leaveController.createAllocation);
 leaveRoutes.get('/requests', requireAnyPermission(PERMISSIONS.LEAVE_READ_ALL, PERMISSIONS.LEAVE_READ_OWN), leaveController.listRequests);
-leaveRoutes.post('/requests', requireAnyPermission(PERMISSIONS.LEAVE_APPLY, PERMISSIONS.LEAVE_APPROVE), validate(createLeaveRequestSchema), leaveController.createRequest);
 leaveRoutes.post('/requests/:id/approve', requirePermission(PERMISSIONS.LEAVE_APPROVE), leaveController.approve);
+leaveRoutes.patch('/requests/:id/approve', requirePermission(PERMISSIONS.LEAVE_APPROVE), leaveController.approve);
 leaveRoutes.post('/requests/:id/reject', requirePermission(PERMISSIONS.LEAVE_APPROVE), leaveController.reject);
+leaveRoutes.patch('/requests/:id/reject', requirePermission(PERMISSIONS.LEAVE_APPROVE), leaveController.reject);
 
 export const payrollRoutes = Router();
 payrollRoutes.use(authenticate, validateTenant);

@@ -137,6 +137,7 @@ export function AppRoutes() {
       </Route>
 
       <Route path="/forbidden" element={<ForbiddenPage />} />
+      <Route path="/access-denied" element={<ForbiddenPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

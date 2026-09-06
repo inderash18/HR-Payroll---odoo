@@ -46,7 +46,7 @@ export function PendingApprovals({ approvals = [], onViewItem }) {
             ✓ All caught up! No pending approvals required at this time.
           </div>
         ) : (
-          approvals.map((item) => (
+          approvals.slice(0, 4).map((item) => (
             <div
               key={item.id}
               style={{
@@ -114,6 +114,25 @@ export function PendingApprovals({ approvals = [], onViewItem }) {
           ))
         )}
       </div>
+
+      {approvals.length > 4 && (
+        <div
+          style={{
+            marginTop: '0.85rem',
+            padding: '0.75rem',
+            textAlign: 'center',
+            borderTop: '1px solid var(--border-subtle, #f1f5f9)',
+            fontSize: '0.82rem',
+            fontWeight: 600,
+            color: 'var(--primary)',
+            cursor: 'pointer',
+          }}
+          onClick={() => navigate('/leaves')}
+          className="clickable-footer"
+        >
+          View all {approvals.length} pending requests
+        </div>
+      )}
     </div>
   );
 }

@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../api/client';
 import { UserPlus } from 'lucide-react';
+import { LocalTableSearch } from '../../components/search/LocalTableSearch';
 
 export function UsersPage() {
   const [users, setUsers] = useState([]);
+  const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,6 +34,17 @@ export function UsersPage() {
     loadData();
   }, []);
 
+  const filteredUsers = useMemo(() => {
+    if (!search.trim()) return users;
+    const q = search.trim().toLowerCase();
+    return users.filter((u) => {
+      const fullName = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
+      const email = (u.email || '').toLowerCase();
+      const role = (u.role || '').toLowerCase().replace(/_/g, ' ');
+      return fullName.includes(q) || email.includes(q) || role.includes(q);
+    });
+  }, [users, search]);
+
   const handleCreate = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -53,11 +66,19 @@ export function UsersPage() {
       <div className="card">
         <div
           className="card-header"
-          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '1rem', flexWrap: 'wrap' }}
         >
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
-            User Accounts ({users.length})
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flex: 1 }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
+              User Accounts ({filteredUsers.length})
+            </h2>
+            <LocalTableSearch
+              value={search}
+              onChange={setSearch}
+              placeholder="Search users, roles, or access..."
+              id="search-users"
+            />
+          </div>
           <button
             className="btn-pill-primary"
             id="btn-add-user-header"
@@ -86,14 +107,14 @@ export function UsersPage() {
                     Loading users from PostgreSQL...
                   </td>
                 </tr>
-              ) : users.length === 0 ? (
+              ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan="5" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                    No users found.
+                    No users found matching your search.
                   </td>
                 </tr>
               ) : (
-                users.map((u) => (
+                filteredUsers.map((u) => (
                   <tr key={u.id}>
                     <td style={{ padding: '1rem 1.25rem', fontWeight: 600 }}>
                       {u.firstName || ''} {u.lastName || ''}

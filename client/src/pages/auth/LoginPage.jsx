@@ -4,9 +4,11 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Loader2, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import api from '../../api/client';
 import { getRoleDashboardPath } from '../../config/navigation.config';
+import { FullScreenLoader } from '../../components/common/FullScreenLoader';
+import { OdooLogo } from '../../components/common/OdooLogo';
 
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, user, isAuthenticated, isInitializing } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('indhu.admin@odoo.in');
@@ -15,6 +17,14 @@ export function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Auto-redirect if already authenticated
+  useEffect(() => {
+    if (!isInitializing && isAuthenticated && user) {
+      const targetPath = getRoleDashboardPath(user?.role);
+      navigate(targetPath, { replace: true });
+    }
+  }, [isAuthenticated, isInitializing, user, navigate]);
 
   // Forgot password modal states
   const [showForgotModal, setShowForgotModal] = useState(false);
@@ -31,6 +41,10 @@ export function LoginPage() {
       document.body.style.margin = "";
     };
   }, []);
+
+  if (isInitializing) {
+    return <FullScreenLoader message="Checking active session..." />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -85,51 +99,48 @@ export function LoginPage() {
 
   return (
     <div
-      className="min-h-screen w-full relative flex items-center justify-center overflow-hidden font-['Inter',sans-serif]"
-      style={{
-        background: 'radial-gradient(circle at 50% 50%, #8B4F67 0%, #520B6B 35%, #3A004D 70%, #23022E 100%)',
-      }}
+      className="min-h-screen w-full relative flex items-center justify-center md:justify-end md:pr-[15%] overflow-hidden bg-cover bg-center font-['Inter',sans-serif]"
+      style={{ backgroundImage: 'url("/ChatGPT Image Sep 6, 2026, 01_09_16 AM.png")' }}
     >
-      {/* Ambient Vignette Glow Spheres derived from reference image */}
-      <div className="absolute w-[600px] h-[600px] rounded-full bg-[#9E4B88]/20 blur-[120px] pointer-events-none -top-20 -left-20"></div>
-      <div className="absolute w-[500px] h-[500px] rounded-full bg-[#8B4F67]/25 blur-[100px] pointer-events-none -bottom-20 -right-20"></div>
+      {/* Emerald/Dark Overlay */}
+      <div className="absolute inset-0 bg-[#0F766E] opacity-[0.12] z-0 pointer-events-none"></div>
 
       {/* The glass card */}
-      <div className="w-full max-w-md md:max-w-[460px] bg-[#23022E]/60 backdrop-blur-[24px] border border-[#D9C3D2]/30 rounded-3xl shadow-[0_20px_50px_rgba(35,2,46,0.6)] overflow-hidden p-8 relative z-10 mx-4">
+      <div className="w-full max-w-md md:max-w-[480px] bg-white/10 backdrop-blur-[24px] border border-white/30 rounded-3xl shadow-[0_8px_32px_0_rgba(15,118,110,0.3)] overflow-hidden p-8 relative z-10 mx-4 md:mx-0">
 
         {/* Header Section */}
-        <div className="mb-6 text-center">
-          <div className="inline-flex items-center gap-1.5 bg-[#FAF5F8]/15 border border-[#D9C3D2]/30 px-3.5 py-1 rounded-full mb-4 shadow-sm">
-            <div className="w-2 h-2 rounded-full bg-[#D9C3D2] animate-pulse"></div>
-            <span className="text-[#FAF5F8] font-bold text-xs tracking-wider uppercase">ODOO WORKFORCE</span>
+        <div className="mb-6">
+          <div className="inline-flex items-center gap-2 bg-white/20 border border-white/40 px-3 py-1.5 rounded-full mb-4">
+            <OdooLogo size={14} color="#0F766E" />
+            <span className="text-[#0F766E] dark:text-[#34C99B] font-semibold text-xs tracking-wider">ODOO ENTERPRISE</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-[#FAF5F8] mb-2 tracking-tight font-['Manrope',sans-serif]">Sign In</h1>
-          <p className="text-[#D9C3D2] text-sm">Access your Odoo Workforce &amp; Payroll Workspace</p>
+          <h1 className="text-4xl font-bold text-[#15241E] mb-2 tracking-tight font-['Manrope',sans-serif]">Sign In</h1>
+          <p className="text-[#50675B] text-sm">Access your Odoo Workforce &amp; Payroll Workspace</p>
         </div>
 
         {/* Notice Box */}
-        <div className="bg-[#FAF5F8]/10 border border-[#D9C3D2]/25 rounded-2xl p-3.5 flex gap-3 mb-6 items-start">
-          <ShieldCheck className="text-[#D9C3D2] mt-0.5 shrink-0" size={20} />
-          <p className="text-[#FAF5F8] text-xs font-medium leading-relaxed">
+        <div className="bg-[#0F766E]/10 border border-[#0F766E]/30 rounded-2xl p-4 flex gap-3 mb-8 items-start">
+          <ShieldCheck className="text-[#0F766E] mt-0.5 shrink-0" size={20} />
+          <p className="text-[#15241E] text-sm font-medium leading-relaxed">
             Secure Organization Portal: Sign in with your registered email or employee ID credentials.
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {error && (
-            <div className="text-red-200 bg-red-950/80 p-3 rounded-xl text-xs font-semibold border border-red-500/40">
+            <div className="text-red-700 bg-red-100/90 p-3 rounded-xl text-sm font-semibold border border-red-200">
               {error}
             </div>
           )}
 
           {/* Email Input */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[#FAF5F8] text-xs font-medium ml-1">Work Email</label>
+            <label className="text-white text-sm font-medium ml-1">Work Email</label>
             <div className="relative">
               <input
                 type="text"
-                className="w-full h-11 bg-white/10 border border-[#D9C3D2]/30 rounded-xl px-4 text-[#FAF5F8] placeholder-[#D9C3D2]/60 outline-none focus:border-[#9E4B88] focus:ring-2 focus:ring-[#9E4B88]/30 transition-all text-sm"
+                className="w-full h-12 bg-white/10 border border-white/30 rounded-full px-5 text-white placeholder-white/50 outline-none focus:border-emerald-400 transition-colors"
                 placeholder="name@odoo.local"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -141,11 +152,11 @@ export function LoginPage() {
           {/* Password Input */}
           <div className="flex flex-col gap-1.5">
             <div className="flex justify-between items-center ml-1">
-              <label className="text-[#FAF5F8] text-xs font-medium">Password</label>
+              <label className="text-white text-sm font-medium">Password</label>
               <button
                 type="button"
                 onClick={() => setShowForgotModal(true)}
-                className="text-[#D9C3D2] text-xs font-medium hover:underline hover:text-white bg-transparent border-none cursor-pointer"
+                className="text-white text-sm font-medium hover:underline bg-transparent border-none cursor-pointer"
               >
                 Forgot password?
               </button>
@@ -153,7 +164,7 @@ export function LoginPage() {
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
-                className="w-full h-11 bg-white/10 border border-[#D9C3D2]/30 rounded-xl px-4 pr-11 text-[#FAF5F8] placeholder-[#D9C3D2]/60 outline-none focus:border-[#9E4B88] focus:ring-2 focus:ring-[#9E4B88]/30 transition-all text-sm tracking-wider"
+                className="w-full h-12 bg-white/10 border border-white/30 rounded-full px-5 pr-12 text-white placeholder-white/50 outline-none focus:border-emerald-400 transition-colors tracking-widest"
                 placeholder="••••••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -162,16 +173,16 @@ export function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#D9C3D2] hover:text-white bg-transparent border-none cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-transparent border-none cursor-pointer"
               >
-                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
           {/* Remember Me */}
-          <label className="flex items-center cursor-pointer mt-1 ml-1">
-            <div className={`w-4.5 h-4.5 rounded-[4px] border ${rememberMe ? 'bg-[#8B4F67] border-[#8B4F67]' : 'bg-transparent border-[#D9C3D2]/50'} flex items-center justify-center transition-colors`}>
+          <label className="flex items-center cursor-pointer mt-1 mb-2 ml-1">
+            <div className={`w-5 h-5 rounded-[4px] border ${rememberMe ? 'bg-[#0F766E] border-[#0F766E]' : 'bg-transparent border-white/50'} flex items-center justify-center transition-colors`}>
               <input type="checkbox" className="hidden" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
               {rememberMe && (
                 <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -179,22 +190,22 @@ export function LoginPage() {
                 </svg>
               )}
             </div>
-            <span className="text-[#D9C3D2] text-xs font-medium ml-2.5">Remember session for 30 days</span>
+            <span className="text-white text-sm font-medium ml-3">Remember session for 30 days</span>
           </label>
 
           {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
-            className="h-11 w-full rounded-xl bg-[#8B4F67] hover:bg-[#753E54] active:bg-[#5E2C41] text-white font-semibold flex items-center justify-center transition-all border border-[#9E4B88]/40 shadow-lg cursor-pointer text-sm mt-2 hover:shadow-[0_0_20px_rgba(158,75,136,0.4)]"
+            className="h-12 w-full rounded-full bg-[#0F766E] hover:bg-[#115E59] active:bg-[#134E48] text-white font-semibold flex items-center justify-center transition-colors border border-emerald-400/50 shadow-lg cursor-pointer"
           >
-            {isLoading ? <Loader2 className="animate-spin mr-2" size={18} /> : null}
-            {isLoading ? 'Authenticating...' : 'Sign In to Odoo'}
+            {isLoading ? <Loader2 className="animate-spin mr-2" size={20} /> : null}
+            {isLoading ? 'Authenticating...' : 'Sign In to Dashboard'}
           </button>
 
           {/* Footer inside card */}
-          <div className="mt-3 text-center">
-            <p className="text-[11px] font-medium text-[#D9C3D2]/80">
+          <div className="mt-4 text-center">
+            <p className="text-[11px] font-medium text-[#15241E]">
               Powered by Odoo Architecture • 256-Bit SSL Encrypted
             </p>
           </div>

@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { Plus, FileText, Calendar, DollarSign, CheckCircle2 } from 'lucide-react';
+import { LocalTableSearch } from '../../components/search/LocalTableSearch';
 
 export function ContractsPage() {
   const [contracts, setContracts] = useState([]);
+  const [search, setSearch] = useState('');
   const [employees, setEmployees] = useState([]);
   const [structures, setStructures] = useState([]);
   const [schedules, setSchedules] = useState([]);
@@ -49,6 +51,17 @@ export function ContractsPage() {
     loadData();
   }, []);
 
+  const filteredContracts = useMemo(() => {
+    if (!search.trim()) return contracts;
+    const q = search.trim().toLowerCase();
+    return contracts.filter((c) => {
+      const empName = `${c.employee?.firstName || ''} ${c.employee?.lastName || ''}`.toLowerCase();
+      const name = (c.name || '').toLowerCase();
+      const empNum = (c.employee?.employeeNum || '').toLowerCase();
+      return empName.includes(q) || name.includes(q) || empNum.includes(q);
+    });
+  }, [contracts, search]);
+
   const handleCreate = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -82,11 +95,19 @@ export function ContractsPage() {
       <div className="card">
         <div
           className="card-header"
-          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '1rem', flexWrap: 'wrap' }}
         >
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
-            Employment Contracts ({contracts.length})
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flex: 1 }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
+              Employment Contracts ({filteredContracts.length})
+            </h2>
+            <LocalTableSearch
+              value={search}
+              onChange={setSearch}
+              placeholder="Search contracts..."
+              id="search-contracts"
+            />
+          </div>
           <button
             className="btn-pill-primary"
             id="btn-add-contract-header"
@@ -116,14 +137,14 @@ export function ContractsPage() {
                     Loading contract records from PostgreSQL...
                   </td>
                 </tr>
-              ) : contracts.length === 0 ? (
+              ) : filteredContracts.length === 0 ? (
                 <tr>
                   <td colSpan="6" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                    No contracts found in PostgreSQL.
+                    No contracts found matching your search.
                   </td>
                 </tr>
               ) : (
-                contracts.map((c) => (
+                filteredContracts.map((c) => (
                   <tr key={c.id}>
                     <td style={{ padding: '1rem 1.25rem', fontWeight: 600 }}>{c.name}</td>
                     <td style={{ padding: '1rem' }}>
